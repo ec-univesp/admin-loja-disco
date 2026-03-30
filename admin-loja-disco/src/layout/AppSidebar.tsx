@@ -32,35 +32,35 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+    subItems: [{ name: "Loja de Discos", path: "/", pro: false }],
   },
   {
     icon: <CalenderIcon />,
-    name: "Calendar",
+    name: "Calendário",
     path: "/calendar",
   },
   {
     icon: <UserCircleIcon />,
-    name: "User Profile",
+    name: "Perfil",
     path: "/profile",
   },
 
   {
-    name: "Forms",
+    name: "Formulários",
     icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+    subItems: [{ name: "Elementos de Forma", path: "/form-elements", pro: false }],
   },
   {
-    name: "Tables",
+    name: "Tabelas",
     icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+    subItems: [{ name: "Tabelas Básicas", path: "/basic-tables", pro: false }],
   },
   {
-    name: "Pages",
+    name: "Páginas",
     icon: <PageIcon />,
     subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
+      { name: "Página em Branco", path: "/blank", pro: false },
+      { name: "Erro 404", path: "/error-404", pro: false },
     ],
   },
   {
@@ -82,22 +82,22 @@ const navItems: NavItem[] = [
 const othersItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
-    name: "Charts",
+    name: "Gráficos",
     subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
+      { name: "Gráfico de Linha", path: "/line-chart", pro: false },
+      { name: "Gráfico de Barra", path: "/bar-chart", pro: false },
     ],
   },
   {
     icon: <BoxCubeIcon />,
-    name: "UI Elements",
+    name: "Elementos UI",
     subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
+      { name: "Alertas", path: "/alerts", pro: false },
       { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
+      { name: "Emblema", path: "/badge", pro: false },
+      { name: "Botões", path: "/buttons", pro: false },
+      { name: "Imagens", path: "/images", pro: false },
+      { name: "Vídeos", path: "/videos", pro: false },
     ],
   },
   {
