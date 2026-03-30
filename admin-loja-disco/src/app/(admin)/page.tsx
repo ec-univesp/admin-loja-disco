@@ -1,16 +1,14 @@
 "use client";
 
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
+import { MetricasLoja } from "@/components/ecommerce/MetricasLoja";
 import React from "react";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
-import DemographicCard from "@/components/ecommerce/DemographicCard";
+import MetaMensal from "@/components/ecommerce/MetaMensal";
+import VendasMensaisChart from "@/components/ecommerce/VendasMensaisChart";
+import VendasRecentes from "@/components/ecommerce/VendasRecentes";
 import Button from "@/components/ui/button/Button";
 import { useRouter } from "next/navigation";
 
-export default function Ecommerce() {
+export default function AdminLojaDisco() {
   const router = useRouter();
 
   const handleNewSale = () => {
@@ -35,25 +33,17 @@ export default function Ecommerce() {
       </div>
 
       <div className="col-span-12 space-y-6 xl:col-span-7">
-        <EcommerceMetrics />
+        <MetricasLoja />
 
-        <MonthlySalesChart />
+        <VendasMensaisChart />
       </div>
 
       <div className="col-span-12 xl:col-span-5">
-        <MonthlyTarget />
-      </div>
-
-      <div className="col-span-12">
-        <StatisticsChart />
-      </div>
-
-      <div className="col-span-12 xl:col-span-5">
-        <DemographicCard />
+        <MetaMensal />
       </div>
 
       <div className="col-span-12 xl:col-span-7">
-        <RecentOrders />
+        <VendasRecentes />
       </div>
     </div>
   );
