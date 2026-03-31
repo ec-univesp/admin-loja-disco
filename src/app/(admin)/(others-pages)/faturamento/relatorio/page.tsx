@@ -2,7 +2,6 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import React from "react";
 
-const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
 const dadosMensais = [
   { mes: "Jan", receita: 3200, despesas: 1800, lucro: 1400 },

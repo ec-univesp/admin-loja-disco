@@ -50,13 +50,6 @@ export default function FaturamentoPage() {
     return matchBusca && matchStatus && matchTipo;
   });
 
-  const totalRecebido = notasFiltradas
-    .filter((n) => n.tipo === "Venda" && n.status === "Pago")
-    .reduce((acc, n) => acc + n.valor, 0);
-
-  const totalPendente = notasFiltradas
-    .filter((n) => n.status === "Pendente")
-    .reduce((acc, n) => acc + n.valor, 0);
 
   return (
     <div>
