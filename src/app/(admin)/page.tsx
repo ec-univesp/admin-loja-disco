@@ -19,6 +19,10 @@ export default function AdminLojaDisco() {
     router.push("/nova-compra");
   };
 
+  const handleAddProduct = () => {
+    router.push("/estoque/add-produto");
+  };
+
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
       <div className="col-span-12">
@@ -28,6 +32,9 @@ export default function AdminLojaDisco() {
           </Button>
           <Button variant="primary" onClick={handleNewPurchase}>
             + Nova Compra
+          </Button>
+          <Button variant="primary" onClick={handleAddProduct}>
+            + Add Produto
           </Button>
         </div>
       </div>
