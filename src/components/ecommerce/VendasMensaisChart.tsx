@@ -1,10 +1,6 @@
 "use client";
 import { ApexOptions } from "apexcharts";
 import dynamic from "next/dynamic";
-import { MoreDotIcon } from "@/icons";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { useState } from "react";
-import { Dropdown } from "../ui/dropdown/Dropdown";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
@@ -99,8 +95,6 @@ export default function VendasMensaisChart() {
       data: [2400, 1398, 9800, 3908, 4800, 3800, 4300, 2400, 3400, 3900, 3500, 4300],
     },
   ];
-
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-4 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
