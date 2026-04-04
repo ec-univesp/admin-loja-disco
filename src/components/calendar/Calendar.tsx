@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -27,7 +27,28 @@ const Calendar: React.FC = () => {
   const [eventStartDate, setEventStartDate] = useState("");
   const [eventEndDate, setEventEndDate] = useState("");
   const [eventLevel, setEventLevel] = useState("");
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>(() => [
+    {
+      id: "1",
+      title: "Event Conf.",
+      start: new Date().toISOString().split("T")[0],
+      extendedProps: { calendar: "Danger" },
+    },
+    {
+      id: "2",
+      title: "Meeting",
+      start: new Date(Date.now() + 86400000).toISOString().split("T")[0],
+      extendedProps: { calendar: "Success" },
+    },
+    {
+      id: "3",
+      title: "Workshop",
+      start: new Date(Date.now() + 172800000).toISOString().split("T")[0],
+      end: new Date(Date.now() + 259200000).toISOString().split("T")[0],
+      extendedProps: { calendar: "Primary" },
+    },
+  ]);
+  const idCounterRef = useRef(0);
   const calendarRef = useRef<FullCalendar>(null);
   const { isOpen, openModal, closeModal } = useModal();
 
@@ -38,29 +59,9 @@ const Calendar: React.FC = () => {
     Warning: "warning",
   };
 
-  useEffect(() => {
-    // Initialize with some events
-    setEvents([
-      {
-        id: "1",
-        title: "Event Conf.",
-        start: new Date().toISOString().split("T")[0],
-        extendedProps: { calendar: "Danger" },
-      },
-      {
-        id: "2",
-        title: "Meeting",
-        start: new Date(Date.now() + 86400000).toISOString().split("T")[0],
-        extendedProps: { calendar: "Success" },
-      },
-      {
-        id: "3",
-        title: "Workshop",
-        start: new Date(Date.now() + 172800000).toISOString().split("T")[0],
-        end: new Date(Date.now() + 259200000).toISOString().split("T")[0],
-        extendedProps: { calendar: "Primary" },
-      },
-    ]);
+  const generateUniqueId = useCallback(() => {
+    idCounterRef.current += 1;
+    return `event-${Date.now()}-${idCounterRef.current}`;
   }, []);
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
@@ -99,7 +100,7 @@ const Calendar: React.FC = () => {
     } else {
       // Add new event
       const newEvent: CalendarEvent = {
-        id: Date.now().toString(),
+        id: generateUniqueId(),
         title: eventTitle,
         start: eventStartDate,
         end: eventEndDate,
@@ -121,7 +122,7 @@ const Calendar: React.FC = () => {
   };
 
   return (
-    <div className="rounded-2xl border  border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="custom-calendar">
         <FullCalendar
           ref={calendarRef}
@@ -153,10 +154,7 @@ const Calendar: React.FC = () => {
         <div className="flex flex-col px-2 overflow-y-auto custom-scrollbar">
           <div>
             <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
-
               {selectedEvent ? "Edit Event" : "Add Event"}
-
-            
             </h5>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Plan your next big moment: schedule or edit an event to stay on
@@ -206,8 +204,8 @@ const Calendar: React.FC = () => {
                             <span
                               className={`h-2 w-2 rounded-full bg-white ${
                                 eventLevel === key ? "block" : "hidden"
-                              }`}  
-                            ></span>
+                              }`}
+                            />
                           </span>
                         </span>
                         {key}
@@ -276,7 +274,7 @@ const renderEventContent = (eventInfo: EventContentArg) => {
     <div
       className={`event-fc-color flex fc-event-main ${colorClass} p-1 rounded-sm`}
     >
-      <div className="fc-daygrid-event-dot"></div>
+      <div className="fc-daygrid-event-dot" />
       <div className="fc-event-time">{eventInfo.timeText}</div>
       <div className="fc-event-title">{eventInfo.event.title}</div>
     </div>
