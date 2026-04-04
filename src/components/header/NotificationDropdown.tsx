@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { Dropdown } from '../ui/dropdown/Dropdown';
@@ -83,16 +82,12 @@ export default function NotificationDropdown() {
               onItemClick={closeDropdown}
               className="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
             >
-              <span className="relative z-1 block h-10 w-full max-w-10 rounded-full">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/images/user/user-02.jpg"
-                  alt="User"
-                  className="w-full overflow-hidden rounded-full"
-                />
-                <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
-              </span>
+              <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600">
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <span className="bg--500 absolute right-0 bottom-0 z-10 h-2.5 w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
+              </div>
 
               <span className="block">
                 <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">
@@ -117,16 +112,12 @@ export default function NotificationDropdown() {
               onItemClick={closeDropdown}
               className="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
             >
-              <span className="relative z-1 block h-10 w-full max-w-10 rounded-full">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/images/user/user-03.jpg"
-                  alt="User"
-                  className="w-full overflow-hidden rounded-full"
-                />
-                <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
-              </span>
+              <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600">
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <span className="bg--500 absolute right-0 bottom-0 z-10 h-2.5 w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
+              </div>
 
               <span className="block">
                 <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">
@@ -152,16 +143,12 @@ export default function NotificationDropdown() {
               className="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
               href="#"
             >
-              <span className="relative z-1 block h-10 w-full max-w-10 rounded-full">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/images/user/user-04.jpg"
-                  alt="User"
-                  className="w-full overflow-hidden rounded-full"
-                />
-                <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
-              </span>
+              <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600">
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <span className="bg--500 absolute right-0 bottom-0 z-10 h-2.5 w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
+              </div>
 
               <span className="block">
                 <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">
@@ -189,16 +176,12 @@ export default function NotificationDropdown() {
               className="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
               href="#"
             >
-              <span className="relative z-1 block h-10 w-full max-w-10 rounded-full">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/images/user/user-05.jpg"
-                  alt="User"
-                  className="w-full overflow-hidden rounded-full"
-                />
-                <span className="bg-error-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
-              </span>
+              <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600">
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <span className="bg--500 absolute right-0 bottom-0 z-10 h-2.5 w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
+              </div>
 
               <span className="block">
                 <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">
@@ -225,16 +208,12 @@ export default function NotificationDropdown() {
               className="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
               onItemClick={closeDropdown}
             >
-              <span className="relative z-1 block h-10 w-full max-w-10 rounded-full">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/images/user/user-02.jpg"
-                  alt="User"
-                  className="w-full overflow-hidden rounded-full"
-                />
-                <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
-              </span>
+              <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600">
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <span className="bg--500 absolute right-0 bottom-0 z-10 h-2.5 w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
+              </div>
 
               <span className="block">
                 <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">
@@ -259,16 +238,12 @@ export default function NotificationDropdown() {
               onItemClick={closeDropdown}
               className="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
             >
-              <span className="relative z-1 block h-10 w-full max-w-10 rounded-full">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/images/user/user-03.jpg"
-                  alt="User"
-                  className="w-full overflow-hidden rounded-full"
-                />
-                <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
-              </span>
+              <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600">
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <span className="bg--500 absolute right-0 bottom-0 z-10 h-2.5 w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
+              </div>
 
               <span className="block">
                 <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">
@@ -293,16 +268,12 @@ export default function NotificationDropdown() {
               onItemClick={closeDropdown}
               className="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
             >
-              <span className="relative z-1 block h-10 w-full max-w-10 rounded-full">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/images/user/user-04.jpg"
-                  alt="User"
-                  className="w-full overflow-hidden rounded-full"
-                />
-                <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
-              </span>
+              <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600">
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <span className="bg--500 absolute right-0 bottom-0 z-10 h-2.5 w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
+              </div>
 
               <span className="block">
                 <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">
@@ -330,16 +301,12 @@ export default function NotificationDropdown() {
               className="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
               href="#"
             >
-              <span className="relative z-1 block h-10 w-full max-w-10 rounded-full">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/images/user/user-05.jpg"
-                  alt="User"
-                  className="overflow-hidden rounded-full"
-                />
-                <span className="bg-error-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
-              </span>
+              <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600">
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <span className="bg-error-500 absolute right-0 bottom-0 z-10 h-2.5 w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
+              </div>
 
               <span className="block">
                 <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">

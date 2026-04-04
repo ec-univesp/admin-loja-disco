@@ -41,7 +41,6 @@ const statusColorClasses = {
 };
 
 const Avatar: React.FC<AvatarProps> = ({
-  alt = 'User Avatar',
   size = 'medium',
   status = 'none',
 }) => {
