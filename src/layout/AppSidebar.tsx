@@ -1,7 +1,6 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
@@ -67,6 +66,42 @@ const navItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const [openSubmenu, setOpenSubmenu] = useState<{
+    type: "main";
+    index: number;
+  } | null>(null);
+  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
+  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Close submenu when pathname changes
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpenSubmenu(null);
+  }, [pathname]);
+
+  // Update submenu height when it changes
+  useEffect(() => {
+    if (openSubmenu !== null) {
+      const key = `main-${openSubmenu.index}`;
+      if (subMenuRefs.current[key]) {
+        setSubMenuHeight((prevHeights) => ({
+          ...prevHeights,
+          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
+        }));
+      }
+    }
+  }, [openSubmenu]);
+
+  const isActive = (path: string) => path === pathname;
+
+  const handleSubmenuToggle = (index: number) => {
+    setOpenSubmenu((prevOpenSubmenu) => {
+      if (prevOpenSubmenu && prevOpenSubmenu.index === index) {
+        return null;
+      }
+      return { type: "main", index };
+    });
+  };
 
   const renderMenuItems = (
     items: NavItem[],
@@ -194,59 +229,9 @@ const AppSidebar: React.FC = () => {
     </ul>
   );
 
-  const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main";
-    index: number;
-  } | null>(null);
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
-  );
-  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  const isActive = useCallback((path: string) => path === pathname, [pathname]);
-
-  useEffect(() => {
-    let matchedIndex: number | null = null;
-    navItems.forEach((nav, index) => {
-      if (nav.subItems) {
-        nav.subItems.forEach((subItem) => {
-          if (isActive(subItem.path)) {
-            matchedIndex = index;
-          }
-        });
-      }
-    });
-    if (matchedIndex !== null) {
-      setOpenSubmenu({ type: "main", index: matchedIndex });
-    } else {
-      setOpenSubmenu(null);
-    }
-  }, [pathname, isActive]);
-
-  useEffect(() => {
-    if (openSubmenu !== null) {
-      const key = `main-${openSubmenu.index}`;
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeight((prevHeights) => ({
-          ...prevHeights,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }));
-      }
-    }
-  }, [openSubmenu]);
-
-  const handleSubmenuToggle = (index: number) => {
-    setOpenSubmenu((prevOpenSubmenu) => {
-      if (prevOpenSubmenu && prevOpenSubmenu.index === index) {
-        return null;
-      }
-      return { type: "main", index };
-    });
-  };
-
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200
         ${
           isExpanded || isMobileOpen
             ? "w-[290px]"
