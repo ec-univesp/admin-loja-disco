@@ -1,0 +1,18 @@
+{
+  "modelContext.servers": {
+    "serena": {
+      "command": "/Users/emerson/.local/bin/uvx",
+      "args": [
+        "-p",
+        "3.13",
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server"
+      ],
+      "env": {
+        "SERENA_SERVER_MODE": "stdio"
+      }
+    }
+  }
+}
