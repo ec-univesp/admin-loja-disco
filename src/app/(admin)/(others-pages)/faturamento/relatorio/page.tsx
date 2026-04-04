@@ -1,27 +1,26 @@
-"use client";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import React from "react";
-
+'use client';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import React from 'react';
 
 const dadosMensais = [
-  { mes: "Jan", receita: 3200, despesas: 1800, lucro: 1400 },
-  { mes: "Fev", receita: 2800, despesas: 1500, lucro: 1300 },
-  { mes: "Mar", receita: 4150, despesas: 2100, lucro: 2050 },
+  { mes: 'Jan', receita: 3200, despesas: 1800, lucro: 1400 },
+  { mes: 'Fev', receita: 2800, despesas: 1500, lucro: 1300 },
+  { mes: 'Mar', receita: 4150, despesas: 2100, lucro: 2050 },
 ];
 
 const topProdutos = [
-  { titulo: "Abbey Road", artista: "The Beatles", qtdVendida: 8, receita: 719.20 },
-  { titulo: "Dark Side of the Moon", artista: "Pink Floyd", qtdVendida: 6, receita: 599.40 },
-  { titulo: "Thriller", artista: "Michael Jackson", qtdVendida: 5, receita: 399.50 },
-  { titulo: "Back in Black", artista: "AC/DC", qtdVendida: 4, receita: 352.00 },
-  { titulo: "Led Zeppelin IV", artista: "Led Zeppelin", qtdVendida: 3, receita: 285.00 },
+  { titulo: 'Abbey Road', artista: 'The Beatles', qtdVendida: 8, receita: 719.2 },
+  { titulo: 'Dark Side of the Moon', artista: 'Pink Floyd', qtdVendida: 6, receita: 599.4 },
+  { titulo: 'Thriller', artista: 'Michael Jackson', qtdVendida: 5, receita: 399.5 },
+  { titulo: 'Back in Black', artista: 'AC/DC', qtdVendida: 4, receita: 352.0 },
+  { titulo: 'Led Zeppelin IV', artista: 'Led Zeppelin', qtdVendida: 3, receita: 285.0 },
 ];
 
 const formasPagamento = [
-  { forma: "PIX", percentual: 42, total: 1743.00 },
-  { forma: "Cartão Crédito", percentual: 35, total: 1452.50 },
-  { forma: "Dinheiro", percentual: 15, total: 622.50 },
-  { forma: "Cartão Débito", percentual: 8, total: 332.00 },
+  { forma: 'PIX', percentual: 42, total: 1743.0 },
+  { forma: 'Cartão Crédito', percentual: 35, total: 1452.5 },
+  { forma: 'Dinheiro', percentual: 15, total: 622.5 },
+  { forma: 'Cartão Débito', percentual: 8, total: 332.0 },
 ];
 
 export default function RelatorioFinanceiroPage() {
@@ -36,25 +35,29 @@ export default function RelatorioFinanceiroPage() {
       {/* KPIs */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Receita Total (Trim.)</p>
+          <p className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+            Receita Total (Trim.)
+          </p>
           <p className="mt-1 text-2xl font-bold text-gray-800 dark:text-white">
             R$ {totalReceita.toFixed(2)}
           </p>
           <p className="mt-1 text-xs text-green-500">↑ +12% vs trimestre anterior</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Despesas (Trim.)</p>
-          <p className="mt-1 text-2xl font-bold text-red-500">
-            R$ {totalDespesas.toFixed(2)}
+          <p className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+            Despesas (Trim.)
           </p>
+          <p className="mt-1 text-2xl font-bold text-red-500">R$ {totalDespesas.toFixed(2)}</p>
           <p className="mt-1 text-xs text-gray-400">Compras + Operacional</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Lucro Líquido (Trim.)</p>
-          <p className="mt-1 text-2xl font-bold text-green-600">
-            R$ {totalLucro.toFixed(2)}
+          <p className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+            Lucro Líquido (Trim.)
           </p>
-          <p className="mt-1 text-xs text-green-500">Margem: {((totalLucro / totalReceita) * 100).toFixed(1)}%</p>
+          <p className="mt-1 text-2xl font-bold text-green-600">R$ {totalLucro.toFixed(2)}</p>
+          <p className="mt-1 text-xs text-green-500">
+            Margem: {((totalLucro / totalReceita) * 100).toFixed(1)}%
+          </p>
         </div>
       </div>
 
@@ -87,9 +90,15 @@ export default function RelatorioFinanceiroPage() {
                 ))}
                 <tr className="border-t border-gray-200 dark:border-gray-700">
                   <td className="py-3 font-bold text-gray-800 dark:text-white">Total</td>
-                  <td className="py-3 text-right font-bold text-green-600">R$ {totalReceita.toFixed(2)}</td>
-                  <td className="py-3 text-right font-bold text-red-500">R$ {totalDespesas.toFixed(2)}</td>
-                  <td className="py-3 text-right font-bold text-gray-800 dark:text-white">R$ {totalLucro.toFixed(2)}</td>
+                  <td className="py-3 text-right font-bold text-green-600">
+                    R$ {totalReceita.toFixed(2)}
+                  </td>
+                  <td className="py-3 text-right font-bold text-red-500">
+                    R$ {totalDespesas.toFixed(2)}
+                  </td>
+                  <td className="py-3 text-right font-bold text-gray-800 dark:text-white">
+                    R$ {totalLucro.toFixed(2)}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -112,7 +121,7 @@ export default function RelatorioFinanceiroPage() {
                 </div>
                 <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
                   <div
-                    className="h-2 rounded-full bg-brand-500"
+                    className="bg-brand-500 h-2 rounded-full"
                     style={{ width: `${fp.percentual}%` }}
                   />
                 </div>
@@ -122,7 +131,7 @@ export default function RelatorioFinanceiroPage() {
         </div>
 
         {/* Top Produtos */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] xl:col-span-2">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 xl:col-span-2 dark:border-gray-800 dark:bg-white/[0.03]">
           <h3 className="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">
             Top 5 Produtos Mais Vendidos
           </h3>
@@ -141,10 +150,16 @@ export default function RelatorioFinanceiroPage() {
                 {topProdutos.map((p, i) => (
                   <tr key={p.titulo} className="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
                     <td className="py-3 text-gray-400">#{i + 1}</td>
-                    <td className="py-3 font-medium text-gray-800 dark:text-white/90">{p.titulo}</td>
+                    <td className="py-3 font-medium text-gray-800 dark:text-white/90">
+                      {p.titulo}
+                    </td>
                     <td className="py-3 text-gray-600 dark:text-gray-300">{p.artista}</td>
-                    <td className="py-3 text-right text-gray-700 dark:text-gray-300">{p.qtdVendida}</td>
-                    <td className="py-3 text-right font-semibold text-green-600">R$ {p.receita.toFixed(2)}</td>
+                    <td className="py-3 text-right text-gray-700 dark:text-gray-300">
+                      {p.qtdVendida}
+                    </td>
+                    <td className="py-3 text-right font-semibold text-green-600">
+                      R$ {p.receita.toFixed(2)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -155,4 +170,3 @@ export default function RelatorioFinanceiroPage() {
     </div>
   );
 }
-

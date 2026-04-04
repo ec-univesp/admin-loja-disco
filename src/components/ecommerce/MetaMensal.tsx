@@ -1,22 +1,22 @@
-"use client";
-import { ApexOptions } from "apexcharts";
-import dynamic from "next/dynamic";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { MoreDotIcon } from "@/icons";
-import { useState } from "react";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
+'use client';
+import { ApexOptions } from 'apexcharts';
+import dynamic from 'next/dynamic';
+import { Dropdown } from '../ui/dropdown/Dropdown';
+import { MoreDotIcon } from '@/icons';
+import { useState } from 'react';
+import { DropdownItem } from '../ui/dropdown/DropdownItem';
 
-const ReactApexChart = dynamic(() => import("react-apexcharts"), {
+const ReactApexChart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
 });
 
 export default function MetaMensal() {
   const series = [68.5];
   const options: ApexOptions = {
-    colors: ["#465FFF"],
+    colors: ['#465FFF'],
     chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "radialBar",
+      fontFamily: 'Outfit, sans-serif',
+      type: 'radialBar',
       height: 330,
       sparkline: {
         enabled: true,
@@ -27,11 +27,11 @@ export default function MetaMensal() {
         startAngle: -85,
         endAngle: 85,
         hollow: {
-          size: "80%",
+          size: '80%',
         },
         track: {
-          background: "#E4E7EC",
-          strokeWidth: "100%",
+          background: '#E4E7EC',
+          strokeWidth: '100%',
           margin: 5,
         },
         dataLabels: {
@@ -39,25 +39,25 @@ export default function MetaMensal() {
             show: false,
           },
           value: {
-            fontSize: "36px",
-            fontWeight: "600",
+            fontSize: '36px',
+            fontWeight: '600',
             offsetY: -40,
-            color: "#1D2939",
+            color: '#1D2939',
             formatter: function (val) {
-              return val + "%";
+              return val + '%';
             },
           },
         },
       },
     },
     fill: {
-      type: "solid",
-      colors: ["#465FFF"],
+      type: 'solid',
+      colors: ['#465FFF'],
     },
     stroke: {
-      lineCap: "round",
+      lineCap: 'round',
     },
-    labels: ["Progress"],
+    labels: ['Progress'],
   };
 
   const [isOpen, setIsOpen] = useState(false);
@@ -72,13 +72,11 @@ export default function MetaMensal() {
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="px-5 pt-5 bg-white shadow-default rounded-2xl pb-11 dark:bg-gray-900 sm:px-6 sm:pt-6">
+      <div className="shadow-default rounded-2xl bg-white px-5 pt-5 pb-11 sm:px-6 sm:pt-6 dark:bg-gray-900">
         <div className="flex justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-              Meta Mensal
-            </h3>
-            <p className="mt-1 font-normal text-gray-500 text-theme-sm dark:text-gray-400">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Meta Mensal</h3>
+            <p className="text-theme-sm mt-1 font-normal text-gray-500 dark:text-gray-400">
               Progresso da meta de vendas
             </p>
           </div>
@@ -86,15 +84,11 @@ export default function MetaMensal() {
             <button onClick={toggleDropdown} className="dropdown-toggle">
               <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
             </button>
-            <Dropdown
-              isOpen={isOpen}
-              onClose={closeDropdown}
-              className="w-40 p-2"
-            >
+            <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-40 p-2">
               <DropdownItem
                 tag="a"
                 onItemClick={closeDropdown}
-                className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+                className="flex w-full rounded-lg text-left font-normal text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
               >
                 Detalhes
               </DropdownItem>
@@ -103,28 +97,17 @@ export default function MetaMensal() {
         </div>
 
         {series && (
-          <ReactApexChart
-            options={options}
-            series={series}
-            type="radialBar"
-            height={330}
-          />
+          <ReactApexChart options={options} series={series} type="radialBar" height={330} />
         )}
 
-        <div className="flex justify-center mt-5 gap-20">
+        <div className="mt-5 flex justify-center gap-20">
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Meta
-            </p>
-            <h3 className="mt-2 text-xl font-semibold text-gray-800 dark:text-white">
-              R$ 10.000
-            </h3>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Meta</p>
+            <h3 className="mt-2 text-xl font-semibold text-gray-800 dark:text-white">R$ 10.000</h3>
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Alcançado
-            </p>
-            <h3 className="mt-2 text-xl font-semibold text-brand-500 dark:text-brand-400">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Alcançado</p>
+            <h3 className="text-brand-500 dark:text-brand-400 mt-2 text-xl font-semibold">
               R$ 6.850
             </h3>
           </div>

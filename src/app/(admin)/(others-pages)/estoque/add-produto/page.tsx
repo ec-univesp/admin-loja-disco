@@ -1,7 +1,7 @@
-"use client";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+'use client';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
 interface ProdutoForm {
   codigo: string;
@@ -16,43 +16,61 @@ interface ProdutoForm {
   gravadora: string;
 }
 
-const generos = ["Rock", "Pop", "Jazz", "Blues", "Samba", "MPB", "Eletrônico", "Hip-Hop", "Clássico", "Country", "Reggae", "Metal", "Grunge", "Rock Progressivo", "Outro"];
-const formatos = ["LP (12\")", "EP (10\")", "Single (7\")", "CD", "Compacto"];
+const generos = [
+  'Rock',
+  'Pop',
+  'Jazz',
+  'Blues',
+  'Samba',
+  'MPB',
+  'Eletrônico',
+  'Hip-Hop',
+  'Clássico',
+  'Country',
+  'Reggae',
+  'Metal',
+  'Grunge',
+  'Rock Progressivo',
+  'Outro',
+];
+const formatos = ['LP (12")', 'EP (10")', 'Single (7")', 'CD', 'Compacto'];
 
 export default function AddProdutoPage() {
   const router = useRouter();
   const [form, setForm] = useState<ProdutoForm>({
-    codigo: "",
-    titulo: "",
-    artista: "",
-    genero: "",
-    quantidade: "",
-    preco: "",
-    descricao: "",
-    formato: "",
-    ano: "",
-    gravadora: "",
+    codigo: '',
+    titulo: '',
+    artista: '',
+    genero: '',
+    quantidade: '',
+    preco: '',
+    descricao: '',
+    formato: '',
+    ano: '',
+    gravadora: '',
   });
   const [errors, setErrors] = useState<Partial<ProdutoForm>>({});
   const [sucesso, setSucesso] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const validate = (): boolean => {
     const newErrors: Partial<ProdutoForm> = {};
-    if (!form.codigo) newErrors.codigo = "Código é obrigatório";
-    if (!form.titulo) newErrors.titulo = "Título é obrigatório";
-    if (!form.artista) newErrors.artista = "Artista é obrigatório";
-    if (!form.genero) newErrors.genero = "Gênero é obrigatório";
-    if (!form.formato) newErrors.formato = "Formato é obrigatório";
+    if (!form.codigo) newErrors.codigo = 'Código é obrigatório';
+    if (!form.titulo) newErrors.titulo = 'Título é obrigatório';
+    if (!form.artista) newErrors.artista = 'Artista é obrigatório';
+    if (!form.genero) newErrors.genero = 'Gênero é obrigatório';
+    if (!form.formato) newErrors.formato = 'Formato é obrigatório';
     if (!form.quantidade || isNaN(Number(form.quantidade)) || Number(form.quantidade) < 0)
-      newErrors.quantidade = "Quantidade inválida";
+      newErrors.quantidade = 'Quantidade inválida';
     if (!form.preco || isNaN(Number(form.preco)) || Number(form.preco) <= 0)
-      newErrors.preco = "Preço inválido";
+      newErrors.preco = 'Preço inválido';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -62,7 +80,7 @@ export default function AddProdutoPage() {
     if (!validate()) return;
     setSucesso(true);
     setTimeout(() => {
-      router.push("/estoque");
+      router.push('/estoque');
     }, 1500);
   };
 
@@ -71,7 +89,7 @@ export default function AddProdutoPage() {
       <PageBreadcrumb pageTitle="Adicionar Produto" />
 
       {sucesso && (
-        <div className="mb-6 rounded-xl bg-green-50 border border-green-200 px-5 py-4 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
+        <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400">
           ✅ Produto cadastrado com sucesso! Redirecionando...
         </div>
       )}
@@ -91,10 +109,10 @@ export default function AddProdutoPage() {
               value={form.codigo}
               onChange={handleChange}
               placeholder="Ex: LP-009"
-              className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors dark:bg-gray-800 dark:text-white ${
+              className={`w-full rounded-lg border px-4 py-2.5 text-sm transition-colors outline-none dark:bg-gray-800 dark:text-white ${
                 errors.codigo
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-gray-200 focus:border-brand-500 dark:border-gray-700"
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'focus:border-brand-500 border-gray-200 dark:border-gray-700'
               }`}
             />
             {errors.codigo && <p className="mt-1 text-xs text-red-500">{errors.codigo}</p>}
@@ -109,15 +127,17 @@ export default function AddProdutoPage() {
               name="formato"
               value={form.formato}
               onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors dark:bg-gray-800 dark:text-white ${
+              className={`w-full rounded-lg border px-4 py-2.5 text-sm transition-colors outline-none dark:bg-gray-800 dark:text-white ${
                 errors.formato
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-gray-200 focus:border-brand-500 dark:border-gray-700"
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'focus:border-brand-500 border-gray-200 dark:border-gray-700'
               }`}
             >
               <option value="">Selecione...</option>
               {formatos.map((f) => (
-                <option key={f} value={f}>{f}</option>
+                <option key={f} value={f}>
+                  {f}
+                </option>
               ))}
             </select>
             {errors.formato && <p className="mt-1 text-xs text-red-500">{errors.formato}</p>}
@@ -133,10 +153,10 @@ export default function AddProdutoPage() {
               value={form.titulo}
               onChange={handleChange}
               placeholder="Ex: Abbey Road"
-              className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors dark:bg-gray-800 dark:text-white ${
+              className={`w-full rounded-lg border px-4 py-2.5 text-sm transition-colors outline-none dark:bg-gray-800 dark:text-white ${
                 errors.titulo
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-gray-200 focus:border-brand-500 dark:border-gray-700"
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'focus:border-brand-500 border-gray-200 dark:border-gray-700'
               }`}
             />
             {errors.titulo && <p className="mt-1 text-xs text-red-500">{errors.titulo}</p>}
@@ -152,10 +172,10 @@ export default function AddProdutoPage() {
               value={form.artista}
               onChange={handleChange}
               placeholder="Ex: The Beatles"
-              className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors dark:bg-gray-800 dark:text-white ${
+              className={`w-full rounded-lg border px-4 py-2.5 text-sm transition-colors outline-none dark:bg-gray-800 dark:text-white ${
                 errors.artista
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-gray-200 focus:border-brand-500 dark:border-gray-700"
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'focus:border-brand-500 border-gray-200 dark:border-gray-700'
               }`}
             />
             {errors.artista && <p className="mt-1 text-xs text-red-500">{errors.artista}</p>}
@@ -170,15 +190,17 @@ export default function AddProdutoPage() {
               name="genero"
               value={form.genero}
               onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors dark:bg-gray-800 dark:text-white ${
+              className={`w-full rounded-lg border px-4 py-2.5 text-sm transition-colors outline-none dark:bg-gray-800 dark:text-white ${
                 errors.genero
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-gray-200 focus:border-brand-500 dark:border-gray-700"
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'focus:border-brand-500 border-gray-200 dark:border-gray-700'
               }`}
             >
               <option value="">Selecione...</option>
               {generos.map((g) => (
-                <option key={g} value={g}>{g}</option>
+                <option key={g} value={g}>
+                  {g}
+                </option>
               ))}
             </select>
             {errors.genero && <p className="mt-1 text-xs text-red-500">{errors.genero}</p>}
@@ -194,7 +216,7 @@ export default function AddProdutoPage() {
               value={form.gravadora}
               onChange={handleChange}
               placeholder="Ex: Apple Records"
-              className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              className="focus:border-brand-500 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             />
           </div>
 
@@ -211,7 +233,7 @@ export default function AddProdutoPage() {
               type="number"
               min="1900"
               max="2026"
-              className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              className="focus:border-brand-500 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             />
           </div>
 
@@ -227,10 +249,10 @@ export default function AddProdutoPage() {
               type="number"
               min="0"
               placeholder="Ex: 10"
-              className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors dark:bg-gray-800 dark:text-white ${
+              className={`w-full rounded-lg border px-4 py-2.5 text-sm transition-colors outline-none dark:bg-gray-800 dark:text-white ${
                 errors.quantidade
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-gray-200 focus:border-brand-500 dark:border-gray-700"
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'focus:border-brand-500 border-gray-200 dark:border-gray-700'
               }`}
             />
             {errors.quantidade && <p className="mt-1 text-xs text-red-500">{errors.quantidade}</p>}
@@ -249,10 +271,10 @@ export default function AddProdutoPage() {
               min="0"
               step="0.01"
               placeholder="Ex: 89.90"
-              className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors dark:bg-gray-800 dark:text-white ${
+              className={`w-full rounded-lg border px-4 py-2.5 text-sm transition-colors outline-none dark:bg-gray-800 dark:text-white ${
                 errors.preco
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-gray-200 focus:border-brand-500 dark:border-gray-700"
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'focus:border-brand-500 border-gray-200 dark:border-gray-700'
               }`}
             />
             {errors.preco && <p className="mt-1 text-xs text-red-500">{errors.preco}</p>}
@@ -269,7 +291,7 @@ export default function AddProdutoPage() {
               onChange={handleChange}
               rows={3}
               placeholder="Informações adicionais sobre o produto..."
-              className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              className="focus:border-brand-500 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             />
           </div>
 
@@ -277,14 +299,14 @@ export default function AddProdutoPage() {
           <div className="flex gap-3 sm:col-span-2">
             <button
               type="submit"
-              className="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition-colors"
+              className="bg-brand-500 hover:bg-brand-600 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-colors"
             >
               Salvar Produto
             </button>
             <button
               type="button"
-              onClick={() => router.push("/estoque")}
-              className="rounded-lg border border-gray-200 px-6 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => router.push('/estoque')}
+              className="rounded-lg border border-gray-200 px-6 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               Cancelar
             </button>
@@ -294,4 +316,3 @@ export default function AddProdutoPage() {
     </div>
   );
 }
-

@@ -1,17 +1,17 @@
-"use client";
-import { ApexOptions } from "apexcharts";
-import dynamic from "next/dynamic";
+'use client';
+import { ApexOptions } from 'apexcharts';
+import dynamic from 'next/dynamic';
 
-const ReactApexChart = dynamic(() => import("react-apexcharts"), {
+const ReactApexChart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
 });
 
 export default function VendasMensaisChart() {
   const options: ApexOptions = {
-    colors: ["#465fff", "#9CB9FF"],
+    colors: ['#465fff', '#9CB9FF'],
     chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "bar",
+      fontFamily: 'Outfit, sans-serif',
+      type: 'bar',
       height: 280,
       toolbar: {
         show: false,
@@ -20,9 +20,9 @@ export default function VendasMensaisChart() {
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: "39%",
+        columnWidth: '39%',
         borderRadius: 5,
-        borderRadiusApplication: "end",
+        borderRadiusApplication: 'end',
       },
     },
     dataLabels: {
@@ -31,22 +31,22 @@ export default function VendasMensaisChart() {
     stroke: {
       show: true,
       width: 4,
-      colors: ["transparent"],
+      colors: ['transparent'],
     },
     xaxis: {
       categories: [
-        "Jan",
-        "Fev",
-        "Mar",
-        "Abr",
-        "Mai",
-        "Jun",
-        "Jul",
-        "Ago",
-        "Set",
-        "Out",
-        "Nov",
-        "Dez",
+        'Jan',
+        'Fev',
+        'Mar',
+        'Abr',
+        'Mai',
+        'Jun',
+        'Jul',
+        'Ago',
+        'Set',
+        'Out',
+        'Nov',
+        'Dez',
       ],
       axisBorder: {
         show: false,
@@ -57,9 +57,9 @@ export default function VendasMensaisChart() {
     },
     legend: {
       show: true,
-      position: "top",
-      horizontalAlign: "left",
-      fontFamily: "Outfit",
+      position: 'top',
+      horizontalAlign: 'left',
+      fontFamily: 'Outfit',
     },
     yaxis: {
       title: {
@@ -79,7 +79,7 @@ export default function VendasMensaisChart() {
     tooltip: {
       y: {
         formatter: function (val) {
-          return "R$ " + val;
+          return 'R$ ' + val;
         },
       },
     },
@@ -87,31 +87,29 @@ export default function VendasMensaisChart() {
 
   const series = [
     {
-      name: "Vendas",
+      name: 'Vendas',
       data: [4000, 3000, 2000, 2780, 1890, 2390, 3490, 2100, 3800, 4200, 3600, 4100],
     },
     {
-      name: "Meta",
+      name: 'Meta',
       data: [2400, 1398, 9800, 3908, 4800, 3800, 4300, 2400, 3400, 3900, 3500, 4300],
     },
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-4 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
-      <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-4 sm:px-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Vendas Mensais
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Vendas Mensais</h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Comparativo mensal de vendas vs meta
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+          <button className="text-theme-sm shadow-theme-xs inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
             <svg
-              className="stroke-current fill-white dark:fill-gray-800"
+              className="fill-white stroke-current dark:fill-gray-800"
               width="20"
               height="20"
               viewBox="0 0 20 20"
@@ -150,14 +148,7 @@ export default function VendasMensaisChart() {
         </div>
       </div>
 
-      {series && (
-        <ReactApexChart
-          options={options}
-          series={series}
-          type="bar"
-          height={280}
-        />
-      )}
+      {series && <ReactApexChart options={options} series={series} type="bar" height={280} />}
     </div>
   );
 }

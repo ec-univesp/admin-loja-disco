@@ -1,12 +1,6 @@
-"use client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
-import Badge from "../ui/badge/Badge";
+'use client';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
+import Badge from '../ui/badge/Badge';
 
 interface VendaDisco {
   id: number;
@@ -14,68 +8,68 @@ interface VendaDisco {
   artista: string;
   quantidade: number;
   preco: string;
-  status: "Entregue" | "Pendente" | "Cancelada";
+  status: 'Entregue' | 'Pendente' | 'Cancelada';
   imagem: string;
 }
 
 const vendas: VendaDisco[] = [
   {
     id: 1,
-    disco: "Abbey Road",
-    artista: "The Beatles",
+    disco: 'Abbey Road',
+    artista: 'The Beatles',
     quantidade: 2,
-    preco: "R$ 179,80",
-    status: "Entregue",
-    imagem: "/images/product/product-01.jpg",
+    preco: 'R$ 179,80',
+    status: 'Entregue',
+    imagem: '/images/product/product-01.jpg',
   },
   {
     id: 2,
-    disco: "Thriller",
-    artista: "Michael Jackson",
+    disco: 'Thriller',
+    artista: 'Michael Jackson',
     quantidade: 1,
-    preco: "R$ 79,90",
-    status: "Pendente",
-    imagem: "/images/product/product-02.jpg",
+    preco: 'R$ 79,90',
+    status: 'Pendente',
+    imagem: '/images/product/product-02.jpg',
   },
   {
     id: 3,
-    disco: "Dark Side of the Moon",
-    artista: "Pink Floyd",
+    disco: 'Dark Side of the Moon',
+    artista: 'Pink Floyd',
     quantidade: 1,
-    preco: "R$ 99,90",
-    status: "Entregue",
-    imagem: "/images/product/product-03.jpg",
+    preco: 'R$ 99,90',
+    status: 'Entregue',
+    imagem: '/images/product/product-03.jpg',
   },
   {
     id: 4,
-    disco: "Construção",
-    artista: "Chico Buarque",
+    disco: 'Construção',
+    artista: 'Chico Buarque',
     quantidade: 3,
-    preco: "R$ 209,70",
-    status: "Cancelada",
-    imagem: "/images/product/product-04.jpg",
+    preco: 'R$ 209,70',
+    status: 'Cancelada',
+    imagem: '/images/product/product-04.jpg',
   },
   {
     id: 5,
-    disco: "Clube da Esquina",
-    artista: "Milton Nascimento",
+    disco: 'Clube da Esquina',
+    artista: 'Milton Nascimento',
     quantidade: 2,
-    preco: "R$ 149,80",
-    status: "Entregue",
-    imagem: "/images/product/product-05.jpg",
+    preco: 'R$ 149,80',
+    status: 'Entregue',
+    imagem: '/images/product/product-05.jpg',
   },
 ];
 
-const statusColor: Record<string, "success" | "warning" | "error"> = {
-  Entregue: "success",
-  Pendente: "warning",
-  Cancelada: "error",
+const statusColor: Record<string, 'success' | 'warning' | 'error'> = {
+  Entregue: 'success',
+  Pendente: 'warning',
+  Cancelada: 'error',
 };
 
 export default function VendasRecentes() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
         Vendas Recentes
       </h3>
 
@@ -104,25 +98,19 @@ export default function VendasRecentes() {
             {vendas.map((venda) => (
               <TableRow key={venda.id}>
                 <TableCell className="px-4 py-4">
-                  <div className="font-medium text-gray-800 dark:text-white">
-                    {venda.disco}
-                  </div>
+                  <div className="font-medium text-gray-800 dark:text-white">{venda.disco}</div>
                 </TableCell>
                 <TableCell className="px-4 py-4 text-gray-600 dark:text-gray-400">
                   {venda.artista}
                 </TableCell>
-                <TableCell className="px-4 py-4 text-gray-800 dark:text-white font-medium">
+                <TableCell className="px-4 py-4 font-medium text-gray-800 dark:text-white">
                   {venda.quantidade}
                 </TableCell>
                 <TableCell className="px-4 py-4 font-semibold text-gray-800 dark:text-white">
                   {venda.preco}
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <Badge
-                    color={statusColor[venda.status]}
-                  >
-                    {venda.status}
-                  </Badge>
+                  <Badge color={statusColor[venda.status]}>{venda.status}</Badge>
                 </TableCell>
               </TableRow>
             ))}

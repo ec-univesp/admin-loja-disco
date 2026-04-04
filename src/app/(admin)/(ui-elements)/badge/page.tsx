@@ -1,13 +1,13 @@
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import Badge from "@/components/ui/badge/Badge";
-import { PlusIcon } from "@/icons";
-import { Metadata } from "next";
-import React from "react";
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import Badge from '@/components/ui/badge/Badge';
+import { PlusIcon } from '@/icons';
+import { Metadata } from 'next';
+import React from 'react';
 
 export const metadata: Metadata = {
-  title: "Next.js Badge | TailAdmin - Next.js Dashboard Template",
+  title: 'Next.js Badge | TailAdmin - Next.js Dashboard Template',
   description:
-    "This is Next.js Badge page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
+    'This is Next.js Badge page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template',
   // other metadata
 };
 
@@ -22,7 +22,7 @@ export default function BadgePage() {
               With Light Background
             </h3>
           </div>
-          <div className="p-6 border-t border-gray-100 dark:border-gray-800 xl:p-10">
+          <div className="border-t border-gray-100 p-6 xl:p-10 dark:border-gray-800">
             <div className="flex flex-wrap gap-4 sm:items-center sm:justify-center">
               {/* Light Variant */}
               <Badge variant="light" color="primary">
@@ -30,13 +30,13 @@ export default function BadgePage() {
               </Badge>
               <Badge variant="light" color="success">
                 Success
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="light" color="error">
                 Error
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="light" color="warning">
                 Warning
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="light" color="info">
                 Info
               </Badge>
@@ -56,7 +56,7 @@ export default function BadgePage() {
               With Solid Background
             </h3>
           </div>
-          <div className="p-6 border-t border-gray-100 dark:border-gray-800 xl:p-10">
+          <div className="border-t border-gray-100 p-6 xl:p-10 dark:border-gray-800">
             <div className="flex flex-wrap gap-4 sm:items-center sm:justify-center">
               {/* Light Variant */}
               <Badge variant="solid" color="primary">
@@ -64,13 +64,13 @@ export default function BadgePage() {
               </Badge>
               <Badge variant="solid" color="success">
                 Success
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="solid" color="error">
                 Error
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="solid" color="warning">
                 Warning
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="solid" color="info">
                 Info
               </Badge>
@@ -90,20 +90,20 @@ export default function BadgePage() {
               Light Background with Left Icon
             </h3>
           </div>
-          <div className="p-6 border-t border-gray-100 dark:border-gray-800 xl:p-10">
+          <div className="border-t border-gray-100 p-6 xl:p-10 dark:border-gray-800">
             <div className="flex flex-wrap gap-4 sm:items-center sm:justify-center">
               <Badge variant="light" color="primary" startIcon={<PlusIcon />}>
                 Primary
               </Badge>
               <Badge variant="light" color="success" startIcon={<PlusIcon />}>
                 Success
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="light" color="error" startIcon={<PlusIcon />}>
                 Error
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="light" color="warning" startIcon={<PlusIcon />}>
                 Warning
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="light" color="info" startIcon={<PlusIcon />}>
                 Info
               </Badge>
@@ -123,20 +123,20 @@ export default function BadgePage() {
               Solid Background with Left Icon
             </h3>
           </div>
-          <div className="p-6 border-t border-gray-100 dark:border-gray-800 xl:p-10">
+          <div className="border-t border-gray-100 p-6 xl:p-10 dark:border-gray-800">
             <div className="flex flex-wrap gap-4 sm:items-center sm:justify-center">
               <Badge variant="solid" color="primary" startIcon={<PlusIcon />}>
                 Primary
               </Badge>
               <Badge variant="solid" color="success" startIcon={<PlusIcon />}>
                 Success
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="solid" color="error" startIcon={<PlusIcon />}>
                 Error
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="solid" color="warning" startIcon={<PlusIcon />}>
                 Warning
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="solid" color="info" startIcon={<PlusIcon />}>
                 Info
               </Badge>
@@ -156,20 +156,20 @@ export default function BadgePage() {
               Light Background with Right Icon
             </h3>
           </div>
-          <div className="p-6 border-t border-gray-100 dark:border-gray-800 xl:p-10">
+          <div className="border-t border-gray-100 p-6 xl:p-10 dark:border-gray-800">
             <div className="flex flex-wrap gap-4 sm:items-center sm:justify-center">
               <Badge variant="light" color="primary" endIcon={<PlusIcon />}>
                 Primary
               </Badge>
               <Badge variant="light" color="success" endIcon={<PlusIcon />}>
                 Success
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="light" color="error" endIcon={<PlusIcon />}>
                 Error
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="light" color="warning" endIcon={<PlusIcon />}>
                 Warning
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="light" color="info" endIcon={<PlusIcon />}>
                 Info
               </Badge>
@@ -189,20 +189,20 @@ export default function BadgePage() {
               Solid Background with Right Icon
             </h3>
           </div>
-          <div className="p-6 border-t border-gray-100 dark:border-gray-800 xl:p-10">
+          <div className="border-t border-gray-100 p-6 xl:p-10 dark:border-gray-800">
             <div className="flex flex-wrap gap-4 sm:items-center sm:justify-center">
               <Badge variant="solid" color="primary" endIcon={<PlusIcon />}>
                 Primary
               </Badge>
               <Badge variant="solid" color="success" endIcon={<PlusIcon />}>
                 Success
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="solid" color="error" endIcon={<PlusIcon />}>
                 Error
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="solid" color="warning" endIcon={<PlusIcon />}>
                 Warning
-              </Badge>{" "}
+              </Badge>{' '}
               <Badge variant="solid" color="info" endIcon={<PlusIcon />}>
                 Info
               </Badge>

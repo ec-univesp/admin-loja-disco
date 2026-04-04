@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "test": "poku",
+    "test:watch": "poku --watch"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",
@@ -41,8 +45,13 @@
     "@types/react-transition-group": "^4.4.12",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.0.7",
+    "husky": "^9.1.7",
+    "poku": "^4.2.0",
     "postcss": "^8.5.6",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4.1.17",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "overrides": {
