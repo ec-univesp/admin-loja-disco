@@ -49,7 +49,7 @@ export default function EstoquePage() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Estoque – Produtos" />
-      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
         {/* Header */}
         <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
