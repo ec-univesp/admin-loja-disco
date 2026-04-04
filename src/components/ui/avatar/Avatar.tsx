@@ -45,7 +45,7 @@ const Avatar: React.FC<AvatarProps> = ({
   status = 'none',
 }) => {
   return (
-    <div className={`relative inline-flex items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-600 ${sizeClasses[size]}`}>
+    <div className={`relative inline-flex items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 ${sizeClasses[size]}`}>
       <svg
         className={`${iconSizeClasses[size]} text-white`}
         fill="currentColor"
