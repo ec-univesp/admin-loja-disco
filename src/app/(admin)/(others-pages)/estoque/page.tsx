@@ -101,7 +101,7 @@ export default function EstoquePage() {
                 </tr>
               ) : (
                 produtosFiltrados.map((produto) => (
-                  <tr key={produto.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                  <tr key={produto.id} className="hover:bg-gray-50 dark:hover:bg-white/2 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">{produto.codigo}</td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">{produto.titulo}</td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{produto.artista}</td>
@@ -159,4 +159,3 @@ export default function EstoquePage() {
     </div>
   );
 }
-
