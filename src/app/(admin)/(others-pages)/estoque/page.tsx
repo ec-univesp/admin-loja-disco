@@ -1,101 +1,20 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useDiscos, useGenerosDisco } from '@/hooks/useStore';
 
-interface Produto {
-  id: number;
+interface ProdutoDisplay {
+  id: string;
   codigo: string;
   titulo: string;
   artista: string;
-  genero: string;
+  premsagem: string;
   quantidade: number;
   preco: number;
   status: 'Disponível' | 'Baixo Estoque' | 'Esgotado';
 }
 
-const produtosMock: Produto[] = [
-  {
-    id: 1,
-    codigo: 'LP-001',
-    titulo: 'Abbey Road',
-    artista: 'The Beatles',
-    genero: 'Rock',
-    quantidade: 12,
-    preco: 89.9,
-    status: 'Disponível',
-  },
-  {
-    id: 2,
-    codigo: 'LP-002',
-    titulo: 'Thriller',
-    artista: 'Michael Jackson',
-    genero: 'Pop',
-    quantidade: 3,
-    preco: 79.9,
-    status: 'Baixo Estoque',
-  },
-  {
-    id: 3,
-    codigo: 'LP-003',
-    titulo: 'Dark Side of the Moon',
-    artista: 'Pink Floyd',
-    genero: 'Rock Progressivo',
-    quantidade: 0,
-    preco: 99.9,
-    status: 'Esgotado',
-  },
-  {
-    id: 4,
-    codigo: 'LP-004',
-    titulo: 'Rumours',
-    artista: 'Fleetwood Mac',
-    genero: 'Rock',
-    quantidade: 8,
-    preco: 85.0,
-    status: 'Disponível',
-  },
-  {
-    id: 5,
-    codigo: 'LP-005',
-    titulo: 'Kind of Blue',
-    artista: 'Miles Davis',
-    genero: 'Jazz',
-    quantidade: 5,
-    preco: 75.0,
-    status: 'Disponível',
-  },
-  {
-    id: 6,
-    codigo: 'LP-006',
-    titulo: 'Nevermind',
-    artista: 'Nirvana',
-    genero: 'Grunge',
-    quantidade: 2,
-    preco: 92.0,
-    status: 'Baixo Estoque',
-  },
-  {
-    id: 7,
-    codigo: 'LP-007',
-    titulo: 'Back in Black',
-    artista: 'AC/DC',
-    genero: 'Rock',
-    quantidade: 15,
-    preco: 88.0,
-    status: 'Disponível',
-  },
-  {
-    id: 8,
-    codigo: 'LP-008',
-    titulo: 'Led Zeppelin IV',
-    artista: 'Led Zeppelin',
-    genero: 'Rock',
-    quantidade: 7,
-    preco: 95.0,
-    status: 'Disponível',
-  },
-];
 
 const statusColor: Record<string, string> = {
   Disponível: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
@@ -103,9 +22,45 @@ const statusColor: Record<string, string> = {
   Esgotado: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
+// Função para gerar código do disco
+const gerarCodigo = (index: number): string => {
+  return `DISC-${String(index + 1).padStart(4, '0')}`;
+};
+
+// Função para determinar status baseado na condição
+const determinarStatus = (condicaoCapa: string, condicaoDisco: string): 'Disponível' | 'Baixo Estoque' | 'Esgotado' => {
+  // Se ambas as condições são boas/excelentes = Disponível
+  if ((condicaoCapa === 'Excelente' || condicaoCapa === 'Bom') &&
+      (condicaoDisco === 'Excelente' || condicaoDisco === 'Bom')) {
+    return 'Disponível';
+  }
+  // Se uma está ruim = Baixo Estoque
+  if (condicaoCapa === 'Razoável' || condicaoDisco === 'Razoável') {
+    return 'Baixo Estoque';
+  }
+  // Se está muito ruim = Esgotado
+  return 'Esgotado';
+};
+
 export default function EstoquePage() {
-  const [produtos, setProdutos] = useState<Produto[]>(produtosMock);
+  const { discosComArtista, loading, error, deleteDisco } = useDiscos();
   const [busca, setBusca] = useState('');
+
+  // Mapear discos para formato de produto para exibição
+  const produtos = useMemo<ProdutoDisplay[]>(
+    () =>
+      discosComArtista.map((disco, index) => ({
+        id: disco.id,
+        codigo: gerarCodigo(index),
+        titulo: disco.album,
+        artista: disco.artistaNome,
+        premsagem: disco.premsagem,
+        quantidade: 1, // Quantidade em estoque (sempre 1 por disco)
+        preco: disco.valorMercado,
+        status: determinarStatus(disco.condicaoCapa, disco.condicaoDisco),
+      })),
+    [discosComArtista]
+  );
 
   const produtosFiltrados = produtos.filter(
     (p) =>
@@ -114,8 +69,8 @@ export default function EstoquePage() {
       p.codigo.toLowerCase().includes(busca.toLowerCase())
   );
 
-  const handleRemover = (id: number) => {
-    setProdutos((prev) => prev.filter((p) => p.id !== id));
+  const handleRemover = (id: string) => {
+    deleteDisco(id);
   };
 
   return (
@@ -164,10 +119,7 @@ export default function EstoquePage() {
                   Artista
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Gênero
-                </th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                  Qtd
+                  Prensagem
                 </th>
                 <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
                   Preço
