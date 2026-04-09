@@ -1,5 +1,6 @@
 'use client';
 import { ThemeToggleButton } from '@/components/common/ThemeToggleButton';
+import Logo from '@/components/common/Logo';
 import NotificationDropdown from '@/components/header/NotificationDropdown';
 import UserDropdown from '@/components/header/UserDropdown';
 import { useSidebar } from '@/context/SidebarContext';
@@ -80,6 +81,10 @@ const AppHeader: React.FC = () => {
             )}
             {/* Cross Icon */}
           </button>
+
+          <div className="lg:hidden">
+            <Logo showText={false} />
+          </div>
 
           <button
             onClick={toggleApplicationMenu}

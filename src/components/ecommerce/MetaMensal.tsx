@@ -13,7 +13,7 @@ const ReactApexChart = dynamic(() => import('react-apexcharts'), {
 export default function MetaMensal() {
   const series = [68.5];
   const options: ApexOptions = {
-    colors: ['#465FFF'],
+    colors: ['#4a3a2f'],
     chart: {
       fontFamily: 'Outfit, sans-serif',
       type: 'radialBar',

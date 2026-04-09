@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '../context/SidebarContext';
+import Logo from '../components/common/Logo';
 import {
   BoxCubeIcon,
   ChevronDownIcon,
@@ -227,7 +228,10 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="py-8" />
+      <div className="border-b border-gray-200 py-4 dark:border-gray-800">
+        {(isExpanded || isMobileOpen) && <Logo showText={true} />}
+      </div>
+      <div className="py-6" />
       <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">

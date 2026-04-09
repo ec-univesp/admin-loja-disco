@@ -8,7 +8,7 @@ const ReactApexChart = dynamic(() => import('react-apexcharts'), {
 
 export default function VendasMensaisChart() {
   const options: ApexOptions = {
-    colors: ['#465fff', '#9CB9FF'],
+    colors: ['#4a3a2f', '#8b7355'],
     chart: {
       fontFamily: 'Outfit, sans-serif',
       type: 'bar',

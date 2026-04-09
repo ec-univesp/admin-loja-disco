@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDiscos, useArtistas } from '@/hooks/useStore';
-import ComponentCard from '@/components/common/ComponentCard';
+import Button from '@/components/ui/button/Button';
 import Label from '@/components/form/Label';
 
 interface AddDiscoFormData {
@@ -31,6 +31,7 @@ export default function AddDiscoForm() {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<AddDiscoFormData>({
     defaultValues: {
@@ -48,20 +49,22 @@ export default function AddDiscoForm() {
       custoDisco: 0,
       status: 'Ativo',
     },
-  }); 
+  });
+
+  const valorMercado = watch('valorMercado');
+  const custoDisco = watch('custoDisco');
+  const margem = valorMercado - custoDisco;
+  const margemPct = custoDisco > 0 ? ((margem / custoDisco) * 100).toFixed(1) : '0';
 
   const onSubmit = async (data: AddDiscoFormData) => {
     try {
-      // Gerar um ID único para o artista baseado no nome
       const artistaId = `artista-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Criar o artista automaticamente
+
       await createArtista({
         nome: data.artistaNome,
-        generoId: '', // Vazio por padrão
+        generoId: '',
       });
 
-      // Criar o disco associado ao artista
       await createDisco({
         artistaId: artistaId,
         album: data.album,
@@ -78,10 +81,9 @@ export default function AddDiscoForm() {
         status: data.status,
       });
 
-      setSuccessMessage('✅ Produto adicionado com sucesso!');
+      setSuccessMessage('✅ Disco adicionado com sucesso!');
       reset();
 
-      // Limpar mensagem após 3 segundos
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       console.error('Erro ao adicionar disco:', err);
@@ -90,79 +92,89 @@ export default function AddDiscoForm() {
 
   return (
     <div className="space-y-6">
-      {/* Formulário de Adicionar Disco */}
-      <ComponentCard title="➕ Adicionar Novo Disco">
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900/50">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-brand-900 dark:text-brand-50">
+            🎵 Novo Disco
+          </h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Adicione um novo disco ao seu estoque
+          </p>
+        </div>
+
         {successMessage && (
-          <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-900/20">
-            <p className="text-sm font-medium text-green-900 dark:text-green-200">
-              {successMessage}
-            </p>
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-success-200 bg-success-50 p-4 dark:border-success-900/50 dark:bg-success-900/20">
+            <svg className="h-5 w-5 text-success-600 dark:text-success-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm font-medium text-success-900 dark:text-success-200">{successMessage}</span>
           </div>
         )}
 
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
-            <p className="text-sm font-medium text-red-900 dark:text-red-200">
-              ❌ Erro ao adicionar: {error}
-            </p>
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-900/50 dark:bg-error-900/20">
+            <svg className="h-5 w-5 text-error-600 dark:text-error-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm font-medium text-error-900 dark:text-error-200">Erro: {error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Artista e Básico */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <Label htmlFor="artistaNome">Artista *</Label>
-              <input
-                type="text"
-                id="artistaNome"
-                placeholder="Ex: The Beatles"
-                {...register('artistaNome', { required: 'Artista é obrigatório' })}
-                className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:bg-gray-900 ${
-                  errors.artistaNome
-                    ? 'border-red-500 bg-red-50 dark:border-red-500 dark:bg-red-900/20'
-                    : 'border-gray-300 bg-white dark:border-gray-700'
-                }`}
-              />
-              {errors.artistaNome && (
-                <span className="mt-1 text-sm text-red-500">{errors.artistaNome.message}</span>
-              )}
-            </div>
+          {/* Artista e Álbum */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white">Informações Básicas</h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="artistaNome">Artista *</Label>
+                <input
+                  type="text"
+                  id="artistaNome"
+                  placeholder="Ex: The Beatles"
+                  {...register('artistaNome', { required: 'Artista é obrigatório' })}
+                  className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
+                    errors.artistaNome
+                      ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
+                      : 'border-gray-300 bg-white focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600'
+                  }`}
+                />
+                {errors.artistaNome && (
+                  <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.artistaNome.message}</span>
+                )}
+              </div>
 
-            <div>
-              <Label htmlFor="album">Álbum *</Label>
-              <input
-                type="text"
-                id="album"
-                placeholder="Nome do álbum"
-                {...register('album', { required: 'Álbum é obrigatório' })}
-                className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:bg-gray-900 ${
-                  errors.album
-                    ? 'border-red-500 bg-red-50 dark:border-red-500 dark:bg-red-900/20'
-                    : 'border-gray-300 bg-white dark:border-gray-700'
-                }`}
-              />
-              {errors.album && (
-                <span className="mt-1 text-sm text-red-500">{errors.album.message}</span>
-              )}
+              <div>
+                <Label htmlFor="album">Álbum *</Label>
+                <input
+                  type="text"
+                  id="album"
+                  placeholder="Nome do álbum"
+                  {...register('album', { required: 'Álbum é obrigatório' })}
+                  className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
+                    errors.album
+                      ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
+                      : 'border-gray-300 bg-white focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600'
+                  }`}
+                />
+                {errors.album && (
+                  <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.album.message}</span>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Informações Técnicas */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white">
-              Informações Técnicas
-            </h4>
-
+            <h3 className="font-semibold text-gray-900 dark:text-white">Informações Técnicas</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
                 <Label htmlFor="nacionalidade">Nacionalidade</Label>
                 <input
                   type="text"
                   id="nacionalidade"
-                  placeholder="Ex: Brasil, USA, Inglaterra"
+                  placeholder="Ex: Brasil"
                   {...register('nacionalidade')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 />
               </div>
 
@@ -171,7 +183,7 @@ export default function AddDiscoForm() {
                 <select
                   id="premsagem"
                   {...register('premsagem')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 >
                   <option value="Vinyl">Vinyl</option>
                   <option value="CD">CD</option>
@@ -185,7 +197,7 @@ export default function AddDiscoForm() {
                 <select
                   id="encarte"
                   {...register('encarte')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 >
                   <option value="Papel">Papel</option>
                   <option value="Plástico">Plástico</option>
@@ -200,9 +212,9 @@ export default function AddDiscoForm() {
                 <input
                   type="text"
                   id="gravadora"
-                  placeholder="Ex: Sony, Warner, Universal"
+                  placeholder="Ex: Sony"
                   {...register('gravadora')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 />
               </div>
 
@@ -212,7 +224,7 @@ export default function AddDiscoForm() {
                   type="number"
                   id="anoLancamento"
                   {...register('anoLancamento')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 />
               </div>
             </div>
@@ -220,17 +232,14 @@ export default function AddDiscoForm() {
 
           {/* Condição */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white">
-              Condição do Disco
-            </h4>
-
+            <h3 className="font-semibold text-gray-900 dark:text-white">Condição do Disco</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="condicaoCapa">Condição da Capa</Label>
                 <select
                   id="condicaoCapa"
                   {...register('condicaoCapa')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 >
                   <option value="Excelente">Excelente</option>
                   <option value="Bom">Bom</option>
@@ -244,7 +253,7 @@ export default function AddDiscoForm() {
                 <select
                   id="condicaoDisco"
                   {...register('condicaoDisco')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 >
                   <option value="Excelente">Excelente</option>
                   <option value="Bom">Bom</option>
@@ -255,37 +264,10 @@ export default function AddDiscoForm() {
             </div>
           </div>
 
-          {/* Preços */}
+          {/* Valores */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white">
-              Valores
-            </h4>
-
+            <h3 className="font-semibold text-gray-900 dark:text-white">Valores</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="valorMercado">Valor de Mercado (R$) *</Label>
-                <input
-                  type="number"
-                  id="valorMercado"
-                  placeholder="0.00"
-                  step="0.01"
-                  {...register('valorMercado', {
-                    required: 'Valor de mercado é obrigatório',
-                    min: { value: 0, message: 'Valor não pode ser negativo' },
-                  })}
-                  className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:bg-gray-900 ${
-                    errors.valorMercado
-                      ? 'border-red-500 bg-red-50 dark:border-red-500 dark:bg-red-900/20'
-                      : 'border-gray-300 bg-white dark:border-gray-700'
-                  }`}
-                />
-                {errors.valorMercado && (
-                  <span className="mt-1 text-sm text-red-500">
-                    {errors.valorMercado.message}
-                  </span>
-                )}
-              </div>
-
               <div>
                 <Label htmlFor="custoDisco">Custo do Disco (R$) *</Label>
                 <input
@@ -297,19 +279,65 @@ export default function AddDiscoForm() {
                     required: 'Custo é obrigatório',
                     min: { value: 0, message: 'Custo não pode ser negativo' },
                   })}
-                  className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:bg-gray-900 ${
+                  className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                     errors.custoDisco
-                      ? 'border-red-500 bg-red-50 dark:border-red-500 dark:bg-red-900/20'
-                      : 'border-gray-300 bg-white dark:border-gray-700'
+                      ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
+                      : 'border-gray-300 bg-white focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600'
                   }`}
                 />
                 {errors.custoDisco && (
-                  <span className="mt-1 text-sm text-red-500">
-                    {errors.custoDisco.message}
-                  </span>
+                  <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.custoDisco.message}</span>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="valorMercado">Valor de Mercado (R$) *</Label>
+                <input
+                  type="number"
+                  id="valorMercado"
+                  placeholder="0.00"
+                  step="0.01"
+                  {...register('valorMercado', {
+                    required: 'Valor de mercado é obrigatório',
+                    min: { value: 0, message: 'Valor não pode ser negativo' },
+                  })}
+                  className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
+                    errors.valorMercado
+                      ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
+                      : 'border-gray-300 bg-white focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600'
+                  }`}
+                />
+                {errors.valorMercado && (
+                  <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.valorMercado.message}</span>
                 )}
               </div>
             </div>
+
+            {/* Margem de Lucro */}
+            {(valorMercado || custoDisco) && (
+              <div className="rounded-lg bg-brand-50 p-4 dark:bg-brand-900/20">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Margem</p>
+                    <p className={`text-lg font-bold ${margem >= 0 ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'}`}>
+                      R$ {margem.toFixed(2)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Percentual</p>
+                    <p className={`text-lg font-bold ${margem >= 0 ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'}`}>
+                      {margemPct}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Preço de Venda</p>
+                    <p className="text-lg font-bold text-brand-700 dark:text-brand-400">
+                      R$ {valorMercado.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Status */}
@@ -318,7 +346,7 @@ export default function AddDiscoForm() {
             <select
               id="status"
               {...register('status')}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
+              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
             >
               <option value="Ativo">Ativo</option>
               <option value="Inativo">Inativo</option>
@@ -327,23 +355,16 @@ export default function AddDiscoForm() {
           </div>
 
           {/* Botões */}
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 rounded-lg bg-brand-500 px-6 py-2.5 font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
-            >
-              {loading ? 'Salvando...' : 'Salvar Produto'}
-            </button>
-            <button
-              type="reset"
-              className="flex-1 rounded-lg border border-gray-300 bg-white px-6 py-2.5 font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-            >
+          <div className="flex gap-3 pt-4">
+            <Button type="submit" disabled={loading} size="lg" variant="primary" fullWidth>
+              {loading ? '💿 Salvando...' : '💿 Salvar Disco'}
+            </Button>
+            <Button type="reset" size="lg" variant="secondary" fullWidth>
               Limpar
-            </button>
+            </Button>
           </div>
         </form>
-      </ComponentCard>
+      </div>
     </div>
   );
 }
