@@ -2,7 +2,7 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useState, useMemo } from 'react';
-import { useDiscos, useGenerosDisco } from '@/hooks/useStore';
+import { useDiscos } from '@/hooks/useStore';
 
 interface ProdutoDisplay {
   id: string;
@@ -135,8 +135,8 @@ export default function EstoquePage() {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {produtosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-gray-400">
-                    Nenhum produto encontrado.
+                  <td colSpan={7} className="px-6 py-10 text-center text-gray-400">
+                    {loading ? '⏳ Carregando...' : '📭 Nenhum produto encontrado. Clique em "+ Adicionar Produto" para começar.'}
                   </td>
                 </tr>
               ) : (
@@ -154,10 +154,7 @@ export default function EstoquePage() {
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
                       {produto.artista}
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{produto.genero}</td>
-                    <td className="px-6 py-4 text-right text-gray-700 dark:text-gray-300">
-                      {produto.quantidade}
-                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{produto.premsagem}</td>
                     <td className="px-6 py-4 text-right text-gray-700 dark:text-gray-300">
                       R$ {produto.preco.toFixed(2)}
                     </td>
@@ -195,13 +192,13 @@ export default function EstoquePage() {
         {/* Footer */}
         <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
           <p className="text-xs text-gray-400">
-            Total em estoque:{' '}
+            Total de produtos:{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {produtosFiltrados.reduce((acc, p) => acc + p.quantidade, 0)} unidades
+              {produtosFiltrados.length} disco(s)
             </span>{' '}
             · Valor total:{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              R$ {produtosFiltrados.reduce((acc, p) => acc + p.quantidade * p.preco, 0).toFixed(2)}
+              R$ {produtosFiltrados.reduce((acc, p) => acc + p.preco, 0).toFixed(2)}
             </span>
           </p>
         </div>

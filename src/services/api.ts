@@ -50,82 +50,19 @@ export const initializeStorage = () => {
     );
   }
 
-  // Discos
+  // Discos (VAZIO - apenas dados adicionados via formulário)
   if (!localStorage.getItem(STORAGE_KEYS.DISCOS)) {
-    localStorage.setItem(
-      STORAGE_KEYS.DISCOS,
-      JSON.stringify([
-        {
-          id: '1',
-          artistaId: '1',
-          album: 'Abbey Road',
-          nacionalidade: 'Inglaterra',
-          premsagem: 'Vinyl',
-          encarte: 'Papel',
-          gravadora: 'Apple Records',
-          anoLancamento: 1969,
-          anoPremsagem: 1969,
-          condicaoCapa: 'Excelente',
-          condicaoDisco: 'Excelente',
-          valorMercado: 150.0,
-          custoDisco: 50.0,
-          status: 'Ativo',
-        },
-        {
-          id: '2',
-          artistaId: '2',
-          album: 'Thriller',
-          nacionalidade: 'USA',
-          premsagem: 'Vinyl',
-          encarte: 'Papel',
-          gravadora: 'Epic Records',
-          anoLancamento: 1982,
-          anoPremsagem: 1982,
-          condicaoCapa: 'Bom',
-          condicaoDisco: 'Bom',
-          valorMercado: 120.0,
-          custoDisco: 40.0,
-          status: 'Ativo',
-        },
-      ])
-    );
+    localStorage.setItem(STORAGE_KEYS.DISCOS, JSON.stringify([]));
   }
 
-  // Clientes
+  // Clientes (VAZIO - apenas dados adicionados via formulário)
   if (!localStorage.getItem(STORAGE_KEYS.CLIENTES)) {
-    localStorage.setItem(
-      STORAGE_KEYS.CLIENTES,
-      JSON.stringify([
-        { id: '1', nome: 'João Silva', generoSexo: 'M', idade: 35 },
-        { id: '2', nome: 'Maria Santos', generoSexo: 'F', idade: 28 },
-        { id: '3', nome: 'Pedro Oliveira', generoSexo: 'M', idade: 45 },
-      ])
-    );
+    localStorage.setItem(STORAGE_KEYS.CLIENTES, JSON.stringify([]));
   }
 
-  // Endereços
+  // Endereços (VAZIO - apenas dados adicionados via formulário)
   if (!localStorage.getItem(STORAGE_KEYS.ENDERECOS)) {
-    localStorage.setItem(
-      STORAGE_KEYS.ENDERECOS,
-      JSON.stringify([
-        {
-          id: '1',
-          logradouro: 'Rua A',
-          numero: '123',
-          cidade: 'São Paulo',
-          estado: 'SP',
-          cep: '01234-567',
-        },
-        {
-          id: '2',
-          logradouro: 'Avenida B',
-          numero: '456',
-          cidade: 'Rio de Janeiro',
-          estado: 'RJ',
-          cep: '20123-789',
-        },
-      ])
-    );
+    localStorage.setItem(STORAGE_KEYS.ENDERECOS, JSON.stringify([]));
   }
 
   // Inicializar outros (vazios)

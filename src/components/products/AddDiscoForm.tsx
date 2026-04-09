@@ -7,7 +7,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import Label from '@/components/form/Label';
 
 interface AddDiscoFormData {
-  artistaId: string;
+  artistaNome: string;
   album: string;
   nacionalidade: string;
   premsagem: string;
@@ -23,8 +23,8 @@ interface AddDiscoFormData {
 }
 
 export default function AddDiscoForm() {
-  const { discos, createDisco, loading, error, discosComArtista } = useDiscos();
-  const { artistas, fetchArtistas } = useArtistas();
+  const { createDisco, loading, error } = useDiscos();
+  const { createArtista } = useArtistas();
   const [successMessage, setSuccessMessage] = useState('');
 
   const {
@@ -34,7 +34,7 @@ export default function AddDiscoForm() {
     formState: { errors },
   } = useForm<AddDiscoFormData>({
     defaultValues: {
-      artistaId: '',
+      artistaNome: '',
       album: '',
       nacionalidade: 'Brasil',
       premsagem: 'Vinyl',
@@ -52,15 +52,33 @@ export default function AddDiscoForm() {
 
   const onSubmit = async (data: AddDiscoFormData) => {
     try {
-      await createDisco({
-        ...data,
-        anoLancamento: Number(data.anoLancamento),
-        anoPremsagem: Number(data.anoPremsagem),
-        valorMercado: Number(data.valorMercado),
-        custoDisco: Number(data.custoDisco),
+      // Gerar um ID único para o artista baseado no nome
+      const artistaId = `artista-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Criar o artista automaticamente
+      await createArtista({
+        nome: data.artistaNome,
+        generoId: '', // Vazio por padrão
       });
 
-      setSuccessMessage('✅ Disco adicionado com sucesso!');
+      // Criar o disco associado ao artista
+      await createDisco({
+        artistaId: artistaId,
+        album: data.album,
+        nacionalidade: data.nacionalidade,
+        premsagem: data.premsagem,
+        encarte: data.encarte,
+        gravadora: data.gravadora,
+        anoLancamento: Number(data.anoLancamento),
+        anoPremsagem: Number(data.anoPremsagem),
+        condicaoCapa: data.condicaoCapa,
+        condicaoDisco: data.condicaoDisco,
+        valorMercado: Number(data.valorMercado),
+        custoDisco: Number(data.custoDisco),
+        status: data.status,
+      });
+
+      setSuccessMessage('✅ Produto adicionado com sucesso!');
       reset();
 
       // Limpar mensagem após 3 segundos
@@ -73,7 +91,7 @@ export default function AddDiscoForm() {
   return (
     <div className="space-y-6">
       {/* Formulário de Adicionar Disco */}
-      <ComponentCard title="➕ Adicionar Novo Disco (com localStorage)">
+      <ComponentCard title="➕ Adicionar Novo Disco">
         {successMessage && (
           <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-900/20">
             <p className="text-sm font-medium text-green-900 dark:text-green-200">
@@ -85,7 +103,7 @@ export default function AddDiscoForm() {
         {error && (
           <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
             <p className="text-sm font-medium text-red-900 dark:text-red-200">
-              ❌ Erro: {error}
+              ❌ Erro ao adicionar: {error}
             </p>
           </div>
         )}
@@ -94,21 +112,20 @@ export default function AddDiscoForm() {
           {/* Artista e Básico */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <Label htmlFor="artistaId">Artista *</Label>
-              <select
-                id="artistaId"
-                {...register('artistaId', { required: 'Artista é obrigatório' })}
-                className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
-              >
-                <option value="">-- Selecione um artista --</option>
-                {artistas.map((artista) => (
-                  <option key={artista.id} value={artista.id}>
-                    {artista.nome}
-                  </option>
-                ))}
-              </select>
-              {errors.artistaId && (
-                <span className="mt-1 text-sm text-red-500">{errors.artistaId.message}</span>
+              <Label htmlFor="artistaNome">Artista *</Label>
+              <input
+                type="text"
+                id="artistaNome"
+                placeholder="Ex: The Beatles"
+                {...register('artistaNome', { required: 'Artista é obrigatório' })}
+                className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:bg-gray-900 ${
+                  errors.artistaNome
+                    ? 'border-red-500 bg-red-50 dark:border-red-500 dark:bg-red-900/20'
+                    : 'border-gray-300 bg-white dark:border-gray-700'
+                }`}
+              />
+              {errors.artistaNome && (
+                <span className="mt-1 text-sm text-red-500">{errors.artistaNome.message}</span>
               )}
             </div>
 
@@ -316,7 +333,7 @@ export default function AddDiscoForm() {
               disabled={loading}
               className="flex-1 rounded-lg bg-brand-500 px-6 py-2.5 font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
             >
-              {loading ? 'Salvando...' : '💾 Adicionar Disco ao localStorage'}
+              {loading ? 'Salvando...' : 'Salvar Produto'}
             </button>
             <button
               type="reset"
@@ -327,69 +344,6 @@ export default function AddDiscoForm() {
           </div>
         </form>
       </ComponentCard>
-
-      {/* Lista de Discos */}
-      <ComponentCard title="📀 Discos Armazenados no localStorage">
-        <div className="space-y-3">
-          {discos && discos.length > 0 ? (
-            <div>
-              <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-900/20">
-                <p className="text-sm font-medium text-blue-900 dark:text-blue-200">
-                  Total de discos: {discos.length}
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {discos.map((disco, index) => (
-                  <div
-                    key={disco.id}
-                    className="flex items-start justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-block rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-                          #{index + 1}
-                        </span>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {disco.album}
-                        </p>
-                      </div>
-                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        Gravadora: {disco.gravadora} • {disco.anoLancamento}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <span className="inline-block rounded bg-purple-100 px-2 py-1 text-xs text-purple-800 dark:bg-purple-900/30 dark:text-purple-200">
-                          {disco.premsagem}
-                        </span>
-                        <span className="inline-block rounded bg-green-100 px-2 py-1 text-xs text-green-800 dark:bg-green-900/30 dark:text-green-200">
-                          {disco.condicaoCapa}
-                        </span>
-                        <span className="inline-block rounded bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-200">
-                          R$ {disco.valorMercado.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800">
-              <p className="text-gray-500 dark:text-gray-400">
-                Nenhum disco adicionado ainda
-              </p>
-            </div>
-          )}
-        </div>
-      </ComponentCard>
-
-      {/* Info Box */}
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-900/20">
-        <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
-          ℹ️ Os discos estão sendo salvos automaticamente no <strong>localStorage</strong> do navegador.
-          Verifique em DevTools (F12 → Application → Local Storage).
-        </p>
-      </div>
     </div>
   );
 }
