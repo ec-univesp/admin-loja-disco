@@ -1,6 +1,20 @@
 // Serviço de API local (usando localStorage)
 // Simula operações de API com delay para parecer mais real
 
+import type {
+  GeneroMusical,
+  Artista,
+  Disco,
+  Cliente,
+  Endereco,
+  ClienteEndereco,
+  Compra,
+  ItemCompra,
+  Venda,
+  ItemVenda,
+  CanalVenda,
+} from '@/types/models';
+
 const STORAGE_KEYS = {
   GENEROS_MUSICAL: 'app_generos_musical',
   ARTISTAS: 'app_artistas',
@@ -100,17 +114,17 @@ export const initializeStorage = () => {
 
 // ============ GENEROS MUSICAIS ============
 export const apiGenerosMusical = {
-  getAll: async () => {
+  getAll: async (): Promise<GeneroMusical[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.GENEROS_MUSICAL);
     return data ? JSON.parse(data) : [];
   },
 
-  create: async (genero: any) => {
+  create: async (genero: Omit<GeneroMusical, 'id'>): Promise<GeneroMusical> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.GENEROS_MUSICAL) || '[]';
-    const items = JSON.parse(data);
-    const newItem = {
+    const items: GeneroMusical[] = JSON.parse(data);
+    const newItem: GeneroMusical = {
       ...genero,
       id: String(Date.now()),
     };
@@ -119,11 +133,11 @@ export const apiGenerosMusical = {
     return newItem;
   },
 
-  update: async (id: string, updates: any) => {
+  update: async (id: string, updates: Partial<GeneroMusical>): Promise<GeneroMusical | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.GENEROS_MUSICAL) || '[]';
-    const items = JSON.parse(data);
-    const index = items.findIndex((item: any) => item.id === id);
+    const items: GeneroMusical[] = JSON.parse(data);
+    const index = items.findIndex((item) => item.id === id);
     if (index >= 0) {
       items[index] = { ...items[index], ...updates };
       localStorage.setItem(STORAGE_KEYS.GENEROS_MUSICAL, JSON.stringify(items));
@@ -131,34 +145,34 @@ export const apiGenerosMusical = {
     return items[index];
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.GENEROS_MUSICAL) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as GeneroMusical[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.GENEROS_MUSICAL, JSON.stringify(items));
   },
 };
 
 // ============ ARTISTAS ============
 export const apiArtistas = {
-  getAll: async () => {
+  getAll: async (): Promise<Artista[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ARTISTAS);
     return data ? JSON.parse(data) : [];
   },
 
-  getById: async (id: string) => {
+  getById: async (id: string): Promise<Artista | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ARTISTAS) || '[]';
-    const items = JSON.parse(data);
-    return items.find((item: any) => item.id === id);
+    const items: Artista[] = JSON.parse(data);
+    return items.find((item) => item.id === id);
   },
 
-  create: async (artista: any) => {
+  create: async (artista: Omit<Artista, 'id'>): Promise<Artista> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ARTISTAS) || '[]';
-    const items = JSON.parse(data);
-    const newItem = {
+    const items: Artista[] = JSON.parse(data);
+    const newItem: Artista = {
       ...artista,
       id: String(Date.now()),
     };
@@ -167,11 +181,11 @@ export const apiArtistas = {
     return newItem;
   },
 
-  update: async (id: string, updates: any) => {
+  update: async (id: string, updates: Partial<Artista>): Promise<Artista | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ARTISTAS) || '[]';
-    const items = JSON.parse(data);
-    const index = items.findIndex((item: any) => item.id === id);
+    const items: Artista[] = JSON.parse(data);
+    const index = items.findIndex((item) => item.id === id);
     if (index >= 0) {
       items[index] = { ...items[index], ...updates };
       localStorage.setItem(STORAGE_KEYS.ARTISTAS, JSON.stringify(items));
@@ -179,34 +193,34 @@ export const apiArtistas = {
     return items[index];
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ARTISTAS) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as Artista[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.ARTISTAS, JSON.stringify(items));
   },
 };
 
 // ============ DISCOS ============
 export const apiDiscos = {
-  getAll: async () => {
+  getAll: async (): Promise<Disco[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.DISCOS);
     return data ? JSON.parse(data) : [];
   },
 
-  getById: async (id: string) => {
+  getById: async (id: string): Promise<Disco | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.DISCOS) || '[]';
-    const items = JSON.parse(data);
-    return items.find((item: any) => item.id === id);
+    const items: Disco[] = JSON.parse(data);
+    return items.find((item) => item.id === id);
   },
 
-  create: async (disco: any) => {
+  create: async (disco: Omit<Disco, 'id'>): Promise<Disco> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.DISCOS) || '[]';
-    const items = JSON.parse(data);
-    const newItem = {
+    const items: Disco[] = JSON.parse(data);
+    const newItem: Disco = {
       ...disco,
       id: String(Date.now()),
     };
@@ -215,11 +229,11 @@ export const apiDiscos = {
     return newItem;
   },
 
-  update: async (id: string, updates: any) => {
+  update: async (id: string, updates: Partial<Disco>): Promise<Disco | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.DISCOS) || '[]';
-    const items = JSON.parse(data);
-    const index = items.findIndex((item: any) => item.id === id);
+    const items: Disco[] = JSON.parse(data);
+    const index = items.findIndex((item) => item.id === id);
     if (index >= 0) {
       items[index] = { ...items[index], ...updates };
       localStorage.setItem(STORAGE_KEYS.DISCOS, JSON.stringify(items));
@@ -227,34 +241,34 @@ export const apiDiscos = {
     return items[index];
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.DISCOS) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as Disco[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.DISCOS, JSON.stringify(items));
   },
 };
 
 // ============ CLIENTES ============
 export const apiClientes = {
-  getAll: async () => {
+  getAll: async (): Promise<Cliente[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CLIENTES);
     return data ? JSON.parse(data) : [];
   },
 
-  getById: async (id: string) => {
+  getById: async (id: string): Promise<Cliente | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CLIENTES) || '[]';
-    const items = JSON.parse(data);
-    return items.find((item: any) => item.id === id);
+    const items: Cliente[] = JSON.parse(data);
+    return items.find((item) => item.id === id);
   },
 
-  create: async (cliente: any) => {
+  create: async (cliente: Omit<Cliente, 'id'>): Promise<Cliente> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CLIENTES) || '[]';
-    const items = JSON.parse(data);
-    const newItem = {
+    const items: Cliente[] = JSON.parse(data);
+    const newItem: Cliente = {
       ...cliente,
       id: String(Date.now()),
     };
@@ -263,11 +277,11 @@ export const apiClientes = {
     return newItem;
   },
 
-  update: async (id: string, updates: any) => {
+  update: async (id: string, updates: Partial<Cliente>): Promise<Cliente | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CLIENTES) || '[]';
-    const items = JSON.parse(data);
-    const index = items.findIndex((item: any) => item.id === id);
+    const items: Cliente[] = JSON.parse(data);
+    const index = items.findIndex((item) => item.id === id);
     if (index >= 0) {
       items[index] = { ...items[index], ...updates };
       localStorage.setItem(STORAGE_KEYS.CLIENTES, JSON.stringify(items));
@@ -275,34 +289,34 @@ export const apiClientes = {
     return items[index];
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CLIENTES) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as Cliente[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.CLIENTES, JSON.stringify(items));
   },
 };
 
 // ============ ENDERECOS ============
 export const apiEnderecos = {
-  getAll: async () => {
+  getAll: async (): Promise<Endereco[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ENDERECOS);
     return data ? JSON.parse(data) : [];
   },
 
-  getById: async (id: string) => {
+  getById: async (id: string): Promise<Endereco | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ENDERECOS) || '[]';
-    const items = JSON.parse(data);
-    return items.find((item: any) => item.id === id);
+    const items: Endereco[] = JSON.parse(data);
+    return items.find((item) => item.id === id);
   },
 
-  create: async (endereco: any) => {
+  create: async (endereco: Omit<Endereco, 'id'>): Promise<Endereco> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ENDERECOS) || '[]';
-    const items = JSON.parse(data);
-    const newItem = {
+    const items: Endereco[] = JSON.parse(data);
+    const newItem: Endereco = {
       ...endereco,
       id: String(Date.now()),
     };
@@ -311,11 +325,11 @@ export const apiEnderecos = {
     return newItem;
   },
 
-  update: async (id: string, updates: any) => {
+  update: async (id: string, updates: Partial<Endereco>): Promise<Endereco | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ENDERECOS) || '[]';
-    const items = JSON.parse(data);
-    const index = items.findIndex((item: any) => item.id === id);
+    const items: Endereco[] = JSON.parse(data);
+    const index = items.findIndex((item) => item.id === id);
     if (index >= 0) {
       items[index] = { ...items[index], ...updates };
       localStorage.setItem(STORAGE_KEYS.ENDERECOS, JSON.stringify(items));
@@ -323,36 +337,36 @@ export const apiEnderecos = {
     return items[index];
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ENDERECOS) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as Endereco[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.ENDERECOS, JSON.stringify(items));
   },
 };
 
 // ============ CLIENTES_ENDERECOS ============
 export const apiClientesEnderecos = {
-  getAll: async () => {
+  getAll: async (): Promise<ClienteEndereco[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CLIENTES_ENDERECOS);
     return data ? JSON.parse(data) : [];
   },
 
-  create: async (vinculo: any) => {
+  create: async (vinculo: ClienteEndereco): Promise<ClienteEndereco> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CLIENTES_ENDERECOS) || '[]';
-    const vinculos = JSON.parse(data);
+    const vinculos: ClienteEndereco[] = JSON.parse(data);
     vinculos.push(vinculo);
     localStorage.setItem(STORAGE_KEYS.CLIENTES_ENDERECOS, JSON.stringify(vinculos));
     return vinculo;
   },
 
-  delete: async (clienteId: string, enderecoId: string) => {
+  delete: async (clienteId: string, enderecoId: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CLIENTES_ENDERECOS) || '[]';
-    const vinculosRestantes = JSON.parse(data).filter(
-      (vinculo: any) =>
+    const vinculosRestantes = (JSON.parse(data) as ClienteEndereco[]).filter(
+      (vinculo) =>
         !(vinculo.clienteId === clienteId && vinculo.enderecoId === enderecoId)
     );
     localStorage.setItem(STORAGE_KEYS.CLIENTES_ENDERECOS, JSON.stringify(vinculosRestantes));
@@ -361,24 +375,24 @@ export const apiClientesEnderecos = {
 
 // ============ VENDAS ============
 export const apiVendas = {
-  getAll: async () => {
+  getAll: async (): Promise<Venda[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.VENDAS);
     return data ? JSON.parse(data) : [];
   },
 
-  getById: async (id: string) => {
+  getById: async (id: string): Promise<Venda | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.VENDAS) || '[]';
-    const items = JSON.parse(data);
-    return items.find((item: any) => item.id === id);
+    const items: Venda[] = JSON.parse(data);
+    return items.find((item) => item.id === id);
   },
 
-  create: async (venda: any) => {
+  create: async (venda: Omit<Venda, 'id'>): Promise<Venda> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.VENDAS) || '[]';
-    const items = JSON.parse(data);
-    const newItem = {
+    const items: Venda[] = JSON.parse(data);
+    const newItem: Venda = {
       ...venda,
       id: String(Date.now()),
     };
@@ -387,11 +401,11 @@ export const apiVendas = {
     return newItem;
   },
 
-  update: async (id: string, updates: any) => {
+  update: async (id: string, updates: Partial<Venda>): Promise<Venda | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.VENDAS) || '[]';
-    const items = JSON.parse(data);
-    const index = items.findIndex((item: any) => item.id === id);
+    const items: Venda[] = JSON.parse(data);
+    const index = items.findIndex((item) => item.id === id);
     if (index >= 0) {
       items[index] = { ...items[index], ...updates };
       localStorage.setItem(STORAGE_KEYS.VENDAS, JSON.stringify(items));
@@ -399,34 +413,34 @@ export const apiVendas = {
     return items[index];
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.VENDAS) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as Venda[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.VENDAS, JSON.stringify(items));
   },
 };
 
 // ============ ITENS_VENDA ============
 export const apiItensVenda = {
-  getAll: async () => {
+  getAll: async (): Promise<ItemVenda[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ITENS_VENDA);
     return data ? JSON.parse(data) : [];
   },
 
-  getByVendaId: async (vendaId: string) => {
+  getByVendaId: async (vendaId: string): Promise<ItemVenda[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ITENS_VENDA) || '[]';
-    const items = JSON.parse(data);
-    return items.filter((item: any) => item.vendaId === vendaId);
+    const items: ItemVenda[] = JSON.parse(data);
+    return items.filter((item) => item.vendaId === vendaId);
   },
 
-  create: async (itemVenda: any) => {
+  create: async (itemVenda: Omit<ItemVenda, 'id'>): Promise<ItemVenda> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ITENS_VENDA) || '[]';
-    const items = JSON.parse(data);
-    const newItem = {
+    const items: ItemVenda[] = JSON.parse(data);
+    const newItem: ItemVenda = {
       ...itemVenda,
       id: String(Date.now()),
     };
@@ -435,34 +449,34 @@ export const apiItensVenda = {
     return newItem;
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ITENS_VENDA) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as ItemVenda[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.ITENS_VENDA, JSON.stringify(items));
   },
 };
 
 // ============ COMPRAS ============
 export const apiCompras = {
-  getAll: async () => {
+  getAll: async (): Promise<Compra[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.COMPRAS);
     return data ? JSON.parse(data) : [];
   },
 
-  getById: async (id: string) => {
+  getById: async (id: string): Promise<Compra | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.COMPRAS) || '[]';
-    const items = JSON.parse(data);
-    return items.find((item: any) => item.id === id);
+    const items: Compra[] = JSON.parse(data);
+    return items.find((item) => item.id === id);
   },
 
-  create: async (compra: any) => {
+  create: async (compra: Omit<Compra, 'id'>): Promise<Compra> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.COMPRAS) || '[]';
-    const items = JSON.parse(data);
-    const newItem = {
+    const items: Compra[] = JSON.parse(data);
+    const newItem: Compra = {
       ...compra,
       id: String(Date.now()),
     };
@@ -471,11 +485,11 @@ export const apiCompras = {
     return newItem;
   },
 
-  update: async (id: string, updates: any) => {
+  update: async (id: string, updates: Partial<Compra>): Promise<Compra | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.COMPRAS) || '[]';
-    const items = JSON.parse(data);
-    const index = items.findIndex((item: any) => item.id === id);
+    const items: Compra[] = JSON.parse(data);
+    const index = items.findIndex((item) => item.id === id);
     if (index >= 0) {
       items[index] = { ...items[index], ...updates };
       localStorage.setItem(STORAGE_KEYS.COMPRAS, JSON.stringify(items));
@@ -483,37 +497,37 @@ export const apiCompras = {
     return items[index];
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.COMPRAS) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as Compra[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.COMPRAS, JSON.stringify(items));
   },
 };
 
 // ============ CANAIS_VENDA ============
 export const apiCanaisVenda = {
-  getAll: async () => {
+  getAll: async (): Promise<CanalVenda[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA);
     return data ? JSON.parse(data) : [];
   },
 
-  create: async (canal: any) => {
+  create: async (canal: Omit<CanalVenda, 'id'>): Promise<CanalVenda> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA) || '[]';
-    const items = JSON.parse(data);
-    const newItem = { ...canal, id: String(Date.now()) };
+    const items: CanalVenda[] = JSON.parse(data);
+    const newItem: CanalVenda = { ...canal, id: String(Date.now()) };
     items.push(newItem);
     localStorage.setItem(STORAGE_KEYS.CANAIS_VENDA, JSON.stringify(items));
     return newItem;
   },
 
-  update: async (id: string, updates: any) => {
+  update: async (id: string, updates: Partial<CanalVenda>): Promise<CanalVenda | undefined> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA) || '[]';
-    const items = JSON.parse(data);
-    const index = items.findIndex((item: any) => item.id === id);
+    const items: CanalVenda[] = JSON.parse(data);
+    const index = items.findIndex((item) => item.id === id);
     if (index >= 0) {
       items[index] = { ...items[index], ...updates };
       localStorage.setItem(STORAGE_KEYS.CANAIS_VENDA, JSON.stringify(items));
@@ -521,34 +535,34 @@ export const apiCanaisVenda = {
     return items[index];
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as CanalVenda[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.CANAIS_VENDA, JSON.stringify(items));
   },
 };
 
 // ============ ITENS_COMPRA ============
 export const apiItensCompra = {
-  getAll: async () => {
+  getAll: async (): Promise<ItemCompra[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ITENS_COMPRA);
     return data ? JSON.parse(data) : [];
   },
 
-  getByCompraId: async (compraId: string) => {
+  getByCompraId: async (compraId: string): Promise<ItemCompra[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ITENS_COMPRA) || '[]';
-    const items = JSON.parse(data);
-    return items.filter((item: any) => item.compraId === compraId);
+    const items: ItemCompra[] = JSON.parse(data);
+    return items.filter((item) => item.compraId === compraId);
   },
 
-  create: async (itemCompra: any) => {
+  create: async (itemCompra: Omit<ItemCompra, 'id'>): Promise<ItemCompra> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ITENS_COMPRA) || '[]';
-    const items = JSON.parse(data);
-    const newItem = {
+    const items: ItemCompra[] = JSON.parse(data);
+    const newItem: ItemCompra = {
       ...itemCompra,
       id: String(Date.now()),
     };
@@ -557,10 +571,10 @@ export const apiItensCompra = {
     return newItem;
   },
 
-  delete: async (id: string) => {
+  delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ITENS_COMPRA) || '[]';
-    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    const items = (JSON.parse(data) as ItemCompra[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.ITENS_COMPRA, JSON.stringify(items));
   },
 };

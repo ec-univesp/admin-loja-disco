@@ -183,7 +183,7 @@ export default function EstoquePage() {
                         </p>
                         {!loading && (
                           <p className="text-xs text-gray-400 dark:text-gray-500">
-                            Clique em "Adicionar Disco" para começar
+                            Clique em &quot;Adicionar Disco&quot; para começar
                           </p>
                         )}
                       </div>
