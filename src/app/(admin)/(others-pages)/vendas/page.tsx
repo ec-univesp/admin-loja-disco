@@ -1,103 +1,55 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
-import React, { useState } from 'react';
-
-interface Venda {
-  id: number;
-  numero: string;
-  cliente: string;
-  data: string;
-  itens: number;
-  total: number;
-  pagamento: string;
-  status: 'Concluída' | 'Pendente' | 'Cancelada';
-}
-
-const vendasMock: Venda[] = [
-  {
-    id: 1,
-    numero: 'VND-0001',
-    cliente: 'Carlos Silva',
-    data: '30/03/2026',
-    itens: 2,
-    total: 179.8,
-    pagamento: 'Cartão Crédito',
-    status: 'Concluída',
-  },
-  {
-    id: 2,
-    numero: 'VND-0002',
-    cliente: 'Ana Souza',
-    data: '29/03/2026',
-    itens: 1,
-    total: 89.9,
-    pagamento: 'PIX',
-    status: 'Concluída',
-  },
-  {
-    id: 3,
-    numero: 'VND-0003',
-    cliente: 'Roberto Lima',
-    data: '28/03/2026',
-    itens: 3,
-    total: 264.7,
-    pagamento: 'Dinheiro',
-    status: 'Pendente',
-  },
-  {
-    id: 4,
-    numero: 'VND-0004',
-    cliente: 'Mariana Costa',
-    data: '27/03/2026',
-    itens: 1,
-    total: 99.9,
-    pagamento: 'Cartão Débito',
-    status: 'Cancelada',
-  },
-  {
-    id: 5,
-    numero: 'VND-0005',
-    cliente: 'Pedro Alves',
-    data: '26/03/2026',
-    itens: 4,
-    total: 350.0,
-    pagamento: 'PIX',
-    status: 'Concluída',
-  },
-  {
-    id: 6,
-    numero: 'VND-0006',
-    cliente: 'Julia Ferreira',
-    data: '25/03/2026',
-    itens: 2,
-    total: 167.8,
-    pagamento: 'Cartão Crédito',
-    status: 'Concluída',
-  },
-  {
-    id: 7,
-    numero: 'VND-0007',
-    cliente: 'Marcos Oliveira',
-    data: '24/03/2026',
-    itens: 1,
-    total: 75.0,
-    pagamento: 'Dinheiro',
-    status: 'Concluída',
-  },
-];
+import React, { useEffect, useMemo, useState } from 'react';
+import { useVendas, useClientes, useItensVenda } from '@/hooks/useStore';
+import ClienteEnderecoModal from '@/components/form/ClienteEnderecoModal';
 
 const statusColor: Record<string, string> = {
   Concluída: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Entregue: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Confirmada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  Enviada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   Pendente: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   Cancelada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
+const numeroVenda = (index: number) => `VND-${String(index + 1).padStart(4, '0')}`;
+
 export default function VendasPage() {
+  const { vendasComDetalhes, fetchVendas } = useVendas();
+  const { clientes, fetchClientes } = useClientes();
+  const { itensVenda, fetchItensVenda } = useItensVenda();
+
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('Todos');
+  const [showClienteModal, setShowClienteModal] = useState(false);
+  const [editClienteId, setEditClienteId] = useState<string | undefined>();
 
-  const vendasFiltradas = vendasMock.filter((v) => {
+  useEffect(() => {
+    fetchVendas();
+    fetchClientes();
+    fetchItensVenda();
+  }, [fetchVendas, fetchClientes, fetchItensVenda]);
+
+  const linhas = useMemo(() => {
+    return vendasComDetalhes
+      .slice()
+      .sort((a, b) => (a.dataVenda < b.dataVenda ? 1 : -1))
+      .map((venda, index) => ({
+        id: venda.id,
+        numero: numeroVenda(index),
+        cliente: venda.clienteNome,
+        clienteId: venda.clienteId,
+        data: venda.dataVenda,
+        itens: itensVenda.filter((i) => i.vendaId === venda.id).length,
+        total: venda.valorTotal,
+        pagamento: venda.pagamento,
+        status: venda.statusPedido || 'Pendente',
+      }));
+  }, [vendasComDetalhes, itensVenda]);
+
+  const linhasFiltradas = linhas.filter((v) => {
     const matchBusca =
       v.numero.toLowerCase().includes(busca.toLowerCase()) ||
       v.cliente.toLowerCase().includes(busca.toLowerCase());
@@ -105,34 +57,35 @@ export default function VendasPage() {
     return matchBusca && matchStatus;
   });
 
-  const totalReceita = vendasFiltradas
-    .filter((v) => v.status === 'Concluída')
+  const totalReceita = linhasFiltradas
+    .filter((v) => v.status === 'Concluída' || v.status === 'Entregue')
     .reduce((acc, v) => acc + v.total, 0);
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Vendas" />
       <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        {/* Header */}
         <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
               Lista de Vendas
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {vendasFiltradas.length} venda(s) · Receita:{' '}
+              {linhasFiltradas.length} venda(s) · Receita:{' '}
               <span className="font-medium text-green-600">R$ {totalReceita.toFixed(2)}</span>
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <select
               value={filtroStatus}
               onChange={(e) => setFiltroStatus(e.target.value)}
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             >
               <option value="Todos">Todos os Status</option>
-              <option value="Concluída">Concluída</option>
               <option value="Pendente">Pendente</option>
+              <option value="Confirmada">Confirmada</option>
+              <option value="Enviada">Enviada</option>
+              <option value="Entregue">Entregue</option>
               <option value="Cancelada">Cancelada</option>
             </select>
             <input
@@ -142,6 +95,16 @@ export default function VendasPage() {
               onChange={(e) => setBusca(e.target.value)}
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             />
+            <button
+              type="button"
+              onClick={() => {
+                setEditClienteId(undefined);
+                setShowClienteModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-500 bg-white px-4 py-2 text-sm font-medium text-brand-600 transition-colors hover:bg-brand-50 dark:bg-gray-900 dark:hover:bg-brand-900/20"
+            >
+              + Novo Cliente
+            </button>
             <Link
               href="/nova-venda"
               className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
@@ -151,7 +114,29 @@ export default function VendasPage() {
           </div>
         </div>
 
-        {/* Tabela */}
+        {clientes.length > 0 && (
+          <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
+            <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+              Clientes cadastrados (clique para editar endereço):
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {clientes.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setEditClienteId(c.id);
+                    setShowClienteModal(true);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-brand-100 hover:text-brand-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-brand-900/30 dark:hover:text-brand-400"
+                >
+                  ✎ {c.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -183,14 +168,14 @@ export default function VendasPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {vendasFiltradas.length === 0 ? (
+              {linhasFiltradas.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-10 text-center text-gray-400">
                     Nenhuma venda encontrada.
                   </td>
                 </tr>
               ) : (
-                vendasFiltradas.map((venda) => (
+                linhasFiltradas.map((venda) => (
                   <tr
                     key={venda.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
@@ -213,17 +198,22 @@ export default function VendasPage() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[venda.status]}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[venda.status] || statusColor.Pendente}`}
                       >
                         {venda.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button
-                        title="Ver detalhes"
+                        type="button"
+                        onClick={() => {
+                          setEditClienteId(venda.clienteId);
+                          setShowClienteModal(true);
+                        }}
+                        title="Editar cliente / endereço"
                         className="hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded p-1 text-base text-gray-400 transition-colors"
                       >
-                        👁️
+                        ✎
                       </button>
                     </td>
                   </tr>
@@ -232,29 +222,13 @@ export default function VendasPage() {
             </tbody>
           </table>
         </div>
-
-        {/* Resumo */}
-        <div className="flex flex-wrap gap-6 border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-          <p className="text-xs text-gray-400">
-            Concluídas:{' '}
-            <span className="font-semibold text-green-600">
-              {vendasMock.filter((v) => v.status === 'Concluída').length}
-            </span>
-          </p>
-          <p className="text-xs text-gray-400">
-            Pendentes:{' '}
-            <span className="font-semibold text-yellow-600">
-              {vendasMock.filter((v) => v.status === 'Pendente').length}
-            </span>
-          </p>
-          <p className="text-xs text-gray-400">
-            Canceladas:{' '}
-            <span className="font-semibold text-red-500">
-              {vendasMock.filter((v) => v.status === 'Cancelada').length}
-            </span>
-          </p>
-        </div>
       </div>
+
+      <ClienteEnderecoModal
+        isOpen={showClienteModal}
+        onClose={() => setShowClienteModal(false)}
+        clienteId={editClienteId}
+      />
     </div>
   );
 }
