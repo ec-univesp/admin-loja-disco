@@ -132,6 +132,23 @@ export const useEnderecos = () => {
 };
 
 /**
+ * Hook para usar relação Cliente-Endereço
+ */
+export const useClientesEnderecos = () => {
+  const clientesEnderecos = useAppStore((state) => state.clientesEnderecos);
+  const fetchClientesEnderecos = useAppStore((state) => state.fetchClientesEnderecos);
+  const vincularClienteEndereco = useAppStore((state) => state.vincularClienteEndereco);
+  const desvincularClienteEndereco = useAppStore((state) => state.desvincularClienteEndereco);
+
+  return {
+    clientesEnderecos,
+    fetchClientesEnderecos,
+    vincularClienteEndereco,
+    desvincularClienteEndereco,
+  };
+};
+
+/**
  * Hook para usar dados de Venda
  */
 export const useVendas = () => {
@@ -282,6 +299,29 @@ export const useItensCompra = () => {
     fetchItensCompra,
     createItemCompra,
     deleteItemCompra,
+  };
+};
+
+/**
+ * Hook para usar dados de Canais de Venda
+ */
+export const useCanaisVenda = () => {
+  const canaisVenda = useAppStore((state) => state.canaisVenda);
+  const loading = useAppStore((state) => state.loading);
+  const error = useAppStore((state) => state.error);
+  const fetchCanaisVenda = useAppStore((state) => state.fetchCanaisVenda);
+  const createCanalVenda = useAppStore((state) => state.createCanalVenda);
+  const updateCanalVenda = useAppStore((state) => state.updateCanalVenda);
+  const deleteCanalVenda = useAppStore((state) => state.deleteCanalVenda);
+
+  return {
+    canaisVenda,
+    loading,
+    error,
+    fetchCanaisVenda,
+    createCanalVenda,
+    updateCanalVenda,
+    deleteCanalVenda,
   };
 };
 
