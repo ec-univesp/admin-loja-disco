@@ -10,12 +10,10 @@ export default function VendasStoreExample() {
     vendasComDetalhes,
     fetchVendas,
     createVenda,
-    updateVenda,
-    deleteVenda,
     loading,
     error,
   } = useVendas();
-  
+
   const { clientes, fetchClientes } = useClientes();
   const { enderecos, fetchEnderecos } = useEnderecos();
   const { discosComArtista, fetchDiscos } = useDiscos();
@@ -27,7 +25,8 @@ export default function VendasStoreExample() {
     dataVenda: new Date().toISOString().split('T')[0],
     frete: 0,
     pagamento: 'Cartão',
-    canalVenda: 'Loja Online',
+    canalVendaId: '',
+    custosAdicionais: 0,
     statusPedido: 'Pendente',
   });
 
@@ -55,9 +54,10 @@ export default function VendasStoreExample() {
       enderecoId: formData.enderecoId,
       dataVenda: formData.dataVenda,
       frete: Number(formData.frete),
-      valorTotal: selectedDisco.precoVenda + Number(formData.frete),
+      valorTotal: selectedDisco.precoVenda + Number(formData.frete) + Number(formData.custosAdicionais),
       pagamento: formData.pagamento,
-      canalVenda: formData.canalVenda,
+      canalVendaId: formData.canalVendaId,
+      custosAdicionais: Number(formData.custosAdicionais),
       statusPedido: formData.statusPedido,
     });
 
@@ -75,7 +75,8 @@ export default function VendasStoreExample() {
         dataVenda: new Date().toISOString().split('T')[0],
         frete: 0,
         pagamento: 'Cartão',
-        canalVenda: 'Loja Online',
+        canalVendaId: '',
+        custosAdicionais: 0,
         statusPedido: 'Pendente',
       });
       setSelectedDisco({ discoId: '', precoVenda: 0 });
