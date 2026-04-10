@@ -1,0 +1,150 @@
+'use client';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import Link from 'next/link';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useCompras, useItensCompra } from '@/hooks/useStore';
+
+const formatNumeroCompra = (posicaoNaLista: number) =>
+  `CMP-${String(posicaoNaLista + 1).padStart(4, '0')}`;
+
+export default function ComprasPage() {
+  const { comprasComDetalhes, fetchCompras, deleteCompra } = useCompras();
+  const { itensCompra, fetchItensCompra } = useItensCompra();
+
+  const [busca, setBusca] = useState('');
+
+  useEffect(() => {
+    fetchCompras();
+    fetchItensCompra();
+  }, [fetchCompras, fetchItensCompra]);
+
+  const linhas = useMemo(() => {
+    const comprasOrdenadas = [...comprasComDetalhes].sort((compraA, compraB) =>
+      compraA.dataCpmpra < compraB.dataCpmpra ? 1 : -1
+    );
+
+    return comprasOrdenadas.map((compra, posicao) => ({
+      id: compra.id,
+      numero: formatNumeroCompra(posicao),
+      fornecedor: compra.fornecedor,
+      data: compra.dataCpmpra,
+      itens: itensCompra.filter((item) => item.compraId === compra.id).length,
+      total: compra.valorTotal,
+    }));
+  }, [comprasComDetalhes, itensCompra]);
+
+  const buscaNormalizada = busca.toLowerCase();
+  const linhasFiltradas = linhas.filter(
+    (linha) =>
+      linha.fornecedor.toLowerCase().includes(buscaNormalizada) ||
+      linha.numero.toLowerCase().includes(buscaNormalizada)
+  );
+
+  const totalGasto = linhasFiltradas.reduce(
+    (acumulado, linha) => acumulado + linha.total,
+    0
+  );
+
+  return (
+    <div>
+      <PageBreadcrumb pageTitle="Compras" />
+      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+              Lista de Compras
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {linhasFiltradas.length} compra(s) · Total gasto:{' '}
+              <span className="font-medium text-red-500">R$ {totalGasto.toFixed(2)}</span>
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              type="text"
+              placeholder="Buscar fornecedor..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+            />
+            <Link
+              href="/nova-compra"
+              className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
+            >
+              + Nova Compra
+            </Link>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-t border-gray-100 dark:border-gray-800">
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Nº Compra
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Fornecedor
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Data
+                </th>
+                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                  Itens
+                </th>
+                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  Total
+                </th>
+                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {linhasFiltradas.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-gray-400">
+                    Nenhuma compra registrada ainda.
+                  </td>
+                </tr>
+              ) : (
+                linhasFiltradas.map((compra) => (
+                  <tr
+                    key={compra.id}
+                    className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                  >
+                    <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
+                      {compra.numero}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
+                      {compra.fornecedor}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{compra.data}</td>
+                    <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
+                      {compra.itens}
+                    </td>
+                    <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
+                      R$ {compra.total.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm('Remover esta compra?')) deleteCompra(compra.id);
+                        }}
+                        title="Remover"
+                        className="hover:text-error-500 hover:bg-error-50 dark:hover:bg-error-900/20 rounded p-1 text-base text-gray-400 transition-colors"
+                      >
+                        🗑
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
