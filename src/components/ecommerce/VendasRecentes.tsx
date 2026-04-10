@@ -13,9 +13,10 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
   Enviada: 'info',
 };
 
-const formatNumeroVenda = (id: string, index: number): string => {
-  return `VND-${String(index + 1).padStart(4, '0')}`;
-};
+const formatNumeroVenda = (posicaoNaLista: number): string =>
+  `VND-${String(posicaoNaLista + 1).padStart(4, '0')}`;
+
+const LIMITE_VENDAS_RECENTES = 5;
 
 export default function VendasRecentes() {
   const { vendasComDetalhes, fetchVendas } = useVendas();
@@ -29,24 +30,27 @@ export default function VendasRecentes() {
   }, [fetchVendas, fetchItensVenda, fetchDiscos]);
 
   const linhas = useMemo(() => {
-    return vendasComDetalhes
-      .slice()
-      .sort((a, b) => (a.dataVenda < b.dataVenda ? 1 : -1))
-      .slice(0, 5)
-      .map((venda, index) => {
-        const itens = itensVenda.filter((i) => i.vendaId === venda.id);
-        const primeiro = itens[0];
-        const disco = primeiro ? discos.find((d) => d.id === primeiro.discoId) : undefined;
-        return {
-          id: venda.id,
-          numero: formatNumeroVenda(venda.id, index),
-          disco: disco?.album || '—',
-          quantidade: itens.length,
-          valor: venda.valorTotal,
-          status: venda.statusPedido || 'Pendente',
-          cliente: venda.clienteNome,
-        };
-      });
+    const vendasOrdenadas = [...vendasComDetalhes].sort((vendaA, vendaB) =>
+      vendaA.dataVenda < vendaB.dataVenda ? 1 : -1
+    );
+
+    return vendasOrdenadas.slice(0, LIMITE_VENDAS_RECENTES).map((venda, posicao) => {
+      const itensDaVenda = itensVenda.filter((item) => item.vendaId === venda.id);
+      const primeiroItem = itensDaVenda[0];
+      const discoPrincipal = primeiroItem
+        ? discos.find((disco) => disco.id === primeiroItem.discoId)
+        : undefined;
+
+      return {
+        id: venda.id,
+        numero: formatNumeroVenda(posicao),
+        disco: discoPrincipal?.album || '—',
+        quantidade: itensDaVenda.length,
+        valor: venda.valorTotal,
+        status: venda.statusPedido || 'Pendente',
+        cliente: venda.clienteNome,
+      };
+    });
   }, [vendasComDetalhes, itensVenda, discos]);
 
   return (

@@ -14,7 +14,10 @@ const statusColor: Record<string, string> = {
   Cancelada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
-const numeroVenda = (index: number) => `VND-${String(index + 1).padStart(4, '0')}`;
+const formatNumeroVenda = (posicaoNaLista: number) =>
+  `VND-${String(posicaoNaLista + 1).padStart(4, '0')}`;
+
+const STATUS_CONCLUIDOS = ['Concluída', 'Entregue'] as const;
 
 export default function VendasPage() {
   const { vendasComDetalhes, fetchVendas } = useVendas();
@@ -33,33 +36,35 @@ export default function VendasPage() {
   }, [fetchVendas, fetchClientes, fetchItensVenda]);
 
   const linhas = useMemo(() => {
-    return vendasComDetalhes
-      .slice()
-      .sort((a, b) => (a.dataVenda < b.dataVenda ? 1 : -1))
-      .map((venda, index) => ({
-        id: venda.id,
-        numero: numeroVenda(index),
-        cliente: venda.clienteNome,
-        clienteId: venda.clienteId,
-        data: venda.dataVenda,
-        itens: itensVenda.filter((i) => i.vendaId === venda.id).length,
-        total: venda.valorTotal,
-        pagamento: venda.pagamento,
-        status: venda.statusPedido || 'Pendente',
-      }));
+    const vendasOrdenadas = [...vendasComDetalhes].sort((vendaA, vendaB) =>
+      vendaA.dataVenda < vendaB.dataVenda ? 1 : -1
+    );
+
+    return vendasOrdenadas.map((venda, posicao) => ({
+      id: venda.id,
+      numero: formatNumeroVenda(posicao),
+      cliente: venda.clienteNome,
+      clienteId: venda.clienteId,
+      data: venda.dataVenda,
+      itens: itensVenda.filter((item) => item.vendaId === venda.id).length,
+      total: venda.valorTotal,
+      pagamento: venda.pagamento,
+      status: venda.statusPedido || 'Pendente',
+    }));
   }, [vendasComDetalhes, itensVenda]);
 
-  const linhasFiltradas = linhas.filter((v) => {
-    const matchBusca =
-      v.numero.toLowerCase().includes(busca.toLowerCase()) ||
-      v.cliente.toLowerCase().includes(busca.toLowerCase());
-    const matchStatus = filtroStatus === 'Todos' || v.status === filtroStatus;
-    return matchBusca && matchStatus;
+  const buscaNormalizada = busca.toLowerCase();
+  const linhasFiltradas = linhas.filter((linha) => {
+    const correspondeBusca =
+      linha.numero.toLowerCase().includes(buscaNormalizada) ||
+      linha.cliente.toLowerCase().includes(buscaNormalizada);
+    const correspondeStatus = filtroStatus === 'Todos' || linha.status === filtroStatus;
+    return correspondeBusca && correspondeStatus;
   });
 
   const totalReceita = linhasFiltradas
-    .filter((v) => v.status === 'Concluída' || v.status === 'Entregue')
-    .reduce((acc, v) => acc + v.total, 0);
+    .filter((linha) => STATUS_CONCLUIDOS.includes(linha.status as (typeof STATUS_CONCLUIDOS)[number]))
+    .reduce((acumulado, linha) => acumulado + linha.total, 0);
 
   return (
     <div>
@@ -120,17 +125,17 @@ export default function VendasPage() {
               Clientes cadastrados (clique para editar endereço):
             </p>
             <div className="flex flex-wrap gap-2">
-              {clientes.map((c) => (
+              {clientes.map((cliente) => (
                 <button
-                  key={c.id}
+                  key={cliente.id}
                   type="button"
                   onClick={() => {
-                    setEditClienteId(c.id);
+                    setEditClienteId(cliente.id);
                     setShowClienteModal(true);
                   }}
                   className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-brand-100 hover:text-brand-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-brand-900/30 dark:hover:text-brand-400"
                 >
-                  ✎ {c.nome}
+                  ✎ {cliente.nome}
                 </button>
               ))}
             </div>

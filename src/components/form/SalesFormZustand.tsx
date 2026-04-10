@@ -37,6 +37,8 @@ interface SalesFormZustandProps {
   onSuccess?: () => void;
 }
 
+const MENSAGEM_SUCESSO_DURACAO_MS = 3000;
+
 const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
   const { createVenda, loading: vendaLoading } = useVendas();
   const { clientes, fetchClientes } = useClientes();
@@ -83,6 +85,7 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
     fetchClientesEnderecos();
   }, [fetchClientes, fetchEnderecos, fetchDiscos, fetchCanaisVenda, fetchClientesEnderecos]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const discoId = watch('discoId');
   const clienteId = watch('clienteId');
   const canalVendaId = watch('canalVendaId');
@@ -90,59 +93,59 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
   const frete = watch('frete');
   const custosAdicionais = watch('custosAdicionais');
 
-  // Endereços disponíveis para o cliente selecionado
   const enderecosDoCliente = useMemo(() => {
     if (!clienteId) return [] as typeof enderecos;
-    const ids = clientesEnderecos
-      .filter((r) => r.clienteId === clienteId)
-      .map((r) => r.enderecoId);
-    return enderecos.filter((e) => ids.includes(e.id));
+    const idsDosEnderecosDoCliente = new Set(
+      clientesEnderecos
+        .filter((vinculo) => vinculo.clienteId === clienteId)
+        .map((vinculo) => vinculo.enderecoId)
+    );
+    return enderecos.filter((endereco) => idsDosEnderecosDoCliente.has(endereco.id));
   }, [clienteId, clientesEnderecos, enderecos]);
 
-  // Atualiza taxa do canal automaticamente em custosAdicionais (sugestão)
   useEffect(() => {
     if (!canalVendaId) return;
-    const canal = canaisVenda.find((c) => c.id === canalVendaId);
-    if (canal && precoVenda) {
-      const sugestao = (Number(precoVenda) * canal.taxaPadrao) / 100;
-      setValue('custosAdicionais', Number(sugestao.toFixed(2)));
+    const canalSelecionado = canaisVenda.find((canal) => canal.id === canalVendaId);
+    if (canalSelecionado && precoVenda) {
+      const custoSugerido = (Number(precoVenda) * canalSelecionado.taxaPadrao) / 100;
+      setValue('custosAdicionais', Number(custoSugerido.toFixed(2)));
     }
   }, [canalVendaId, precoVenda, canaisVenda, setValue]);
 
   const valorTotal =
     Number(precoVenda || 0) + Number(frete || 0) + Number(custosAdicionais || 0);
 
-  const handleFormSubmit = async (data: SalesFormZustandData) => {
+  const handleFormSubmit = async (dadosFormulario: SalesFormZustandData) => {
     try {
-      const venda = await createVenda({
-        clienteId: data.clienteId,
-        enderecoId: data.enderecoId,
-        dataVenda: data.dataVenda,
-        frete: Number(data.frete),
+      const novaVenda = await createVenda({
+        clienteId: dadosFormulario.clienteId,
+        enderecoId: dadosFormulario.enderecoId,
+        dataVenda: dadosFormulario.dataVenda,
+        frete: Number(dadosFormulario.frete),
         valorTotal,
-        pagamento: data.pagamento,
-        canalVendaId: data.canalVendaId,
-        custosAdicionais: Number(data.custosAdicionais),
-        statusPedido: data.statusPedido,
+        pagamento: dadosFormulario.pagamento,
+        canalVendaId: dadosFormulario.canalVendaId,
+        custosAdicionais: Number(dadosFormulario.custosAdicionais),
+        statusPedido: dadosFormulario.statusPedido,
       });
 
-      if (venda) {
+      if (novaVenda) {
         await createItemVenda({
-          vendaId: venda.id,
-          discoId: data.discoId,
-          precoVenda: Number(data.precoVenda),
+          vendaId: novaVenda.id,
+          discoId: dadosFormulario.discoId,
+          precoVenda: Number(dadosFormulario.precoVenda),
         });
         reset();
         setSuccessMsg('Venda registrada com sucesso!');
-        setTimeout(() => setSuccessMsg(''), 3000);
+        setTimeout(() => setSuccessMsg(''), MENSAGEM_SUCESSO_DURACAO_MS);
         onSuccess?.();
       }
-    } catch (error) {
-      console.error('Erro ao criar venda:', error);
+    } catch (erro) {
+      console.error('Erro ao criar venda:', erro);
     }
   };
 
-  const discoSelecionado = discosComArtista.find((d) => d.id === discoId);
+  const discoSelecionado = discosComArtista.find((disco) => disco.id === discoId);
 
   return (
     <>
@@ -153,7 +156,6 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
       )}
 
       <Form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-        {/* Cliente */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -196,10 +198,10 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
                 className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
                 <option value="">-- Selecione --</option>
-                {clientes.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nome}
-                    {c.idade ? ` (${c.idade} anos)` : ''}
+                {clientes.map((cliente) => (
+                  <option key={cliente.id} value={cliente.id}>
+                    {cliente.nome}
+                    {cliente.idade ? ` (${cliente.idade} anos)` : ''}
                   </option>
                 ))}
               </select>
@@ -219,9 +221,9 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
                 <option value="">
                   {clienteId ? '-- Selecione --' : 'Escolha um cliente primeiro'}
                 </option>
-                {enderecosDoCliente.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.logradouro}, {e.numero} - {e.cidade}/{e.estado}
+                {enderecosDoCliente.map((endereco) => (
+                  <option key={endereco.id} value={endereco.id}>
+                    {endereco.logradouro}, {endereco.numero} - {endereco.cidade}/{endereco.estado}
                   </option>
                 ))}
               </select>
@@ -232,7 +234,6 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
           </div>
         </div>
 
-        {/* Disco */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Disco</h3>
           <div className="space-y-4">
@@ -244,9 +245,9 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
                 className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
                 <option value="">-- Selecione --</option>
-                {discosComArtista.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.artistaNome} - {d.album} (R$ {d.valorMercado.toFixed(2)})
+                {discosComArtista.map((disco) => (
+                  <option key={disco.id} value={disco.id}>
+                    {disco.artistaNome} - {disco.album} (R$ {disco.valorMercado.toFixed(2)})
                   </option>
                 ))}
               </select>
@@ -305,7 +306,6 @@ placeholder={discoSelecionado?.valorMercado.toFixed(2) || '0.00'}
           </div>
         </div>
 
-        {/* Dados da Venda */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
             Dados da Venda
@@ -368,10 +368,10 @@ placeholder={discoSelecionado?.valorMercado.toFixed(2) || '0.00'}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 >
                   <option value="">-- Selecione --</option>
-                  {canaisVenda.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nome}
-                      {c.taxaPadrao ? ` (taxa ${c.taxaPadrao}%)` : ''}
+                  {canaisVenda.map((canal) => (
+                    <option key={canal.id} value={canal.id}>
+                      {canal.nome}
+                      {canal.taxaPadrao ? ` (taxa ${canal.taxaPadrao}%)` : ''}
                     </option>
                   ))}
                 </select>
@@ -417,7 +417,6 @@ placeholder={discoSelecionado?.valorMercado.toFixed(2) || '0.00'}
           </div>
         </div>
 
-        {/* Observações */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Observações</h3>
           <Controller
