@@ -40,7 +40,7 @@ interface AppStore extends AppState {
 
   // Ações para Artistas
   fetchArtistas: () => Promise<void>;
-  createArtista: (artista: Omit<Artista, 'id'>) => Promise<void>;
+  createArtista: (artista: Omit<Artista, 'id'>) => Promise<Artista | undefined>;
   updateArtista: (id: string, updates: Partial<Artista>) => Promise<void>;
   deleteArtista: (id: string) => Promise<void>;
 
@@ -210,6 +210,7 @@ export const useAppStore = create<AppStore>()(
               artistas: [...state.artistas, newArtista],
               loading: false,
             }));
+            return newArtista;
           } catch (error) {
             set({
               error: 'Erro ao criar artista',

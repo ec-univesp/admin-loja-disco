@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { useDiscos, useArtistas } from '@/hooks/useStore';
 import Button from '@/components/ui/button/Button';
@@ -25,6 +26,7 @@ interface AddDiscoFormData {
 }
 
 export default function AddDiscoForm() {
+  const router = useRouter();
   const { createDisco, loading, error } = useDiscos();
   const { createArtista } = useArtistas();
   const [successMessage, setSuccessMessage] = useState('');
@@ -61,15 +63,14 @@ export default function AddDiscoForm() {
 
   const onSubmit = async (data: AddDiscoFormData) => {
     try {
-      const artistaId = `artista-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-      await createArtista({
+      const novoArtista = await createArtista({
         nome: data.artistaNome,
         generoId: '',
       });
+      if (!novoArtista) throw new Error('Falha ao criar artista');
 
       await createDisco({
-        artistaId: artistaId,
+        artistaId: novoArtista.id,
         album: data.album,
         nacionalidade: data.nacionalidade,
         premsagem: data.premsagem,
@@ -84,10 +85,13 @@ export default function AddDiscoForm() {
         status: data.status,
       });
 
-      setSuccessMessage('✅ Disco adicionado com sucesso!');
+      setSuccessMessage('Disco adicionado com sucesso!');
       reset();
 
-      setTimeout(() => setSuccessMessage(''), 3000);
+      setTimeout(() => {
+        setSuccessMessage('');
+        router.push('/estoque');
+      }, 2000);
     } catch (err) {
       console.error('Erro ao adicionar disco:', err);
     }
