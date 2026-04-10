@@ -6,6 +6,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useDiscos, useGenerosMusical } from '@/hooks/useStore';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
+import EditDiscoModal from '@/components/products/EditDiscoModal';
 
 interface ProdutoDisplay {
   id: string;
@@ -46,6 +47,7 @@ export default function EstoquePage() {
   const [busca, setBusca] = useState('');
   const [filtroGenero, setFiltroGenero] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
+  const [editDiscoId, setEditDiscoId] = useState<string | null>(null);
   const generoModal = useModal();
 
   useEffect(() => {
@@ -245,6 +247,7 @@ export default function EstoquePage() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             title="Editar"
+                            onClick={() => setEditDiscoId(produto.id)}
                             className="rounded-lg p-2 text-gray-500 transition-all duration-200 hover:bg-brand-100 hover:text-brand-700 dark:hover:bg-brand-900/30 dark:hover:text-brand-400"
                           >
                             {iconEdit}
@@ -342,6 +345,12 @@ export default function EstoquePage() {
           </div>
         </div>
       </Modal>
+
+      <EditDiscoModal
+        isOpen={editDiscoId !== null}
+        onClose={() => setEditDiscoId(null)}
+        discoId={editDiscoId}
+      />
     </div>
   );
 }
