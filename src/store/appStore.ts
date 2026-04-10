@@ -14,6 +14,7 @@ import type {
   ItemCompra,
   Venda,
   ItemVenda,
+  CanalVenda,
   AppState,
 } from '@/types/models';
 import {
@@ -26,6 +27,8 @@ import {
   apiItensVenda,
   apiCompras,
   apiItensCompra,
+  apiCanaisVenda,
+  apiClientesEnderecos,
 } from '@/services/api';
 
 interface AppStore extends AppState {
@@ -49,13 +52,13 @@ interface AppStore extends AppState {
 
   // Ações para Clientes
   fetchClientes: () => Promise<void>;
-  createCliente: (cliente: Omit<Cliente, 'id'>) => Promise<void>;
+  createCliente: (cliente: Omit<Cliente, 'id'>) => Promise<Cliente | undefined>;
   updateCliente: (id: string, updates: Partial<Cliente>) => Promise<void>;
   deleteCliente: (id: string) => Promise<void>;
 
   // Ações para Endereços
   fetchEnderecos: () => Promise<void>;
-  createEndereco: (endereco: Omit<Endereco, 'id'>) => Promise<void>;
+  createEndereco: (endereco: Omit<Endereco, 'id'>) => Promise<Endereco | undefined>;
   updateEndereco: (id: string, updates: Partial<Endereco>) => Promise<void>;
   deleteEndereco: (id: string) => Promise<void>;
 
@@ -72,7 +75,7 @@ interface AppStore extends AppState {
 
   // Ações para Compras
   fetchCompras: () => Promise<void>;
-  createCompra: (compra: Omit<Compra, 'id'>) => Promise<void>;
+  createCompra: (compra: Omit<Compra, 'id'>) => Promise<Compra | undefined>;
   updateCompra: (id: string, updates: Partial<Compra>) => Promise<void>;
   deleteCompra: (id: string) => Promise<void>;
 
@@ -80,6 +83,17 @@ interface AppStore extends AppState {
   fetchItensCompra: () => Promise<void>;
   createItemCompra: (itemCompra: Omit<ItemCompra, 'id'>) => Promise<void>;
   deleteItemCompra: (id: string) => Promise<void>;
+
+  // Ações para Cliente-Endereço (relação)
+  fetchClientesEnderecos: () => Promise<void>;
+  vincularClienteEndereco: (clienteId: string, enderecoId: string) => Promise<void>;
+  desvincularClienteEndereco: (clienteId: string, enderecoId: string) => Promise<void>;
+
+  // Ações para Canais de Venda
+  fetchCanaisVenda: () => Promise<void>;
+  createCanalVenda: (canal: Omit<CanalVenda, 'id'>) => Promise<CanalVenda | undefined>;
+  updateCanalVenda: (id: string, updates: Partial<CanalVenda>) => Promise<void>;
+  deleteCanalVenda: (id: string) => Promise<void>;
 
   // Ações gerais
   setError: (error: string | null) => void;
@@ -99,6 +113,7 @@ const initialState: AppState = {
   itensCompra: [],
   vendas: [],
   itensVenda: [],
+  canaisVenda: [],
   loading: false,
   error: null,
 };
@@ -323,6 +338,7 @@ export const useAppStore = create<AppStore>()(
               clientes: [...state.clientes, newCliente],
               loading: false,
             }));
+            return newCliente;
           } catch (error) {
             set({
               error: 'Erro ao criar cliente',
@@ -387,6 +403,7 @@ export const useAppStore = create<AppStore>()(
               enderecos: [...state.enderecos, newEndereco],
               loading: false,
             }));
+            return newEndereco;
           } catch (error) {
             set({
               error: 'Erro ao criar endereço',
@@ -562,6 +579,7 @@ export const useAppStore = create<AppStore>()(
               compras: [...state.compras, newCompra],
               loading: false,
             }));
+            return newCompra;
           } catch (error) {
             set({
               error: 'Erro ao criar compra',
@@ -650,6 +668,95 @@ export const useAppStore = create<AppStore>()(
           }
         },
 
+        // ============ CLIENTES ENDERECOS ============
+        fetchClientesEnderecos: async () => {
+          set({ loading: true, error: null });
+          try {
+            const data = await apiClientesEnderecos.getAll();
+            set({ clientesEnderecos: data, loading: false });
+          } catch (error) {
+            set({ error: 'Erro ao buscar relação cliente-endereço', loading: false });
+          }
+        },
+
+        vincularClienteEndereco: async (clienteId, enderecoId) => {
+          try {
+            await apiClientesEnderecos.create({ clienteId, enderecoId });
+            set((state) => ({
+              clientesEnderecos: [...state.clientesEnderecos, { clienteId, enderecoId }],
+            }));
+          } catch (error) {
+            set({ error: 'Erro ao vincular endereço ao cliente' });
+          }
+        },
+
+        desvincularClienteEndereco: async (clienteId, enderecoId) => {
+          try {
+            await apiClientesEnderecos.delete(clienteId, enderecoId);
+            set((state) => ({
+              clientesEnderecos: state.clientesEnderecos.filter(
+                (vinculo) =>
+                  !(vinculo.clienteId === clienteId && vinculo.enderecoId === enderecoId)
+              ),
+            }));
+          } catch (error) {
+            set({ error: 'Erro ao desvincular endereço do cliente' });
+          }
+        },
+
+        // ============ CANAIS VENDA ============
+        fetchCanaisVenda: async () => {
+          set({ loading: true, error: null });
+          try {
+            const data = await apiCanaisVenda.getAll();
+            set({ canaisVenda: data, loading: false });
+          } catch (error) {
+            set({ error: 'Erro ao buscar canais de venda', loading: false });
+          }
+        },
+
+        createCanalVenda: async (canal) => {
+          set({ loading: true, error: null });
+          try {
+            const newCanal = await apiCanaisVenda.create(canal);
+            set((state) => ({
+              canaisVenda: [...state.canaisVenda, newCanal],
+              loading: false,
+            }));
+            return newCanal;
+          } catch (error) {
+            set({ error: 'Erro ao criar canal de venda', loading: false });
+          }
+        },
+
+        updateCanalVenda: async (id, updates) => {
+          set({ loading: true, error: null });
+          try {
+            await apiCanaisVenda.update(id, updates);
+            set((state) => ({
+              canaisVenda: state.canaisVenda.map((canal) =>
+                canal.id === id ? { ...canal, ...updates } : canal
+              ),
+              loading: false,
+            }));
+          } catch (error) {
+            set({ error: 'Erro ao atualizar canal de venda', loading: false });
+          }
+        },
+
+        deleteCanalVenda: async (id) => {
+          set({ loading: true, error: null });
+          try {
+            await apiCanaisVenda.delete(id);
+            set((state) => ({
+              canaisVenda: state.canaisVenda.filter((canal) => canal.id !== id),
+              loading: false,
+            }));
+          } catch (error) {
+            set({ error: 'Erro ao deletar canal de venda', loading: false });
+          }
+        },
+
         // ============ AÇÕES GERAIS ============
         setError: (error) => set({ error }),
         clearError: () => set({ error: null }),
@@ -657,7 +764,7 @@ export const useAppStore = create<AppStore>()(
       }),
       {
         name: 'app-storage',
-        version: 1,
+        version: 2,
       }
     )
   )

@@ -42,16 +42,20 @@ const navItems: NavItem[] = [
     subItems: [
       { name: 'Lista de Vendas', path: '/vendas' },
       { name: 'Nova Venda', path: '/nova-venda' },
+    ],
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: 'Compras',
+    subItems: [
+      { name: 'Lista de Compras', path: '/compras' },
       { name: 'Nova Compra', path: '/nova-compra' },
     ],
   },
   {
     icon: <DocsIcon />,
     name: 'Faturamento',
-    subItems: [
-      { name: 'Notas Fiscais', path: '/faturamento' },
-      { name: 'Relatório Financeiro', path: '/faturamento/relatorio' },
-    ],
+    subItems: [{ name: 'Relatório Financeiro', path: '/faturamento' }],
   },
   {
     icon: <PaperPlaneIcon />,

@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
   ITENS_COMPRA: 'app_itens_compra',
   VENDAS: 'app_vendas',
   ITENS_VENDA: 'app_itens_venda',
+  CANAIS_VENDA: 'app_canais_venda',
 } as const;
 
 // Simula delay de requisição
@@ -83,6 +84,17 @@ export const initializeStorage = () => {
   }
   if (!localStorage.getItem(STORAGE_KEYS.ITENS_VENDA)) {
     localStorage.setItem(STORAGE_KEYS.ITENS_VENDA, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA)) {
+    localStorage.setItem(
+      STORAGE_KEYS.CANAIS_VENDA,
+      JSON.stringify([
+        { id: '1', nome: 'Loja Física', taxaPadrao: 0 },
+        { id: '2', nome: 'Loja Online', taxaPadrao: 0 },
+        { id: '3', nome: 'Mercado Livre', taxaPadrao: 12 },
+        { id: '4', nome: 'Shopee', taxaPadrao: 14 },
+      ])
+    );
   }
 };
 
@@ -319,6 +331,34 @@ export const apiEnderecos = {
   },
 };
 
+// ============ CLIENTES_ENDERECOS ============
+export const apiClientesEnderecos = {
+  getAll: async () => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.CLIENTES_ENDERECOS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  create: async (vinculo: any) => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.CLIENTES_ENDERECOS) || '[]';
+    const vinculos = JSON.parse(data);
+    vinculos.push(vinculo);
+    localStorage.setItem(STORAGE_KEYS.CLIENTES_ENDERECOS, JSON.stringify(vinculos));
+    return vinculo;
+  },
+
+  delete: async (clienteId: string, enderecoId: string) => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.CLIENTES_ENDERECOS) || '[]';
+    const vinculosRestantes = JSON.parse(data).filter(
+      (vinculo: any) =>
+        !(vinculo.clienteId === clienteId && vinculo.enderecoId === enderecoId)
+    );
+    localStorage.setItem(STORAGE_KEYS.CLIENTES_ENDERECOS, JSON.stringify(vinculosRestantes));
+  },
+};
+
 // ============ VENDAS ============
 export const apiVendas = {
   getAll: async () => {
@@ -448,6 +488,44 @@ export const apiCompras = {
     const data = localStorage.getItem(STORAGE_KEYS.COMPRAS) || '[]';
     const items = JSON.parse(data).filter((item: any) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.COMPRAS, JSON.stringify(items));
+  },
+};
+
+// ============ CANAIS_VENDA ============
+export const apiCanaisVenda = {
+  getAll: async () => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA);
+    return data ? JSON.parse(data) : [];
+  },
+
+  create: async (canal: any) => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA) || '[]';
+    const items = JSON.parse(data);
+    const newItem = { ...canal, id: String(Date.now()) };
+    items.push(newItem);
+    localStorage.setItem(STORAGE_KEYS.CANAIS_VENDA, JSON.stringify(items));
+    return newItem;
+  },
+
+  update: async (id: string, updates: any) => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA) || '[]';
+    const items = JSON.parse(data);
+    const index = items.findIndex((item: any) => item.id === id);
+    if (index >= 0) {
+      items[index] = { ...items[index], ...updates };
+      localStorage.setItem(STORAGE_KEYS.CANAIS_VENDA, JSON.stringify(items));
+    }
+    return items[index];
+  },
+
+  delete: async (id: string) => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA) || '[]';
+    const items = JSON.parse(data).filter((item: any) => item.id !== id);
+    localStorage.setItem(STORAGE_KEYS.CANAIS_VENDA, JSON.stringify(items));
   },
 };
 
