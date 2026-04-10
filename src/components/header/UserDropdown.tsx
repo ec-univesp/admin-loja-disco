@@ -27,7 +27,7 @@ export default function UserDropdown() {
           </svg>
         </span>
 
-        <span className="text-theme-sm mr-1 block font-medium">Musharof</span>
+        <span className="text-theme-sm mr-1 block font-medium">Admin</span>
 
         <svg
           className={`stroke-gray-500 transition-transform duration-200 dark:stroke-gray-400 ${
@@ -56,7 +56,7 @@ export default function UserDropdown() {
       >
         <div>
           <span className="text-theme-sm block font-medium text-gray-700 dark:text-gray-400">
-            Musharof Chowdhury
+            Admin
           </span>
           <span className="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
             randomuser@pimjo.com
