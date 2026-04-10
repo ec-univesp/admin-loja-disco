@@ -2,7 +2,6 @@
 
 import { MetricasLoja } from '@/components/ecommerce/MetricasLoja';
 import React from 'react';
-import MetaMensal from '@/components/ecommerce/MetaMensal';
 import VendasMensaisChart from '@/components/ecommerce/VendasMensaisChart';
 import VendasRecentes from '@/components/ecommerce/VendasRecentes';
 import Button from '@/components/ui/button/Button';
@@ -39,17 +38,13 @@ export default function AdminLojaDisco() {
         </div>
       </div>
 
-      <div className="col-span-12 space-y-6 xl:col-span-7">
+      <div className="col-span-12 space-y-6">
         <MetricasLoja />
 
         <VendasMensaisChart />
       </div>
 
-      <div className="col-span-12 xl:col-span-5">
-        <MetaMensal />
-      </div>
-
-      <div className="col-span-12 xl:col-span-7">
+      <div className="col-span-12">
         <VendasRecentes />
       </div>
     </div>
