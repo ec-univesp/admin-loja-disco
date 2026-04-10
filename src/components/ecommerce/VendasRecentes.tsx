@@ -1,72 +1,54 @@
 'use client';
+import { useEffect, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import Badge from '../ui/badge/Badge';
+import { useVendas, useItensVenda, useDiscos } from '@/hooks/useStore';
 
-interface VendaDisco {
-  id: number;
-  disco: string;
-  artista: string;
-  quantidade: number;
-  preco: string;
-  status: 'Entregue' | 'Pendente' | 'Cancelada';
-  imagem: string;
-}
-
-const vendas: VendaDisco[] = [
-  {
-    id: 1,
-    disco: 'Abbey Road',
-    artista: 'The Beatles',
-    quantidade: 2,
-    preco: 'R$ 179,80',
-    status: 'Entregue',
-    imagem: '/images/product/product-01.jpg',
-  },
-  {
-    id: 2,
-    disco: 'Thriller',
-    artista: 'Michael Jackson',
-    quantidade: 1,
-    preco: 'R$ 79,90',
-    status: 'Pendente',
-    imagem: '/images/product/product-02.jpg',
-  },
-  {
-    id: 3,
-    disco: 'Dark Side of the Moon',
-    artista: 'Pink Floyd',
-    quantidade: 1,
-    preco: 'R$ 99,90',
-    status: 'Entregue',
-    imagem: '/images/product/product-03.jpg',
-  },
-  {
-    id: 4,
-    disco: 'Construção',
-    artista: 'Chico Buarque',
-    quantidade: 3,
-    preco: 'R$ 209,70',
-    status: 'Cancelada',
-    imagem: '/images/product/product-04.jpg',
-  },
-  {
-    id: 5,
-    disco: 'Clube da Esquina',
-    artista: 'Milton Nascimento',
-    quantidade: 2,
-    preco: 'R$ 149,80',
-    status: 'Entregue',
-    imagem: '/images/product/product-05.jpg',
-  },
-];
-
-const statusColor: Record<string, 'success' | 'warning' | 'error'> = {
+const statusColor: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
   Entregue: 'success',
+  Concluída: 'success',
   Pendente: 'warning',
   Cancelada: 'error',
+  Confirmada: 'info',
+  Enviada: 'info',
+};
+
+const formatNumeroVenda = (id: string, index: number): string => {
+  return `VND-${String(index + 1).padStart(4, '0')}`;
 };
 
 export default function VendasRecentes() {
+  const { vendasComDetalhes, fetchVendas } = useVendas();
+  const { itensVenda, fetchItensVenda } = useItensVenda();
+  const { discos, fetchDiscos } = useDiscos();
+
+  useEffect(() => {
+    fetchVendas();
+    fetchItensVenda();
+    fetchDiscos();
+  }, [fetchVendas, fetchItensVenda, fetchDiscos]);
+
+  const linhas = useMemo(() => {
+    return vendasComDetalhes
+      .slice()
+      .sort((a, b) => (a.dataVenda < b.dataVenda ? 1 : -1))
+      .slice(0, 5)
+      .map((venda, index) => {
+        const itens = itensVenda.filter((i) => i.vendaId === venda.id);
+        const primeiro = itens[0];
+        const disco = primeiro ? discos.find((d) => d.id === primeiro.discoId) : undefined;
+        return {
+          id: venda.id,
+          numero: formatNumeroVenda(venda.id, index),
+          disco: disco?.album || '—',
+          quantidade: itens.length,
+          valor: venda.valorTotal,
+          status: venda.statusPedido || 'Pendente',
+          cliente: venda.clienteNome,
+        };
+      });
+  }, [vendasComDetalhes, itensVenda, discos]);
+
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -77,11 +59,14 @@ export default function VendasRecentes() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableCell isHeader className="min-w-[110px] px-4 py-3">
+                Nº Venda
+              </TableCell>
               <TableCell isHeader className="min-w-[200px] px-4 py-3">
                 Disco
               </TableCell>
               <TableCell isHeader className="min-w-[150px] px-4 py-3">
-                Artista
+                Cliente
               </TableCell>
               <TableCell isHeader className="px-4 py-3">
                 Qtd.
@@ -95,25 +80,36 @@ export default function VendasRecentes() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {vendas.map((venda) => (
-              <TableRow key={venda.id}>
-                <TableCell className="px-4 py-4">
-                  <div className="font-medium text-gray-800 dark:text-white">{venda.disco}</div>
-                </TableCell>
-                <TableCell className="px-4 py-4 text-gray-600 dark:text-gray-400">
-                  {venda.artista}
-                </TableCell>
-                <TableCell className="px-4 py-4 font-medium text-gray-800 dark:text-white">
-                  {venda.quantidade}
-                </TableCell>
-                <TableCell className="px-4 py-4 font-semibold text-gray-800 dark:text-white">
-                  {venda.preco}
-                </TableCell>
-                <TableCell className="px-4 py-4">
-                  <Badge color={statusColor[venda.status]}>{venda.status}</Badge>
+            {linhas.length === 0 ? (
+              <TableRow>
+                <TableCell className="px-4 py-6 text-center text-gray-400">
+                  Nenhuma venda registrada ainda.
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              linhas.map((linha) => (
+                <TableRow key={linha.id}>
+                  <TableCell className="px-4 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
+                    {linha.numero}
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
+                    <div className="font-medium text-gray-800 dark:text-white">{linha.disco}</div>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-gray-600 dark:text-gray-400">
+                    {linha.cliente}
+                  </TableCell>
+                  <TableCell className="px-4 py-4 font-medium text-gray-800 dark:text-white">
+                    {linha.quantidade}
+                  </TableCell>
+                  <TableCell className="px-4 py-4 font-semibold text-gray-800 dark:text-white">
+                    R$ {linha.valor.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
+                    <Badge color={statusColor[linha.status] || 'warning'}>{linha.status}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
