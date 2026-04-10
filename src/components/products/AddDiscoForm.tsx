@@ -319,7 +319,7 @@ export default function AddDiscoForm() {
             </div>
 
             {/* Margem de Lucro */}
-            {(valorMercado || custoDisco) && (
+            {(valorMercado > 0 || custoDisco > 0) && (
               <div className="rounded-lg bg-brand-50 p-4 dark:bg-brand-900/20">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>

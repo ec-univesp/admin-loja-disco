@@ -5,9 +5,11 @@ import { useForm, Controller } from 'react-hook-form';
 import Form from './Form';
 import Label from './Label';
 import ControlledInput from './input/ControlledInput';
+import CurrencyInput from './input/CurrencyInput';
 import TextArea from './input/TextArea';
 import FileInput from './input/FileInput';
 import DatePicker from './date-picker';
+import { formatBRL } from '@/utils/currency';
 
 interface SalesFormData {
   productName: string;
@@ -142,19 +144,22 @@ const SalesForm: FC<SalesFormProps> = ({ onSubmit, isLoading = false }) => {
             </div>
 
             <div>
-              <Label htmlFor="unitPrice">Preço Unitário (R$) *</Label>
-              <ControlledInput
-                type="number"
-                id="unitPrice"
-                placeholder="0.00"
-                {...register('unitPrice', {
+              <Label htmlFor="unitPrice">Preço Unitário *</Label>
+              <Controller
+                control={control}
+                name="unitPrice"
+                rules={{
                   required: 'Preço unitário é obrigatório',
-                  min: {
-                    value: 0,
-                    message: 'Preço não pode ser negativo',
-                  },
-                })}
-                error={!!errors.unitPrice}
+                  min: { value: 0, message: 'Preço não pode ser negativo' },
+                }}
+                render={({ field }) => (
+                  <CurrencyInput
+                    id="unitPrice"
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={!!errors.unitPrice}
+                  />
+                )}
               />
               {errors.unitPrice && (
                 <span className="mt-1 text-sm text-red-500">
@@ -166,7 +171,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSubmit, isLoading = false }) => {
 
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-900/20">
             <p className="text-sm font-medium text-blue-900 dark:text-blue-200">
-              Preço Total: R$ {(Number(quantity) * Number(unitPrice)).toFixed(2)}
+              Preço Total: {formatBRL(Number(quantity) * Number(unitPrice))}
             </p>
           </div>
         </div>

@@ -27,14 +27,13 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
   return (
     <NumericFormat
       id={id}
-      value={Number.isFinite(value) ? value : 0}
+      value={value || ''}
       onValueChange={(values) => {
         onChange(values.floatValue ?? 0);
       }}
       thousandSeparator="."
       decimalSeparator=","
       decimalScale={2}
-      fixedDecimalScale
       allowNegative={false}
       prefix="R$ "
       placeholder={placeholder}

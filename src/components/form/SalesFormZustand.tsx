@@ -5,8 +5,10 @@ import { useForm, Controller } from 'react-hook-form';
 import Form from './Form';
 import Label from './Label';
 import ControlledInput from './input/ControlledInput';
+import CurrencyInput from './input/CurrencyInput';
 import TextArea from './input/TextArea';
 import Button from '@/components/ui/button/Button';
+import { formatBRL } from '@/utils/currency';
 import {
   useVendas,
   useClientes,
@@ -288,16 +290,22 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
             )}
 
             <div>
-              <Label htmlFor="precoVenda">Preço de Venda (R$) *</Label>
-              <ControlledInput
-                type="number"
-                id="precoVenda"
-placeholder={discoSelecionado?.valorMercado.toFixed(2) || '0.00'}
-                {...register('precoVenda', {
+              <Label htmlFor="precoVenda">Preço de Venda *</Label>
+              <Controller
+                control={control}
+                name="precoVenda"
+                rules={{
                   required: 'Preço é obrigatório',
                   min: { value: 0, message: 'Preço não pode ser negativo' },
-                })}
-                error={!!errors.precoVenda}
+                }}
+                render={({ field }) => (
+                  <CurrencyInput
+                    id="precoVenda"
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={!!errors.precoVenda}
+                  />
+                )}
               />
               {errors.precoVenda && (
                 <span className="mt-1 text-sm text-red-500">{errors.precoVenda.message}</span>
@@ -324,12 +332,17 @@ placeholder={discoSelecionado?.valorMercado.toFixed(2) || '0.00'}
               </div>
 
               <div>
-                <Label htmlFor="frete">Frete (R$)</Label>
-                <ControlledInput
-                  type="number"
-                  id="frete"
-    placeholder="0.00"
-                  {...register('frete')}
+                <Label htmlFor="frete">Frete</Label>
+                <Controller
+                  control={control}
+                  name="frete"
+                  render={({ field }) => (
+                    <CurrencyInput
+                      id="frete"
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
                 />
               </div>
             </div>
@@ -380,12 +393,17 @@ placeholder={discoSelecionado?.valorMercado.toFixed(2) || '0.00'}
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="custosAdicionais">Custos Adicionais (R$)</Label>
-                <ControlledInput
-                  type="number"
-                  id="custosAdicionais"
-    placeholder="0.00"
-                  {...register('custosAdicionais')}
+                <Label htmlFor="custosAdicionais">Custos Adicionais</Label>
+                <Controller
+                  control={control}
+                  name="custosAdicionais"
+                  render={({ field }) => (
+                    <CurrencyInput
+                      id="custosAdicionais"
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   Sugerido a partir da taxa do canal selecionado
@@ -411,7 +429,7 @@ placeholder={discoSelecionado?.valorMercado.toFixed(2) || '0.00'}
             <div className="rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-900 dark:bg-brand-900/20">
               <p className="text-sm text-brand-700 dark:text-brand-200">
                 Valor Total da Venda:{' '}
-                <span className="ml-2 text-lg font-bold">R$ {valorTotal.toFixed(2)}</span>
+                <span className="ml-2 text-lg font-bold">{formatBRL(valorTotal)}</span>
               </p>
             </div>
           </div>
