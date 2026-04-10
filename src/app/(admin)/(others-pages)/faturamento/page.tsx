@@ -15,6 +15,8 @@ import {
   exportarRelatorioFinanceiro,
 } from '@/services/exportExcel';
 
+const LIMITE_TOP_PRODUTOS = 5;
+
 const MESES_PT = [
   'Jan',
   'Fev',
@@ -48,81 +50,109 @@ export default function FaturamentoPage() {
 
   // Resumo mensal: receita (vendas) vs despesas (compras + custos adicionais)
   const resumoMensal = useMemo(() => {
-    const map = new Map<string, { receita: number; despesas: number }>();
+    const totaisPorMes = new Map<string, { receita: number; despesas: number }>();
 
-    vendas.forEach((v) => {
-      const data = new Date(v.dataVenda);
-      const key = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
-      const atual = map.get(key) ?? { receita: 0, despesas: 0 };
-      atual.receita += v.valorTotal;
-      atual.despesas += Number(v.custosAdicionais || 0);
-      map.set(key, atual);
-    });
+    const obterChaveMes = (dataIso: string) => {
+      const data = new Date(dataIso);
+      return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+    };
 
-    compras.forEach((c) => {
-      const data = new Date(c.dataCpmpra);
-      const key = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
-      const atual = map.get(key) ?? { receita: 0, despesas: 0 };
-      atual.despesas += c.valorTotal;
-      map.set(key, atual);
-    });
+    const acumular = (
+      chaveMes: string,
+      delta: { receita?: number; despesas?: number }
+    ) => {
+      const totais = totaisPorMes.get(chaveMes) ?? { receita: 0, despesas: 0 };
+      totais.receita += delta.receita ?? 0;
+      totais.despesas += delta.despesas ?? 0;
+      totaisPorMes.set(chaveMes, totais);
+    };
 
-    return Array.from(map.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, valores]) => {
-        const [, mes] = key.split('-');
+    vendas.forEach((venda) =>
+      acumular(obterChaveMes(venda.dataVenda), {
+        receita: venda.valorTotal,
+        despesas: Number(venda.custosAdicionais || 0),
+      })
+    );
+
+    compras.forEach((compra) =>
+      acumular(obterChaveMes(compra.dataCpmpra), { despesas: compra.valorTotal })
+    );
+
+    return Array.from(totaisPorMes.entries())
+      .sort(([chaveA], [chaveB]) => chaveA.localeCompare(chaveB))
+      .map(([chaveMes, totais]) => {
+        const [, numeroMes] = chaveMes.split('-');
         return {
-          mes: MESES_PT[Number(mes) - 1] ?? key,
-          receita: valores.receita,
-          despesas: valores.despesas,
-          lucro: valores.receita - valores.despesas,
+          mes: MESES_PT[Number(numeroMes) - 1] ?? chaveMes,
+          receita: totais.receita,
+          despesas: totais.despesas,
+          lucro: totais.receita - totais.despesas,
         };
       });
   }, [vendas, compras]);
 
-  const totalReceita = resumoMensal.reduce((a, d) => a + d.receita, 0);
-  const totalDespesas = resumoMensal.reduce((a, d) => a + d.despesas, 0);
+  const totalReceita = resumoMensal.reduce(
+    (acumulado, mes) => acumulado + mes.receita,
+    0
+  );
+  const totalDespesas = resumoMensal.reduce(
+    (acumulado, mes) => acumulado + mes.despesas,
+    0
+  );
   const totalLucro = totalReceita - totalDespesas;
 
   // Top discos vendidos
   const topProdutos = useMemo(() => {
-    const map = new Map<
+    const totaisPorDisco = new Map<
       string,
       { album: string; artista: string; qtd: number; receita: number }
     >();
-    itensVenda.forEach((item) => {
-      const disco = discos.find((d) => d.id === item.discoId);
+
+    itensVenda.forEach((itemVenda) => {
+      const disco = discos.find((discoAtual) => discoAtual.id === itemVenda.discoId);
       if (!disco) return;
-      const atual = map.get(disco.id) ?? {
+
+      const totais = totaisPorDisco.get(disco.id) ?? {
         album: disco.album,
         artista: '',
         qtd: 0,
         receita: 0,
       };
-      atual.qtd += 1;
-      atual.receita += item.precoVenda;
-      map.set(disco.id, atual);
+      totais.qtd += 1;
+      totais.receita += itemVenda.precoVenda;
+      totaisPorDisco.set(disco.id, totais);
     });
-    return Array.from(map.values())
-      .sort((a, b) => b.qtd - a.qtd)
-      .slice(0, 5);
+
+    return Array.from(totaisPorDisco.values())
+      .sort((discoA, discoB) => discoB.qtd - discoA.qtd)
+      .slice(0, LIMITE_TOP_PRODUTOS);
   }, [itensVenda, discos]);
 
   // Formas de pagamento
   const formasPagamento = useMemo(() => {
-    const map = new Map<string, number>();
-    vendas.forEach((v) => {
-      const k = v.pagamento || 'Outros';
-      map.set(k, (map.get(k) ?? 0) + v.valorTotal);
+    const totaisPorForma = new Map<string, number>();
+
+    vendas.forEach((venda) => {
+      const formaPagamento = venda.pagamento || 'Outros';
+      totaisPorForma.set(
+        formaPagamento,
+        (totaisPorForma.get(formaPagamento) ?? 0) + venda.valorTotal
+      );
     });
-    const total = Array.from(map.values()).reduce((a, b) => a + b, 0) || 1;
-    return Array.from(map.entries())
-      .map(([forma, valor]) => ({
+
+    const totalGeral =
+      Array.from(totaisPorForma.values()).reduce(
+        (acumulado, valor) => acumulado + valor,
+        0
+      ) || 1;
+
+    return Array.from(totaisPorForma.entries())
+      .map(([forma, total]) => ({
         forma,
-        total: valor,
-        percentual: Math.round((valor / total) * 100),
+        total,
+        percentual: Math.round((total / totalGeral) * 100),
       }))
-      .sort((a, b) => b.total - a.total);
+      .sort((formaA, formaB) => formaB.total - formaA.total);
   }, [vendas]);
 
   const handleExportRelatorio = () => {
@@ -130,16 +160,16 @@ export default function FaturamentoPage() {
       resumoMensal,
       topProdutos,
       formasPagamento,
-      vendasDetalhe: vendas.map((v) => ({
-        id: v.id,
-        data: v.dataVenda,
-        cliente: v.clienteId,
-        canal: canaisVenda.find((c) => c.id === v.canalVendaId)?.nome ?? '',
-        pagamento: v.pagamento,
-        frete: v.frete,
-        custosAdicionais: v.custosAdicionais,
-        total: v.valorTotal,
-        status: v.statusPedido,
+      vendasDetalhe: vendas.map((venda) => ({
+        id: venda.id,
+        data: venda.dataVenda,
+        cliente: venda.clienteId,
+        canal: canaisVenda.find((canal) => canal.id === venda.canalVendaId)?.nome ?? '',
+        pagamento: venda.pagamento,
+        frete: venda.frete,
+        custosAdicionais: venda.custosAdicionais,
+        total: venda.valorTotal,
+        status: venda.statusPedido,
       })),
     });
   };
@@ -213,15 +243,19 @@ export default function FaturamentoPage() {
                     </td>
                   </tr>
                 ) : (
-                  resumoMensal.map((d) => (
-                    <tr key={d.mes}>
+                  resumoMensal.map((mesAtual) => (
+                    <tr key={mesAtual.mes}>
                       <td className="py-3 font-medium text-gray-700 dark:text-gray-300">
-                        {d.mes}
+                        {mesAtual.mes}
                       </td>
-                      <td className="py-3 text-right text-green-600">R$ {d.receita.toFixed(2)}</td>
-                      <td className="py-3 text-right text-red-500">R$ {d.despesas.toFixed(2)}</td>
+                      <td className="py-3 text-right text-green-600">
+                        R$ {mesAtual.receita.toFixed(2)}
+                      </td>
+                      <td className="py-3 text-right text-red-500">
+                        R$ {mesAtual.despesas.toFixed(2)}
+                      </td>
                       <td className="py-3 text-right font-semibold text-gray-800 dark:text-white">
-                        R$ {d.lucro.toFixed(2)}
+                        R$ {mesAtual.lucro.toFixed(2)}
                       </td>
                     </tr>
                   ))
@@ -239,18 +273,18 @@ export default function FaturamentoPage() {
             <p className="text-sm text-gray-400">Sem vendas registradas.</p>
           ) : (
             <div className="space-y-4">
-              {formasPagamento.map((fp) => (
-                <div key={fp.forma}>
+              {formasPagamento.map((forma) => (
+                <div key={forma.forma}>
                   <div className="mb-1 flex justify-between text-sm">
-                    <span className="text-gray-700 dark:text-gray-300">{fp.forma}</span>
+                    <span className="text-gray-700 dark:text-gray-300">{forma.forma}</span>
                     <span className="font-medium text-gray-800 dark:text-white">
-                      {fp.percentual}% · R$ {fp.total.toFixed(2)}
+                      {forma.percentual}% · R$ {forma.total.toFixed(2)}
                     </span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
                     <div
                       className="bg-brand-500 h-2 rounded-full"
-                      style={{ width: `${fp.percentual}%` }}
+                      style={{ width: `${forma.percentual}%` }}
                     />
                   </div>
                 </div>
@@ -277,15 +311,20 @@ export default function FaturamentoPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {topProdutos.map((p, i) => (
-                    <tr key={p.album} className="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
-                      <td className="py-3 text-gray-400">#{i + 1}</td>
+                  {topProdutos.map((produto, posicao) => (
+                    <tr
+                      key={produto.album}
+                      className="hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                    >
+                      <td className="py-3 text-gray-400">#{posicao + 1}</td>
                       <td className="py-3 font-medium text-gray-800 dark:text-white/90">
-                        {p.album}
+                        {produto.album}
                       </td>
-                      <td className="py-3 text-right text-gray-700 dark:text-gray-300">{p.qtd}</td>
+                      <td className="py-3 text-right text-gray-700 dark:text-gray-300">
+                        {produto.qtd}
+                      </td>
                       <td className="py-3 text-right font-semibold text-green-600">
-                        R$ {p.receita.toFixed(2)}
+                        R$ {produto.receita.toFixed(2)}
                       </td>
                     </tr>
                   ))}
