@@ -181,10 +181,10 @@ export default function FaturamentoPage() {
 
       <div className="mb-6 flex flex-wrap justify-end gap-3">
         <Button variant="outline" size="sm" onClick={handleExportRelatorio}>
-          📊 Exportar Relatório (Excel)
+          Exportar Relatório (Excel)
         </Button>
         <Button variant="primary" size="sm" onClick={handleBackupCompleto}>
-          💾 Backup Completo (Excel)
+          Backup Completo (Excel)
         </Button>
       </div>
 

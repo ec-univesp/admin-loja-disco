@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useDiscos, useArtistas } from '@/hooks/useStore';
 import Button from '@/components/ui/button/Button';
 import Label from '@/components/form/Label';
+import CurrencyInput from '@/components/form/input/CurrencyInput';
+import { formatBRL } from '@/utils/currency';
 
 interface AddDiscoFormData {
   artistaNome: string;
@@ -32,6 +34,7 @@ export default function AddDiscoForm() {
     handleSubmit,
     reset,
     watch,
+    control,
     formState: { errors },
   } = useForm<AddDiscoFormData>({
     defaultValues: {
@@ -269,21 +272,22 @@ export default function AddDiscoForm() {
             <h3 className="font-semibold text-gray-900 dark:text-white">Valores</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="custoDisco">Custo do Disco (R$) *</Label>
-                <input
-                  type="number"
-                  id="custoDisco"
-                  placeholder="0.00"
-                  step="0.01"
-                  {...register('custoDisco', {
+                <Label htmlFor="custoDisco">Custo do Disco *</Label>
+                <Controller
+                  control={control}
+                  name="custoDisco"
+                  rules={{
                     required: 'Custo é obrigatório',
                     min: { value: 0, message: 'Custo não pode ser negativo' },
-                  })}
-                  className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
-                    errors.custoDisco
-                      ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
-                      : 'border-gray-300 bg-white focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600'
-                  }`}
+                  }}
+                  render={({ field }) => (
+                    <CurrencyInput
+                      id="custoDisco"
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={!!errors.custoDisco}
+                    />
+                  )}
                 />
                 {errors.custoDisco && (
                   <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.custoDisco.message}</span>
@@ -291,21 +295,22 @@ export default function AddDiscoForm() {
               </div>
 
               <div>
-                <Label htmlFor="valorMercado">Valor de Mercado (R$) *</Label>
-                <input
-                  type="number"
-                  id="valorMercado"
-                  placeholder="0.00"
-                  step="0.01"
-                  {...register('valorMercado', {
+                <Label htmlFor="valorMercado">Valor de Mercado *</Label>
+                <Controller
+                  control={control}
+                  name="valorMercado"
+                  rules={{
                     required: 'Valor de mercado é obrigatório',
                     min: { value: 0, message: 'Valor não pode ser negativo' },
-                  })}
-                  className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
-                    errors.valorMercado
-                      ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
-                      : 'border-gray-300 bg-white focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600'
-                  }`}
+                  }}
+                  render={({ field }) => (
+                    <CurrencyInput
+                      id="valorMercado"
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={!!errors.valorMercado}
+                    />
+                  )}
                 />
                 {errors.valorMercado && (
                   <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.valorMercado.message}</span>
@@ -320,7 +325,7 @@ export default function AddDiscoForm() {
                   <div>
                     <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Margem</p>
                     <p className={`text-lg font-bold ${margem >= 0 ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'}`}>
-                      R$ {margem.toFixed(2)}
+                      {formatBRL(margem)}
                     </p>
                   </div>
                   <div>
@@ -332,7 +337,7 @@ export default function AddDiscoForm() {
                   <div>
                     <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Preço de Venda</p>
                     <p className="text-lg font-bold text-brand-700 dark:text-brand-400">
-                      R$ {valorMercado.toFixed(2)}
+                      {formatBRL(valorMercado)}
                     </p>
                   </div>
                 </div>
@@ -357,7 +362,7 @@ export default function AddDiscoForm() {
           {/* Botões */}
           <div className="flex gap-3 pt-4">
             <Button type="submit" disabled={loading} size="lg" variant="primary" fullWidth>
-              {loading ? '💿 Salvando...' : '💿 Salvar Disco'}
+              {loading ? 'Salvando...' : 'Salvar Disco'}
             </Button>
             <Button type="reset" size="lg" variant="secondary" fullWidth>
               Limpar

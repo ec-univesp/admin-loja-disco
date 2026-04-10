@@ -55,6 +55,8 @@ export default function ClienteEnderecoModal({
   const [form, setForm] = useState<FormState>(initialState);
   const [enderecoIdEdicao, setEnderecoIdEdicao] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
+  const [cepError, setCepError] = useState<string | null>(null);
 
   const isEdicao = Boolean(clienteId);
 
@@ -96,6 +98,62 @@ export default function ClienteEnderecoModal({
         campo === 'idade' ? Number(e.target.value || 0) : (e.target.value as never);
       setForm((prev) => ({ ...prev, [campo]: value }));
     };
+
+  const buscarCep = async (cepRaw: string) => {
+    const cepLimpo = cepRaw.replace(/\D/g, '');
+    if (cepLimpo.length !== 8) return;
+
+    setCepLoading(true);
+    setCepError(null);
+    try {
+      const response = await fetch(`https://brasilapi.com.br/api/cep/v1/${cepLimpo}`);
+      if (!response.ok) {
+        throw new Error('CEP não encontrado');
+      }
+      const data: {
+        street?: string;
+        city?: string;
+        state?: string;
+      } = await response.json();
+      setForm((prev) => ({
+        ...prev,
+        cep: cepLimpo,
+        logradouro: data.street ?? prev.logradouro,
+        cidade: data.city ?? prev.cidade,
+        estado: data.state ?? prev.estado,
+      }));
+    } catch (err) {
+      setCepError(err instanceof Error ? err.message : 'Erro ao buscar CEP');
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value.replace(/\D/g, '').slice(0, 8);
+    if (cepError) setCepError(null);
+    if (valor.length === 0) {
+      // Limpa todo o endereço quando o CEP é apagado
+      setForm((prev) => ({
+        ...prev,
+        cep: '',
+        logradouro: '',
+        numero: '',
+        cidade: '',
+        estado: '',
+      }));
+      return;
+    }
+    setForm((prev) => ({ ...prev, cep: valor }));
+  };
+
+  const handleBuscarCepClick = () => {
+    if (form.cep.length === 8) {
+      void buscarCep(form.cep);
+    } else {
+      setCepError('Informe um CEP com 8 dígitos');
+    }
+  };
 
   const temEndereco = Boolean(form.logradouro || form.cidade || form.cep);
 
@@ -224,6 +282,77 @@ export default function ClienteEnderecoModal({
               Endereço
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div>
+                <Label htmlFor="end-cep">CEP</Label>
+                <div className="flex items-center">
+                  <input
+                    id="end-cep"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={8}
+                    placeholder="Somente números"
+                    value={form.cep}
+                    onChange={handleCepChange}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleBuscarCepClick();
+                      }
+                    }}
+                    className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleBuscarCepClick}
+                    disabled={cepLoading}
+                    aria-label="Buscar CEP"
+                    className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center text-gray-500 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-60 dark:text-gray-300 dark:hover:text-brand-500"
+                  >
+                    {cepLoading ? (
+                      <svg
+                        className="h-4 w-4 animate-spin"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 10.5a7.5 7.5 0 0013.15 6.15z"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {cepError && (
+                  <span className="mt-1 block text-xs text-error-600 dark:text-error-400">
+                    {cepError}
+                  </span>
+                )}
+              </div>
               <div className="md:col-span-2">
                 <Label htmlFor="end-log">Logradouro</Label>
                 <input
@@ -231,11 +360,12 @@ export default function ClienteEnderecoModal({
                   type="text"
                   value={form.logradouro}
                   onChange={handleChange('logradouro')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  disabled={cepLoading}
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 />
               </div>
               <div>
-                <Label htmlFor="end-num">Número</Label>
+                <Label htmlFor="end-num">Número *</Label>
                 <input
                   id="end-num"
                   type="text"
@@ -251,7 +381,8 @@ export default function ClienteEnderecoModal({
                   type="text"
                   value={form.cidade}
                   onChange={handleChange('cidade')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  disabled={cepLoading}
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 />
               </div>
               <div>
@@ -261,17 +392,8 @@ export default function ClienteEnderecoModal({
                   type="text"
                   value={form.estado}
                   onChange={handleChange('estado')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <Label htmlFor="end-cep">CEP</Label>
-                <input
-                  id="end-cep"
-                  type="text"
-                  value={form.cep}
-                  onChange={handleChange('cep')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  disabled={cepLoading}
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 />
               </div>
             </div>
