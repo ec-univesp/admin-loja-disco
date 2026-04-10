@@ -765,6 +765,12 @@ export const useAppStore = create<AppStore>()(
       {
         name: 'app-storage',
         version: 2,
+        migrate: (persistedState, version) => {
+          if (version < 2) {
+            return { ...initialState, ...(persistedState as Partial<AppStore>) };
+          }
+          return persistedState as AppStore;
+        },
       }
     )
   )
