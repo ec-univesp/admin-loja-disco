@@ -12,6 +12,7 @@ interface ProdutoDisplay {
   codigo: string;
   titulo: string;
   artista: string;
+  genero: string;
   premsagem: string;
   quantidade: number;
   preco: number;
@@ -43,6 +44,7 @@ export default function EstoquePage() {
   const { discosComArtista, loading, deleteDisco } = useDiscos();
   const { generosMusical, fetchGenerosMusical, createGeneroMusical } = useGenerosMusical();
   const [busca, setBusca] = useState('');
+  const [filtroGenero, setFiltroGenero] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
   const generoModal = useModal();
 
@@ -65,6 +67,7 @@ export default function EstoquePage() {
         codigo: gerarCodigo(index),
         titulo: disco.album,
         artista: disco.artistaNome,
+        genero: disco.generoNome,
         premsagem: disco.premsagem,
         quantidade: 1,
         preco: disco.valorMercado,
@@ -73,12 +76,15 @@ export default function EstoquePage() {
     [discosComArtista]
   );
 
-  const produtosFiltrados = produtos.filter(
-    (p) =>
+  const produtosFiltrados = produtos.filter((p) => {
+    const matchBusca =
+      !busca ||
       p.titulo.toLowerCase().includes(busca.toLowerCase()) ||
       p.artista.toLowerCase().includes(busca.toLowerCase()) ||
-      p.codigo.toLowerCase().includes(busca.toLowerCase())
-  );
+      p.codigo.toLowerCase().includes(busca.toLowerCase());
+    const matchGenero = !filtroGenero || p.genero === filtroGenero;
+    return matchBusca && matchGenero;
+  });
 
   const handleRemover = (id: string) => {
     deleteDisco(id);
@@ -120,11 +126,23 @@ export default function EstoquePage() {
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
-                placeholder="🔍 Buscar álbum, artista ou código..."
+                placeholder="Buscar album, artista ou codigo..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
                 className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
               />
+              <select
+                value={filtroGenero}
+                onChange={(e) => setFiltroGenero(e.target.value)}
+                className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
+              >
+                <option value="">Todos os gêneros</option>
+                {generosMusical.map((g) => (
+                  <option key={g.id} value={g.nome}>
+                    {g.nome}
+                  </option>
+                ))}
+              </select>
               <Button
                 size="md"
                 variant="outline"
@@ -157,6 +175,9 @@ export default function EstoquePage() {
                     Artista
                   </th>
                   <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Gênero
+                  </th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
                     Prensagem
                   </th>
                   <th className="px-6 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">
@@ -173,7 +194,7 @@ export default function EstoquePage() {
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
                 {produtosFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <svg className="h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -203,6 +224,9 @@ export default function EstoquePage() {
                       </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                         {produto.artista}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        {produto.genero || '—'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                         {produto.premsagem}

@@ -53,6 +53,7 @@ export const useArtistas = () => {
 export const useDiscos = () => {
   const discos = useAppStore((state) => state.discos);
   const artistas = useAppStore((state) => state.artistas);
+  const generosMusical = useAppStore((state) => state.generosMusical);
   const loading = useAppStore((state) => state.loading);
   const error = useAppStore((state) => state.error);
   const fetchDiscos = useAppStore((state) => state.fetchDiscos);
@@ -60,17 +61,21 @@ export const useDiscos = () => {
   const updateDisco = useAppStore((state) => state.updateDisco);
   const deleteDisco = useAppStore((state) => state.deleteDisco);
 
-  // Mapeia discos com informações de artista
+  // Mapeia discos com informações de artista e gênero
   const discosComArtista = useMemo(
     () =>
       discos.map((disco) => {
         const artista = artistas.find((a) => a.id === disco.artistaId);
+        const genero = disco.generoId
+          ? generosMusical.find((g) => g.id === disco.generoId)
+          : undefined;
         return {
           ...disco,
           artistaNome: artista?.nome || 'Desconhecido',
+          generoNome: genero?.nome || '',
         };
       }),
-    [discos, artistas]
+    [discos, artistas, generosMusical]
   );
 
   return {

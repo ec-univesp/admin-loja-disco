@@ -15,6 +15,7 @@ export interface Artista {
 export interface Disco {
   id: string;
   artistaId: string;
+  generoId?: string;
   album: string;
   nacionalidade: string;
   premsagem: string;

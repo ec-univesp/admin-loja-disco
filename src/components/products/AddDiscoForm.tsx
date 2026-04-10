@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
-import { useDiscos, useArtistas } from '@/hooks/useStore';
+import { useDiscos, useArtistas, useGenerosMusical } from '@/hooks/useStore';
 import Button from '@/components/ui/button/Button';
 import Label from '@/components/form/Label';
 import CurrencyInput from '@/components/form/input/CurrencyInput';
@@ -11,6 +11,7 @@ import { formatBRL } from '@/utils/currency';
 
 interface AddDiscoFormData {
   artistaNome: string;
+  generoId: string;
   album: string;
   nacionalidade: string;
   premsagem: string;
@@ -29,7 +30,12 @@ export default function AddDiscoForm() {
   const router = useRouter();
   const { createDisco, loading, error } = useDiscos();
   const { createArtista } = useArtistas();
+  const { generosMusical, fetchGenerosMusical } = useGenerosMusical();
   const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    fetchGenerosMusical();
+  }, [fetchGenerosMusical]);
 
   const {
     register,
@@ -41,6 +47,7 @@ export default function AddDiscoForm() {
   } = useForm<AddDiscoFormData>({
     defaultValues: {
       artistaNome: '',
+      generoId: '',
       album: '',
       nacionalidade: 'Brasil',
       premsagem: 'Vinyl',
@@ -71,6 +78,7 @@ export default function AddDiscoForm() {
 
       await createDisco({
         artistaId: novoArtista.id,
+        generoId: data.generoId || undefined,
         album: data.album,
         nacionalidade: data.nacionalidade,
         premsagem: data.premsagem,
@@ -131,7 +139,7 @@ export default function AddDiscoForm() {
           {/* Artista e Álbum */}
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900 dark:text-white">Informações Básicas</h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
                 <Label htmlFor="artistaNome">Artista *</Label>
                 <input
@@ -148,6 +156,22 @@ export default function AddDiscoForm() {
                 {errors.artistaNome && (
                   <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.artistaNome.message}</span>
                 )}
+              </div>
+
+              <div>
+                <Label htmlFor="generoId">Gênero Musical</Label>
+                <select
+                  id="generoId"
+                  {...register('generoId')}
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
+                >
+                  <option value="">-- Selecione --</option>
+                  {generosMusical.map((genero) => (
+                    <option key={genero.id} value={genero.id}>
+                      {genero.nome}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
