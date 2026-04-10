@@ -76,6 +76,14 @@ export interface ItemCompra {
   precoCompra: number;
 }
 
+// Tipos para Canal de Venda
+export interface CanalVenda {
+  id: string;
+  nome: string;
+  // taxa percentual padrão do canal (ex: 12 = 12% como Mercado Livre)
+  taxaPadrao: number;
+}
+
 // Tipos para Venda
 export interface Venda {
   id: string;
@@ -85,7 +93,8 @@ export interface Venda {
   frete: number;
   valorTotal: number;
   pagamento: string;
-  canalVenda: string;
+  canalVendaId: string;
+  custosAdicionais: number;
   statusPedido: string;
 }
 
@@ -128,9 +137,12 @@ export interface AppState {
   
   // Vendas
   vendas: Venda[];
-  
+
   // Itens Venda
   itensVenda: ItemVenda[];
+
+  // Canais de Venda
+  canaisVenda: CanalVenda[];
   
   // Loading e Errors
   loading: boolean;
