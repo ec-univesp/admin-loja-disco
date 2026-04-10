@@ -1,5 +1,6 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import SalesFormExample from '@/components/form/SalesFormExample';
+import SalesFormZustand from '@/components/form/SalesFormZustand';
+import ComponentCard from '@/components/common/ComponentCard';
 import { Metadata } from 'next';
 import React from 'react';
 
@@ -13,7 +14,9 @@ export default function NovaVendaPage() {
     <div>
       <PageBreadcrumb pageTitle="Nova Venda" />
       <div className="rounded-2xl border border-gray-200 bg-white px-5 py-7 xl:px-10 xl:py-12 dark:border-gray-800 dark:bg-white/[0.03]">
-        <SalesFormExample />
+        <ComponentCard title="Registrar Nova Venda">
+          <SalesFormZustand />
+        </ComponentCard>
       </div>
     </div>
   );

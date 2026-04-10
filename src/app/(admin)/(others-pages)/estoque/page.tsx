@@ -2,8 +2,10 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import Link from 'next/link';
-import React, { useState, useMemo } from 'react';
-import { useDiscos } from '@/hooks/useStore';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useDiscos, useGenerosMusical } from '@/hooks/useStore';
+import { Modal } from '@/components/ui/modal';
+import { useModal } from '@/hooks/useModal';
 
 interface ProdutoDisplay {
   id: string;
@@ -38,8 +40,23 @@ const determinarStatus = (condicaoCapa: string, condicaoDisco: string): 'Dispon�
 };
 
 export default function EstoquePage() {
-  const { discosComArtista, loading, error, deleteDisco } = useDiscos();
+  const { discosComArtista, loading, deleteDisco } = useDiscos();
+  const { generosMusical, fetchGenerosMusical, createGeneroMusical } = useGenerosMusical();
   const [busca, setBusca] = useState('');
+  const [novoGenero, setNovoGenero] = useState('');
+  const generoModal = useModal();
+
+  useEffect(() => {
+    fetchGenerosMusical();
+  }, [fetchGenerosMusical]);
+
+  const handleAddGenero = async () => {
+    const nome = novoGenero.trim();
+    if (!nome) return;
+    await createGeneroMusical({ nome });
+    setNovoGenero('');
+    generoModal.closeModal();
+  };
 
   const produtos = useMemo<ProdutoDisplay[]>(
     () =>
@@ -88,7 +105,7 @@ export default function EstoquePage() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Estoque – Produtos" />
-      
+
       <div className="grid gap-4">
         <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-brand-50 via-white to-brand-25 dark:border-gray-700 dark:from-brand-950/50 dark:via-gray-900 dark:to-brand-900/30">
           <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
@@ -108,6 +125,14 @@ export default function EstoquePage() {
                 onChange={(e) => setBusca(e.target.value)}
                 className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
               />
+              <Button
+                size="md"
+                variant="outline"
+                startIcon={iconPlus}
+                onClick={generoModal.openModal}
+              >
+                Gênero Musical
+              </Button>
               <Link href="/estoque/add-produto" className="inline-block">
                 <Button size="md" variant="primary" startIcon={iconPlus}>
                   Adicionar Disco
@@ -236,6 +261,63 @@ export default function EstoquePage() {
           )}
         </div>
       </div>
+
+      <Modal
+        isOpen={generoModal.isOpen}
+        onClose={generoModal.closeModal}
+        className="m-4 max-w-[500px]"
+      >
+        <div className="p-6">
+          <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Cadastrar Gênero Musical
+          </h4>
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Nome do gênero *
+              </label>
+              <input
+                type="text"
+                value={novoGenero}
+                onChange={(e) => setNovoGenero(e.target.value)}
+                placeholder="Ex: MPB, Reggae, Samba..."
+                className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddGenero();
+                }}
+                autoFocus
+              />
+            </div>
+
+            {generosMusical.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Gêneros já cadastrados:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {generosMusical.map((genero) => (
+                    <span
+                      key={genero.id}
+                      className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
+                    >
+                      {genero.nome}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button size="sm" variant="outline" onClick={generoModal.closeModal}>
+                Cancelar
+              </Button>
+              <Button size="sm" variant="primary" onClick={handleAddGenero}>
+                Salvar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

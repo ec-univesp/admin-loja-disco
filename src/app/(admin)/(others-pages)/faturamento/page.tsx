@@ -48,7 +48,6 @@ export default function FaturamentoPage() {
     fetchCanaisVenda();
   }, [fetchVendas, fetchCompras, fetchItensVenda, fetchDiscos, fetchCanaisVenda]);
 
-  // Resumo mensal: receita (vendas) vs despesas (compras + custos adicionais)
   const resumoMensal = useMemo(() => {
     const totaisPorMes = new Map<string, { receita: number; despesas: number }>();
 
@@ -101,7 +100,6 @@ export default function FaturamentoPage() {
   );
   const totalLucro = totalReceita - totalDespesas;
 
-  // Top discos vendidos
   const topProdutos = useMemo(() => {
     const totaisPorDisco = new Map<
       string,
@@ -128,7 +126,6 @@ export default function FaturamentoPage() {
       .slice(0, LIMITE_TOP_PRODUTOS);
   }, [itensVenda, discos]);
 
-  // Formas de pagamento
   const formasPagamento = useMemo(() => {
     const totaisPorForma = new Map<string, number>();
 
@@ -191,7 +188,6 @@ export default function FaturamentoPage() {
         </Button>
       </div>
 
-      {/* KPIs */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
