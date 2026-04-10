@@ -1,311 +1,298 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import Link from 'next/link';
-import React, { useState } from 'react';
+import Button from '@/components/ui/button/Button';
+import React, { useEffect, useMemo } from 'react';
+import {
+  useVendas,
+  useCompras,
+  useItensVenda,
+  useDiscos,
+  useCanaisVenda,
+} from '@/hooks/useStore';
+import { useAppStore } from '@/store/appStore';
+import {
+  exportarBackupCompleto,
+  exportarRelatorioFinanceiro,
+} from '@/services/exportExcel';
 
-interface NotaFiscal {
-  id: number;
-  numero: string;
-  cliente: string;
-  data: string;
-  vencimento: string;
-  valor: number;
-  tipo: 'Venda' | 'Compra';
-  status: 'Pago' | 'Pendente' | 'Vencido';
-}
-
-const notasMock: NotaFiscal[] = [
-  {
-    id: 1,
-    numero: 'NF-00045',
-    cliente: 'Carlos Silva',
-    data: '30/03/2026',
-    vencimento: '30/03/2026',
-    valor: 179.8,
-    tipo: 'Venda',
-    status: 'Pago',
-  },
-  {
-    id: 2,
-    numero: 'NF-00044',
-    cliente: 'Ana Souza',
-    data: '29/03/2026',
-    vencimento: '29/03/2026',
-    valor: 89.9,
-    tipo: 'Venda',
-    status: 'Pago',
-  },
-  {
-    id: 3,
-    numero: 'NF-00043',
-    cliente: 'Distribuidora Vinil Brasil',
-    data: '28/03/2026',
-    vencimento: '11/04/2026',
-    valor: 1250.0,
-    tipo: 'Compra',
-    status: 'Pendente',
-  },
-  {
-    id: 4,
-    numero: 'NF-00042',
-    cliente: 'Roberto Lima',
-    data: '27/03/2026',
-    vencimento: '27/03/2026',
-    valor: 264.7,
-    tipo: 'Venda',
-    status: 'Pendente',
-  },
-  {
-    id: 5,
-    numero: 'NF-00041',
-    cliente: 'Sound Records Ltda',
-    data: '15/03/2026',
-    vencimento: '15/03/2026',
-    valor: 890.0,
-    tipo: 'Compra',
-    status: 'Vencido',
-  },
-  {
-    id: 6,
-    numero: 'NF-00040',
-    cliente: 'Pedro Alves',
-    data: '14/03/2026',
-    vencimento: '14/03/2026',
-    valor: 350.0,
-    tipo: 'Venda',
-    status: 'Pago',
-  },
-  {
-    id: 7,
-    numero: 'NF-00039',
-    cliente: 'Julia Ferreira',
-    data: '10/03/2026',
-    vencimento: '10/03/2026',
-    valor: 167.8,
-    tipo: 'Venda',
-    status: 'Pago',
-  },
-  {
-    id: 8,
-    numero: 'NF-00038',
-    cliente: 'Distribuidora Vinil Brasil',
-    data: '01/03/2026',
-    vencimento: '01/03/2026',
-    valor: 2100.0,
-    tipo: 'Compra',
-    status: 'Pago',
-  },
+const MESES_PT = [
+  'Jan',
+  'Fev',
+  'Mar',
+  'Abr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Set',
+  'Out',
+  'Nov',
+  'Dez',
 ];
 
-const statusColor: Record<string, string> = {
-  Pago: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  Pendente: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  Vencido: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-};
-
-const tipoColor: Record<string, string> = {
-  Venda: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  Compra: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-};
-
 export default function FaturamentoPage() {
-  const [busca, setBusca] = useState('');
-  const [filtroStatus, setFiltroStatus] = useState('Todos');
-  const [filtroTipo, setFiltroTipo] = useState('Todos');
+  const { vendas, fetchVendas } = useVendas();
+  const { compras, fetchCompras } = useCompras();
+  const { itensVenda, fetchItensVenda } = useItensVenda();
+  const { discos, fetchDiscos } = useDiscos();
+  const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
+  const fullState = useAppStore();
 
-  const notasFiltradas = notasMock.filter((n) => {
-    const matchBusca =
-      n.numero.toLowerCase().includes(busca.toLowerCase()) ||
-      n.cliente.toLowerCase().includes(busca.toLowerCase());
-    const matchStatus = filtroStatus === 'Todos' || n.status === filtroStatus;
-    const matchTipo = filtroTipo === 'Todos' || n.tipo === filtroTipo;
-    return matchBusca && matchStatus && matchTipo;
-  });
+  useEffect(() => {
+    fetchVendas();
+    fetchCompras();
+    fetchItensVenda();
+    fetchDiscos();
+    fetchCanaisVenda();
+  }, [fetchVendas, fetchCompras, fetchItensVenda, fetchDiscos, fetchCanaisVenda]);
+
+  // Resumo mensal: receita (vendas) vs despesas (compras + custos adicionais)
+  const resumoMensal = useMemo(() => {
+    const map = new Map<string, { receita: number; despesas: number }>();
+
+    vendas.forEach((v) => {
+      const data = new Date(v.dataVenda);
+      const key = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+      const atual = map.get(key) ?? { receita: 0, despesas: 0 };
+      atual.receita += v.valorTotal;
+      atual.despesas += Number(v.custosAdicionais || 0);
+      map.set(key, atual);
+    });
+
+    compras.forEach((c) => {
+      const data = new Date(c.dataCpmpra);
+      const key = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+      const atual = map.get(key) ?? { receita: 0, despesas: 0 };
+      atual.despesas += c.valorTotal;
+      map.set(key, atual);
+    });
+
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, valores]) => {
+        const [, mes] = key.split('-');
+        return {
+          mes: MESES_PT[Number(mes) - 1] ?? key,
+          receita: valores.receita,
+          despesas: valores.despesas,
+          lucro: valores.receita - valores.despesas,
+        };
+      });
+  }, [vendas, compras]);
+
+  const totalReceita = resumoMensal.reduce((a, d) => a + d.receita, 0);
+  const totalDespesas = resumoMensal.reduce((a, d) => a + d.despesas, 0);
+  const totalLucro = totalReceita - totalDespesas;
+
+  // Top discos vendidos
+  const topProdutos = useMemo(() => {
+    const map = new Map<
+      string,
+      { album: string; artista: string; qtd: number; receita: number }
+    >();
+    itensVenda.forEach((item) => {
+      const disco = discos.find((d) => d.id === item.discoId);
+      if (!disco) return;
+      const atual = map.get(disco.id) ?? {
+        album: disco.album,
+        artista: '',
+        qtd: 0,
+        receita: 0,
+      };
+      atual.qtd += 1;
+      atual.receita += item.precoVenda;
+      map.set(disco.id, atual);
+    });
+    return Array.from(map.values())
+      .sort((a, b) => b.qtd - a.qtd)
+      .slice(0, 5);
+  }, [itensVenda, discos]);
+
+  // Formas de pagamento
+  const formasPagamento = useMemo(() => {
+    const map = new Map<string, number>();
+    vendas.forEach((v) => {
+      const k = v.pagamento || 'Outros';
+      map.set(k, (map.get(k) ?? 0) + v.valorTotal);
+    });
+    const total = Array.from(map.values()).reduce((a, b) => a + b, 0) || 1;
+    return Array.from(map.entries())
+      .map(([forma, valor]) => ({
+        forma,
+        total: valor,
+        percentual: Math.round((valor / total) * 100),
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [vendas]);
+
+  const handleExportRelatorio = () => {
+    exportarRelatorioFinanceiro({
+      resumoMensal,
+      topProdutos,
+      formasPagamento,
+      vendasDetalhe: vendas.map((v) => ({
+        id: v.id,
+        data: v.dataVenda,
+        cliente: v.clienteId,
+        canal: canaisVenda.find((c) => c.id === v.canalVendaId)?.nome ?? '',
+        pagamento: v.pagamento,
+        frete: v.frete,
+        custosAdicionais: v.custosAdicionais,
+        total: v.valorTotal,
+        status: v.statusPedido,
+      })),
+    });
+  };
+
+  const handleBackupCompleto = () => {
+    exportarBackupCompleto(fullState);
+  };
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Faturamento – Notas Fiscais" />
+      <PageBreadcrumb pageTitle="Relatório Financeiro" />
 
-      {/* Cards de resumo */}
+      <div className="mb-6 flex flex-wrap justify-end gap-3">
+        <Button variant="outline" size="sm" onClick={handleExportRelatorio}>
+          📊 Exportar Relatório (Excel)
+        </Button>
+        <Button variant="primary" size="sm" onClick={handleBackupCompleto}>
+          💾 Backup Completo (Excel)
+        </Button>
+      </div>
+
+      {/* KPIs */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
-            Receita Recebida
+            Receita Total
           </p>
-          <p className="mt-1 text-2xl font-bold text-green-600">
-            R${' '}
-            {notasMock
-              .filter((n) => n.tipo === 'Venda' && n.status === 'Pago')
-              .reduce((a, n) => a + n.valor, 0)
-              .toFixed(2)}
+          <p className="mt-1 text-2xl font-bold text-gray-800 dark:text-white">
+            R$ {totalReceita.toFixed(2)}
           </p>
+          <p className="mt-1 text-xs text-gray-400">Soma de todas as vendas registradas</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
-            Valores Pendentes
+            Despesas
           </p>
-          <p className="mt-1 text-2xl font-bold text-yellow-500">
-            R${' '}
-            {notasMock
-              .filter((n) => n.status === 'Pendente')
-              .reduce((a, n) => a + n.valor, 0)
-              .toFixed(2)}
-          </p>
+          <p className="mt-1 text-2xl font-bold text-red-500">R$ {totalDespesas.toFixed(2)}</p>
+          <p className="mt-1 text-xs text-gray-400">Compras + custos adicionais de canais</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
-            Valores Vencidos
+            Lucro Líquido
           </p>
-          <p className="mt-1 text-2xl font-bold text-red-500">
-            R${' '}
-            {notasMock
-              .filter((n) => n.status === 'Vencido')
-              .reduce((a, n) => a + n.valor, 0)
-              .toFixed(2)}
+          <p className="mt-1 text-2xl font-bold text-green-600">R$ {totalLucro.toFixed(2)}</p>
+          <p className="mt-1 text-xs text-green-500">
+            Margem: {totalReceita ? ((totalLucro / totalReceita) * 100).toFixed(1) : '0.0'}%
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        {/* Header */}
-        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-              Notas Fiscais
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {notasFiltradas.length} nota(s) encontrada(s)
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <select
-              value={filtroTipo}
-              onChange={(e) => setFiltroTipo(e.target.value)}
-              className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-            >
-              <option value="Todos">Todos os Tipos</option>
-              <option value="Venda">Venda</option>
-              <option value="Compra">Compra</option>
-            </select>
-            <select
-              value={filtroStatus}
-              onChange={(e) => setFiltroStatus(e.target.value)}
-              className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-            >
-              <option value="Todos">Todos os Status</option>
-              <option value="Pago">Pago</option>
-              <option value="Pendente">Pendente</option>
-              <option value="Vencido">Vencido</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Buscar nota..."
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-            />
-            <Link
-              href="/faturamento/relatorio"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-            >
-              📊 Relatório
-            </Link>
-          </div>
-        </div>
-
-        {/* Tabela */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-t border-gray-100 dark:border-gray-800">
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Nº Nota
-                </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Cliente / Fornecedor
-                </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Emissão
-                </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Vencimento
-                </th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                  Valor
-                </th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
-                  Tipo
-                </th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {notasFiltradas.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-gray-400">
-                    Nenhuma nota fiscal encontrada.
-                  </td>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+          <h3 className="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">
+            Resultado Mensal
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <th className="py-2 text-left font-medium text-gray-500">Mês</th>
+                  <th className="py-2 text-right font-medium text-gray-500">Receita</th>
+                  <th className="py-2 text-right font-medium text-gray-500">Despesas</th>
+                  <th className="py-2 text-right font-medium text-gray-500">Lucro</th>
                 </tr>
-              ) : (
-                notasFiltradas.map((nota) => (
-                  <tr
-                    key={nota.id}
-                    className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
-                  >
-                    <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
-                      {nota.numero}
-                    </td>
-                    <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
-                      {nota.cliente}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{nota.data}</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {nota.vencimento}
-                    </td>
-                    <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
-                      R$ {nota.valor.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${tipoColor[nota.tipo]}`}
-                      >
-                        {nota.tipo}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[nota.status]}`}
-                      >
-                        {nota.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        title="Baixar NF"
-                        className="hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded p-1 text-base text-gray-400 transition-colors"
-                      >
-                        📄
-                      </button>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {resumoMensal.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-6 text-center text-gray-400">
+                      Sem dados suficientes ainda.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  resumoMensal.map((d) => (
+                    <tr key={d.mes}>
+                      <td className="py-3 font-medium text-gray-700 dark:text-gray-300">
+                        {d.mes}
+                      </td>
+                      <td className="py-3 text-right text-green-600">R$ {d.receita.toFixed(2)}</td>
+                      <td className="py-3 text-right text-red-500">R$ {d.despesas.toFixed(2)}</td>
+                      <td className="py-3 text-right font-semibold text-gray-800 dark:text-white">
+                        R$ {d.lucro.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-          <p className="text-xs text-gray-400">
-            Total filtrado:{' '}
-            <span className="font-semibold text-gray-700 dark:text-gray-200">
-              R$ {notasFiltradas.reduce((a, n) => a + n.valor, 0).toFixed(2)}
-            </span>
-          </p>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+          <h3 className="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">
+            Formas de Pagamento
+          </h3>
+          {formasPagamento.length === 0 ? (
+            <p className="text-sm text-gray-400">Sem vendas registradas.</p>
+          ) : (
+            <div className="space-y-4">
+              {formasPagamento.map((fp) => (
+                <div key={fp.forma}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span className="text-gray-700 dark:text-gray-300">{fp.forma}</span>
+                    <span className="font-medium text-gray-800 dark:text-white">
+                      {fp.percentual}% · R$ {fp.total.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                    <div
+                      className="bg-brand-500 h-2 rounded-full"
+                      style={{ width: `${fp.percentual}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 xl:col-span-2 dark:border-gray-800 dark:bg-white/[0.03]">
+          <h3 className="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">
+            Top 5 Discos Mais Vendidos
+          </h3>
+          {topProdutos.length === 0 ? (
+            <p className="text-sm text-gray-400">Sem vendas registradas.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 dark:border-gray-800">
+                    <th className="py-2 text-left font-medium text-gray-500">#</th>
+                    <th className="py-2 text-left font-medium text-gray-500">Álbum</th>
+                    <th className="py-2 text-right font-medium text-gray-500">Qtd Vendida</th>
+                    <th className="py-2 text-right font-medium text-gray-500">Receita</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {topProdutos.map((p, i) => (
+                    <tr key={p.album} className="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                      <td className="py-3 text-gray-400">#{i + 1}</td>
+                      <td className="py-3 font-medium text-gray-800 dark:text-white/90">
+                        {p.album}
+                      </td>
+                      <td className="py-3 text-right text-gray-700 dark:text-gray-300">{p.qtd}</td>
+                      <td className="py-3 text-right font-semibold text-green-600">
+                        R$ {p.receita.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>
