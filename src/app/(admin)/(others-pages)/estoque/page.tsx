@@ -7,6 +7,7 @@ import { useDiscos, useGenerosMusical } from '@/hooks/useStore';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import EditDiscoModal from '@/components/products/EditDiscoModal';
+import { TrashBinIcon } from '@/icons';
 
 interface ProdutoDisplay {
   id: string;
@@ -43,12 +44,18 @@ const determinarStatus = (condicaoCapa: string, condicaoDisco: string): 'Dispon�
 
 export default function EstoquePage() {
   const { discosComArtista, loading, deleteDisco } = useDiscos();
-  const { generosMusical, fetchGenerosMusical, createGeneroMusical } = useGenerosMusical();
+  const { generosMusical, fetchGenerosMusical, createGeneroMusical, deleteGeneroMusical } = useGenerosMusical();
   const [busca, setBusca] = useState('');
   const [filtroGenero, setFiltroGenero] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
   const [editDiscoId, setEditDiscoId] = useState<string | null>(null);
   const generoModal = useModal();
+
+  const deleteDiscoModal = useModal();
+  const [discoParaApagar, setDiscoParaApagar] = useState<{ id: string; titulo: string } | null>(null);
+
+  const deleteGeneroModal = useModal();
+  const [generoParaApagar, setGeneroParaApagar] = useState<{ id: string; nome: string } | null>(null);
 
   useEffect(() => {
     fetchGenerosMusical();
@@ -60,6 +67,20 @@ export default function EstoquePage() {
     await createGeneroMusical({ nome });
     setNovoGenero('');
     generoModal.closeModal();
+  };
+
+  const handleConfirmarApagarDisco = async () => {
+    if (!discoParaApagar) return;
+    await deleteDisco(discoParaApagar.id); // TODO: API
+    setDiscoParaApagar(null);
+    deleteDiscoModal.closeModal();
+  };
+
+  const handleConfirmarApagarGenero = async () => {
+    if (!generoParaApagar) return;
+    await deleteGeneroMusical(generoParaApagar.id); // TODO: API
+    setGeneroParaApagar(null);
+    deleteGeneroModal.closeModal();
   };
 
   const produtos = useMemo<ProdutoDisplay[]>(
@@ -88,10 +109,6 @@ export default function EstoquePage() {
     return matchBusca && matchGenero;
   });
 
-  const handleRemover = (id: string) => {
-    deleteDisco(id);
-  };
-
   const iconPlus = (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -101,12 +118,6 @@ export default function EstoquePage() {
   const iconEdit = (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-    </svg>
-  );
-
-  const iconDelete = (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
     </svg>
   );
 
@@ -246,18 +257,25 @@ export default function EstoquePage() {
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
-                            title="Editar"
+                            type="button"
+                            aria-label={`Editar disco ${produto.titulo}`}
+                            title={`Editar disco ${produto.titulo}`}
                             onClick={() => setEditDiscoId(produto.id)}
                             className="rounded-lg p-2 text-gray-500 transition-all duration-200 hover:bg-brand-100 hover:text-brand-700 dark:hover:bg-brand-900/30 dark:hover:text-brand-400"
                           >
                             {iconEdit}
                           </button>
                           <button
-                            title="Remover"
-                            onClick={() => handleRemover(produto.id)}
+                            type="button"
+                            aria-label={`Apagar disco ${produto.titulo}`}
+                            title={`Apagar disco ${produto.titulo}`}
+                            onClick={() => {
+                              setDiscoParaApagar({ id: produto.id, titulo: produto.titulo });
+                              deleteDiscoModal.openModal();
+                            }}
                             className="rounded-lg p-2 text-gray-500 transition-all duration-200 hover:bg-error-100 hover:text-error-700 dark:hover:bg-error-900/30 dark:hover:text-error-400"
                           >
-                            {iconDelete}
+                            <TrashBinIcon className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -325,9 +343,21 @@ export default function EstoquePage() {
                   {generosMusical.map((genero) => (
                     <span
                       key={genero.id}
-                      className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
+                      className="inline-flex items-center gap-1 rounded-full bg-brand-50 pl-3 pr-1 py-1 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
                     >
                       {genero.nome}
+                      <button
+                        type="button"
+                        aria-label={`Apagar gênero ${genero.nome}`}
+                        title={`Apagar gênero ${genero.nome}`}
+                        onClick={() => {
+                          setGeneroParaApagar({ id: genero.id, nome: genero.nome });
+                          deleteGeneroModal.openModal();
+                        }}
+                        className="ml-0.5 rounded-full p-0.5 text-brand-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                      >
+                        <TrashBinIcon className="h-3 w-3" />
+                      </button>
                     </span>
                   ))}
                 </div>
@@ -351,6 +381,78 @@ export default function EstoquePage() {
         onClose={() => setEditDiscoId(null)}
         discoId={editDiscoId}
       />
+
+      <Modal
+        isOpen={deleteDiscoModal.isOpen}
+        onClose={deleteDiscoModal.closeModal}
+        className="m-4 max-w-[440px]"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Apagar disco
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Tem certeza que deseja apagar o disco{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">
+              {discoParaApagar?.titulo}
+            </span>
+            ? Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={deleteDiscoModal.closeModal}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmarApagarDisco}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Apagar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={deleteGeneroModal.isOpen}
+        onClose={deleteGeneroModal.closeModal}
+        className="m-4 max-w-[440px]"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Apagar gênero musical
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Tem certeza que deseja apagar o gênero{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">
+              {generoParaApagar?.nome}
+            </span>
+            ? Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={deleteGeneroModal.closeModal}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmarApagarGenero}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Apagar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

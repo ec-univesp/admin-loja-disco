@@ -4,6 +4,9 @@ import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useVendas, useClientes, useItensVenda } from '@/hooks/useStore';
 import ClienteEnderecoModal from '@/components/form/ClienteEnderecoModal';
+import { Modal } from '@/components/ui/modal';
+import { useModal } from '@/hooks/useModal';
+import { TrashBinIcon } from '@/icons';
 
 const statusColor: Record<string, string> = {
   Concluída: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
@@ -20,14 +23,34 @@ const formatNumeroVenda = (posicaoNaLista: number) =>
 const STATUS_CONCLUIDOS = ['Concluída', 'Entregue'] as const;
 
 export default function VendasPage() {
-  const { vendasComDetalhes, fetchVendas } = useVendas();
-  const { clientes, fetchClientes } = useClientes();
+  const { vendasComDetalhes, fetchVendas, deleteVenda } = useVendas();
+  const { clientes, fetchClientes, deleteCliente } = useClientes();
   const { itensVenda, fetchItensVenda } = useItensVenda();
 
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('Todos');
   const [showClienteModal, setShowClienteModal] = useState(false);
   const [editClienteId, setEditClienteId] = useState<string | undefined>();
+
+  const deleteVendaModal = useModal();
+  const [vendaParaApagar, setVendaParaApagar] = useState<{ id: string; numero: string } | null>(null);
+
+  const deleteClienteModal = useModal();
+  const [clienteParaApagar, setClienteParaApagar] = useState<{ id: string; nome: string } | null>(null);
+
+  const handleConfirmarApagarVenda = async () => {
+    if (!vendaParaApagar) return;
+    await deleteVenda(vendaParaApagar.id); // TODO: API
+    setVendaParaApagar(null);
+    deleteVendaModal.closeModal();
+  };
+
+  const handleConfirmarApagarCliente = async () => {
+    if (!clienteParaApagar) return;
+    await deleteCliente(clienteParaApagar.id); // TODO: API
+    setClienteParaApagar(null);
+    deleteClienteModal.closeModal();
+  };
 
   useEffect(() => {
     fetchVendas();
@@ -119,24 +142,44 @@ export default function VendasPage() {
           </div>
         </div>
 
-        {clientes.length > 0 && (
+        {clientes.length === 0 ? (
+          <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
+            <p className="text-xs text-gray-400 dark:text-gray-500">Nenhum cliente cadastrado.</p>
+          </div>
+        ) : (
           <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
             <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-              Clientes cadastrados (clique para editar endereço):
+              Clientes cadastrados (clique no nome para editar endereço):
             </p>
             <div className="flex flex-wrap gap-2">
               {clientes.map((cliente) => (
-                <button
+                <span
                   key={cliente.id}
-                  type="button"
-                  onClick={() => {
-                    setEditClienteId(cliente.id);
-                    setShowClienteModal(true);
-                  }}
-                  className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-brand-100 hover:text-brand-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-brand-900/30 dark:hover:text-brand-400"
+                  className="inline-flex items-center gap-1 rounded-full bg-gray-100 pl-3 pr-1 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300"
                 >
-                  ✎ {cliente.nome}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditClienteId(cliente.id);
+                      setShowClienteModal(true);
+                    }}
+                    className="transition-colors hover:text-brand-700 dark:hover:text-brand-400"
+                  >
+                    ✎ {cliente.nome}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Apagar cliente ${cliente.nome}`}
+                    title={`Apagar cliente ${cliente.nome}`}
+                    onClick={() => {
+                      setClienteParaApagar({ id: cliente.id, nome: cliente.nome });
+                      deleteClienteModal.openModal();
+                    }}
+                    className="ml-0.5 rounded-full p-0.5 text-gray-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                  >
+                    <TrashBinIcon className="h-3 w-3" />
+                  </button>
+                </span>
               ))}
             </div>
           </div>
@@ -167,9 +210,7 @@ export default function VendasPage() {
                 <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
                   Status
                 </th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
-                  Ações
-                </th>
+                <th className="w-20 px-6 py-3" aria-hidden="true" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -209,17 +250,32 @@ export default function VendasPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditClienteId(venda.clienteId);
-                          setShowClienteModal(true);
-                        }}
-                        title="Editar cliente / endereço"
-                        className="hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded p-1 text-base text-gray-400 transition-colors"
-                      >
-                        ✎
-                      </button>
+                      <div className="inline-flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditClienteId(venda.clienteId);
+                            setShowClienteModal(true);
+                          }}
+                          aria-label="Editar cliente / endereço"
+                          title="Editar cliente / endereço"
+                          className="rounded p-1.5 text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 dark:hover:text-brand-400"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Apagar venda ${venda.numero}`}
+                          title={`Apagar venda ${venda.numero}`}
+                          onClick={() => {
+                            setVendaParaApagar({ id: venda.id, numero: venda.numero });
+                            deleteVendaModal.openModal();
+                          }}
+                          className="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                        >
+                          <TrashBinIcon className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -234,6 +290,78 @@ export default function VendasPage() {
         onClose={() => setShowClienteModal(false)}
         clienteId={editClienteId}
       />
+
+      <Modal
+        isOpen={deleteVendaModal.isOpen}
+        onClose={deleteVendaModal.closeModal}
+        className="m-4 max-w-[440px]"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Apagar venda
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Tem certeza que deseja apagar a venda{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">
+              {vendaParaApagar?.numero}
+            </span>
+            ? Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={deleteVendaModal.closeModal}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmarApagarVenda}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Apagar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={deleteClienteModal.isOpen}
+        onClose={deleteClienteModal.closeModal}
+        className="m-4 max-w-[440px]"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Apagar cliente
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Tem certeza que deseja apagar o cliente{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">
+              {clienteParaApagar?.nome}
+            </span>
+            ? Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={deleteClienteModal.closeModal}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmarApagarCliente}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Apagar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
