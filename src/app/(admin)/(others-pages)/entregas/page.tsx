@@ -1,142 +1,61 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useVendas } from '@/hooks/useStore';
 
-interface Entrega {
-  id: number;
-  codigo: string;
-  cliente: string;
-  endereco: string;
-  produto: string;
-  data: string;
-  previsao: string;
-  transportadora: string;
-  status: 'Entregue' | 'Em Trânsito' | 'Pendente' | 'Cancelado';
-}
-
-const entregasMock: Entrega[] = [
-  {
-    id: 1,
-    codigo: 'ENT-0001',
-    cliente: 'Carlos Silva',
-    endereco: 'Rua das Flores, 123 – SP',
-    produto: 'Abbey Road (LP)',
-    data: '28/03/2026',
-    previsao: '31/03/2026',
-    transportadora: 'Correios PAC',
-    status: 'Em Trânsito',
-  },
-  {
-    id: 2,
-    codigo: 'ENT-0002',
-    cliente: 'Ana Souza',
-    endereco: 'Av. Brasil, 456 – RJ',
-    produto: 'Thriller (LP)',
-    data: '27/03/2026',
-    previsao: '30/03/2026',
-    transportadora: 'Sedex',
-    status: 'Entregue',
-  },
-  {
-    id: 3,
-    codigo: 'ENT-0003',
-    cliente: 'Roberto Lima',
-    endereco: 'Rua 7 de Setembro, 789 – MG',
-    produto: 'Nevermind (LP) + Rumours (LP)',
-    data: '26/03/2026',
-    previsao: '02/04/2026',
-    transportadora: 'Correios PAC',
-    status: 'Em Trânsito',
-  },
-  {
-    id: 4,
-    codigo: 'ENT-0004',
-    cliente: 'Pedro Alves',
-    endereco: 'Travessa dos Músicos, 10 – RS',
-    produto: 'Kind of Blue (LP) × 2',
-    data: '25/03/2026',
-    previsao: '01/04/2026',
-    transportadora: 'Jadlog',
-    status: 'Pendente',
-  },
-  {
-    id: 5,
-    codigo: 'ENT-0005',
-    cliente: 'Mariana Costa',
-    endereco: 'Rua da Saudade, 321 – BA',
-    produto: 'Dark Side of the Moon (LP)',
-    data: '24/03/2026',
-    previsao: '28/03/2026',
-    transportadora: 'Sedex',
-    status: 'Cancelado',
-  },
-  {
-    id: 6,
-    codigo: 'ENT-0006',
-    cliente: 'Julia Ferreira',
-    endereco: 'Alameda Santos, 654 – SP',
-    produto: 'Back in Black (LP)',
-    data: '23/03/2026',
-    previsao: '27/03/2026',
-    transportadora: 'Correios PAC',
-    status: 'Entregue',
-  },
-  {
-    id: 7,
-    codigo: 'ENT-0007',
-    cliente: 'Marcos Oliveira',
-    endereco: 'Rua XV de Novembro, 99 – PR',
-    produto: 'Led Zeppelin IV (LP)',
-    data: '20/03/2026',
-    previsao: '25/03/2026',
-    transportadora: 'Sedex',
-    status: 'Entregue',
-  },
-];
+const STATUS_ENTREGA = ['Confirmada', 'Enviada', 'Entregue', 'Cancelada'] as const;
+type StatusEntrega = (typeof STATUS_ENTREGA)[number];
 
 const statusColor: Record<string, string> = {
   Entregue: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  'Em Trânsito': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  Pendente: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  Cancelado: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-};
-
-const statusIcon: Record<string, string> = {
-  Entregue: '✅',
-  'Em Trânsito': '🚚',
-  Pendente: '⏳',
-  Cancelado: '❌',
+  Enviada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  Confirmada: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  Cancelada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
 export default function EntregasPage() {
+  const { vendasComDetalhes, fetchVendas } = useVendas();
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('Todos');
 
-  const entregasFiltradas = entregasMock.filter((e) => {
-    const matchBusca =
-      e.codigo.toLowerCase().includes(busca.toLowerCase()) ||
-      e.cliente.toLowerCase().includes(busca.toLowerCase()) ||
-      e.produto.toLowerCase().includes(busca.toLowerCase());
-    const matchStatus = filtroStatus === 'Todos' || e.status === filtroStatus;
-    return matchBusca && matchStatus;
-  });
+  useEffect(() => {
+    fetchVendas();
+  }, [fetchVendas]);
+
+  const entregas = useMemo(
+    () =>
+      vendasComDetalhes.filter((v) =>
+        STATUS_ENTREGA.includes(v.statusPedido as StatusEntrega)
+      ),
+    [vendasComDetalhes]
+  );
+
+  const entregasFiltradas = useMemo(() => {
+    const buscaNorm = busca.toLowerCase();
+    return entregas.filter((v) => {
+      const matchBusca =
+        v.clienteNome.toLowerCase().includes(buscaNorm) ||
+        v.enderecoCidade.toLowerCase().includes(buscaNorm) ||
+        v.dataVenda.toLowerCase().includes(buscaNorm);
+      const matchStatus = filtroStatus === 'Todos' || v.statusPedido === filtroStatus;
+      return matchBusca && matchStatus;
+    });
+  }, [entregas, busca, filtroStatus]);
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Entregas" />
 
-      {/* Resumo */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {(['Entregue', 'Em Trânsito', 'Pendente', 'Cancelado'] as const).map((s) => (
+        {STATUS_ENTREGA.map((s) => (
           <div
             key={s}
             className="hover:border-brand-300 cursor-pointer rounded-xl border border-gray-200 bg-white p-4 transition-colors dark:border-gray-800 dark:bg-white/[0.03]"
             onClick={() => setFiltroStatus(filtroStatus === s ? 'Todos' : s)}
           >
-            <p className="text-xl">{statusIcon[s]}</p>
             <p className="mt-1 text-2xl font-bold text-gray-800 dark:text-white">
-              {entregasMock.filter((e) => e.status === s).length}
+              {entregas.filter((v) => v.statusPedido === s).length}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">{s}</p>
           </div>
@@ -144,7 +63,6 @@ export default function EntregasPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        {/* Header */}
         <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -161,10 +79,11 @@ export default function EntregasPage() {
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             >
               <option value="Todos">Todos os Status</option>
-              <option value="Entregue">Entregue</option>
-              <option value="Em Trânsito">Em Trânsito</option>
-              <option value="Pendente">Pendente</option>
-              <option value="Cancelado">Cancelado</option>
+              {STATUS_ENTREGA.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
             </select>
             <input
               type="text"
@@ -178,40 +97,36 @@ export default function EntregasPage() {
                 href="/entregas/pendentes"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-yellow-300 bg-yellow-50 px-3 py-2 text-xs font-medium text-yellow-700 transition-colors hover:bg-yellow-100 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
               >
-                ⏳ Pendentes
+                Pendentes
               </Link>
               <Link
                 href="/entregas/concluidas"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400"
               >
-                ✅ Concluídas
+                Concluidas
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Tabela */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-t border-gray-100 dark:border-gray-800">
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Código
-                </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
                   Cliente
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Produto
+                  Cidade
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Endereço
+                  Data da Venda
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Previsão
+                  Pagamento
                 </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Transportadora
+                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  Total
                 </th>
                 <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
                   Status
@@ -221,45 +136,39 @@ export default function EntregasPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {entregasFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-10 text-center text-gray-400">
-                    Nenhuma entrega encontrada.
+                  <td
+                    colSpan={6}
+                    className="px-6 py-10 text-center text-sm text-gray-400 dark:text-gray-500"
+                  >
+                    Nenhuma entrega registrada.
                   </td>
                 </tr>
               ) : (
-                entregasFiltradas.map((entrega) => (
+                entregasFiltradas.map((venda) => (
                   <tr
-                    key={entrega.id}
+                    key={venda.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
-                    <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
-                      {entrega.codigo}
-                    </td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
-                      {entrega.cliente}
-                    </td>
-                    <td
-                      className="max-w-[180px] truncate px-6 py-4 text-gray-600 dark:text-gray-300"
-                      title={entrega.produto}
-                    >
-                      {entrega.produto}
-                    </td>
-                    <td
-                      className="max-w-[160px] truncate px-6 py-4 text-xs text-gray-500 dark:text-gray-400"
-                      title={entrega.endereco}
-                    >
-                      {entrega.endereco}
+                      {venda.clienteNome}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {entrega.previsao}
+                      {venda.enderecoCidade}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {entrega.transportadora}
+                      {venda.dataVenda}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {venda.pagamento}
+                    </td>
+                    <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
+                      R$ {venda.valorTotal.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[entrega.status]}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[venda.statusPedido] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}
                       >
-                        {statusIcon[entrega.status]} {entrega.status}
+                        {venda.statusPedido}
                       </span>
                     </td>
                   </tr>

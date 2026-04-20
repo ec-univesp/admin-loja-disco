@@ -1,64 +1,34 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
-import React, { useState } from 'react';
-
-const entregasPendentesMock = [
-  {
-    id: 3,
-    codigo: 'ENT-0003',
-    cliente: 'Roberto Lima',
-    endereco: 'Rua 7 de Setembro, 789 – MG',
-    produto: 'Nevermind (LP) + Rumours (LP)',
-    data: '26/03/2026',
-    previsao: '02/04/2026',
-    transportadora: 'Correios PAC',
-    diasRestantes: 3,
-  },
-  {
-    id: 4,
-    codigo: 'ENT-0004',
-    cliente: 'Pedro Alves',
-    endereco: 'Travessa dos Músicos, 10 – RS',
-    produto: 'Kind of Blue (LP) × 2',
-    data: '25/03/2026',
-    previsao: '01/04/2026',
-    transportadora: 'Jadlog',
-    diasRestantes: 2,
-  },
-  {
-    id: 8,
-    codigo: 'ENT-0008',
-    cliente: 'Fernanda Ribeiro',
-    endereco: 'Rua das Acácias, 55 – SC',
-    produto: 'Rumours (LP)',
-    data: '30/03/2026',
-    previsao: '05/04/2026',
-    transportadora: 'Correios PAC',
-    diasRestantes: 6,
-  },
-  {
-    id: 9,
-    codigo: 'ENT-0009',
-    cliente: 'Lucas Mendes',
-    endereco: 'Av. Paulista, 1000 – SP',
-    produto: 'Abbey Road (LP)',
-    data: '30/03/2026',
-    previsao: '04/04/2026',
-    transportadora: 'Sedex',
-    diasRestantes: 5,
-  },
-];
+import React, { useEffect, useMemo, useState } from 'react';
+import { useVendas } from '@/hooks/useStore';
 
 export default function EntregasPendentesPage() {
+  const { vendasComDetalhes, fetchVendas } = useVendas();
   const [busca, setBusca] = useState('');
 
-  const filtradas = entregasPendentesMock.filter(
-    (e) =>
-      e.cliente.toLowerCase().includes(busca.toLowerCase()) ||
-      e.codigo.toLowerCase().includes(busca.toLowerCase()) ||
-      e.produto.toLowerCase().includes(busca.toLowerCase())
+  useEffect(() => {
+    fetchVendas();
+  }, [fetchVendas]);
+
+  const pendentes = useMemo(
+    () =>
+      vendasComDetalhes.filter(
+        (v) => v.statusPedido === 'Confirmada' || v.statusPedido === 'Enviada'
+      ),
+    [vendasComDetalhes]
   );
+
+  const filtradas = useMemo(() => {
+    const buscaNorm = busca.toLowerCase();
+    return pendentes.filter(
+      (v) =>
+        v.clienteNome.toLowerCase().includes(buscaNorm) ||
+        v.enderecoCidade.toLowerCase().includes(buscaNorm) ||
+        v.dataVenda.toLowerCase().includes(buscaNorm)
+    );
+  }, [pendentes, busca]);
 
   return (
     <div>
@@ -66,8 +36,8 @@ export default function EntregasPendentesPage() {
 
       <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 px-5 py-4 dark:border-yellow-800/50 dark:bg-yellow-900/20">
         <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
-          ⏳ Existem <strong>{entregasPendentesMock.length}</strong> entregas aguardando despacho ou
-          processamento.
+          Existem <strong>{pendentes.length}</strong> entrega(s) aguardando despacho ou em
+          trânsito.
         </p>
       </div>
 
@@ -93,7 +63,7 @@ export default function EntregasPendentesPage() {
               href="/entregas"
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              ← Todas as Entregas
+              Todas as Entregas
             </Link>
           </div>
         </div>
@@ -102,56 +72,67 @@ export default function EntregasPendentesPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-t border-gray-100 dark:border-gray-800">
-                <th className="px-6 py-3 text-left font-medium text-gray-500">Código</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500">Cliente</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500">Produto</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500">Transportadora</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500">Previsão</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500">Dias Restantes</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500">Ação</th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Cliente
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Cidade
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Data da Venda
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Pagamento
+                </th>
+                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  Total
+                </th>
+                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {filtradas.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-10 text-center text-gray-400">
+                  <td
+                    colSpan={6}
+                    className="px-6 py-10 text-center text-sm text-gray-400 dark:text-gray-500"
+                  >
                     Nenhuma entrega pendente.
                   </td>
                 </tr>
               ) : (
-                filtradas.map((e) => (
+                filtradas.map((venda) => (
                   <tr
-                    key={e.id}
+                    key={venda.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
-                    <td className="px-6 py-4 font-mono text-xs text-gray-500">{e.codigo}</td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
-                      {e.cliente}
-                    </td>
-                    <td className="max-w-[180px] truncate px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {e.produto}
+                      {venda.clienteNome}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {e.transportadora}
+                      {venda.enderecoCidade}
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
-                      {e.previsao}
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {venda.dataVenda}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {venda.pagamento}
+                    </td>
+                    <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
+                      R$ {venda.valorTotal.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          e.diasRestantes <= 2
-                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          venda.statusPedido === 'Enviada'
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                         }`}
                       >
-                        {e.diasRestantes}d
+                        {venda.statusPedido}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button className="bg-brand-500 hover:bg-brand-600 rounded-lg px-3 py-1 text-xs font-medium text-white transition-colors">
-                        Despachar
-                      </button>
                     </td>
                   </tr>
                 ))

@@ -1,111 +1,57 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
-import React, { useState } from 'react';
-
-const entregasConcluidasMock = [
-  {
-    id: 2,
-    codigo: 'ENT-0002',
-    cliente: 'Ana Souza',
-    endereco: 'Av. Brasil, 456 – RJ',
-    produto: 'Thriller (LP)',
-    dataEnvio: '27/03/2026',
-    dataEntrega: '29/03/2026',
-    transportadora: 'Sedex',
-    avaliacao: 5,
-  },
-  {
-    id: 6,
-    codigo: 'ENT-0006',
-    cliente: 'Julia Ferreira',
-    endereco: 'Alameda Santos, 654 – SP',
-    produto: 'Back in Black (LP)',
-    dataEnvio: '23/03/2026',
-    dataEntrega: '27/03/2026',
-    transportadora: 'Correios PAC',
-    avaliacao: 4,
-  },
-  {
-    id: 7,
-    codigo: 'ENT-0007',
-    cliente: 'Marcos Oliveira',
-    endereco: 'Rua XV de Novembro, 99 – PR',
-    produto: 'Led Zeppelin IV (LP)',
-    dataEnvio: '20/03/2026',
-    dataEntrega: '25/03/2026',
-    transportadora: 'Sedex',
-    avaliacao: 5,
-  },
-  {
-    id: 10,
-    codigo: 'ENT-0010',
-    cliente: 'Sandra Torres',
-    endereco: 'Rua das Palmeiras, 77 – GO',
-    produto: 'Kind of Blue (LP)',
-    dataEnvio: '15/03/2026',
-    dataEntrega: '20/03/2026',
-    transportadora: 'Jadlog',
-    avaliacao: 4,
-  },
-  {
-    id: 11,
-    codigo: 'ENT-0011',
-    cliente: 'Ricardo Barros',
-    endereco: 'Travessa das Rosas, 12 – CE',
-    produto: 'Abbey Road (LP)',
-    dataEnvio: '10/03/2026',
-    dataEntrega: '14/03/2026',
-    transportadora: 'Sedex',
-    avaliacao: 5,
-  },
-];
+import React, { useEffect, useMemo, useState } from 'react';
+import { useVendas } from '@/hooks/useStore';
 
 export default function EntregasConcluidasPage() {
+  const { vendasComDetalhes, fetchVendas } = useVendas();
   const [busca, setBusca] = useState('');
 
-  const filtradas = entregasConcluidasMock.filter(
-    (e) =>
-      e.cliente.toLowerCase().includes(busca.toLowerCase()) ||
-      e.codigo.toLowerCase().includes(busca.toLowerCase()) ||
-      e.produto.toLowerCase().includes(busca.toLowerCase())
+  useEffect(() => {
+    fetchVendas();
+  }, [fetchVendas]);
+
+  const concluidas = useMemo(
+    () => vendasComDetalhes.filter((v) => v.statusPedido === 'Entregue'),
+    [vendasComDetalhes]
   );
 
-  const avgAvaliacao =
-    entregasConcluidasMock.reduce((a, e) => a + e.avaliacao, 0) / entregasConcluidasMock.length;
+  const filtradas = useMemo(() => {
+    const buscaNorm = busca.toLowerCase();
+    return concluidas.filter(
+      (v) =>
+        v.clienteNome.toLowerCase().includes(buscaNorm) ||
+        v.enderecoCidade.toLowerCase().includes(buscaNorm) ||
+        v.dataVenda.toLowerCase().includes(buscaNorm)
+    );
+  }, [concluidas, busca]);
 
-  const renderStars = (n: number) =>
-    Array.from({ length: 5 }, (_, i) => (
-      <span key={i} className={i < n ? 'text-yellow-400' : 'text-gray-300'}>
-        ★
-      </span>
-    ));
+  const totalReceita = useMemo(
+    () => concluidas.reduce((acc, v) => acc + v.valorTotal, 0),
+    [concluidas]
+  );
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Entregas Concluídas" />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-xs font-medium text-gray-500 uppercase">Total Entregue</p>
-          <p className="mt-1 text-2xl font-bold text-green-600">{entregasConcluidasMock.length}</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-xs font-medium text-gray-500 uppercase">Avaliação Média</p>
-          <p className="mt-1 text-2xl font-bold text-yellow-500">{avgAvaliacao.toFixed(1)} / 5</p>
-          <div className="mt-1 flex">{renderStars(Math.round(avgAvaliacao))}</div>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-xs font-medium text-gray-500 uppercase">Taxa de Satisfação</p>
-          <p className="text-brand-500 mt-1 text-2xl font-bold">
-            {(
-              (entregasConcluidasMock.filter((e) => e.avaliacao >= 4).length /
-                entregasConcluidasMock.length) *
-              100
-            ).toFixed(0)}
-            %
+          <p className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+            Total Entregue
           </p>
-          <p className="text-xs text-gray-400">Avaliações ≥ 4 estrelas</p>
+          <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">
+            {concluidas.length}
+          </p>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+          <p className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+            Receita Total
+          </p>
+          <p className="text-brand-500 mt-1 text-2xl font-bold">
+            R$ {totalReceita.toFixed(2)}
+          </p>
         </div>
       </div>
 
@@ -131,7 +77,7 @@ export default function EntregasConcluidasPage() {
               href="/entregas"
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              ← Todas as Entregas
+              Todas as Entregas
             </Link>
           </div>
         </div>
@@ -140,46 +86,53 @@ export default function EntregasConcluidasPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-t border-gray-100 dark:border-gray-800">
-                <th className="px-6 py-3 text-left font-medium text-gray-500">Código</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500">Cliente</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500">Produto</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500">Transportadora</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500">Envio</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500">Entregue em</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500">Avaliação</th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Cliente
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Cidade
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Data da Venda
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Pagamento
+                </th>
+                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  Total
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {filtradas.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-10 text-center text-gray-400">
-                    Nenhuma entrega encontrada.
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-sm text-gray-400 dark:text-gray-500"
+                  >
+                    Nenhuma entrega concluída.
                   </td>
                 </tr>
               ) : (
-                filtradas.map((e) => (
+                filtradas.map((venda) => (
                   <tr
-                    key={e.id}
+                    key={venda.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
-                    <td className="px-6 py-4 font-mono text-xs text-gray-500">{e.codigo}</td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
-                      {e.cliente}
-                    </td>
-                    <td className="max-w-[180px] truncate px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {e.produto}
+                      {venda.clienteNome}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {e.transportadora}
+                      {venda.enderecoCidade}
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-500">{e.dataEnvio}</td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                        ✅ {e.dataEntrega}
-                      </span>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {venda.dataVenda}
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex justify-center text-sm">{renderStars(e.avaliacao)}</div>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {venda.pagamento}
+                    </td>
+                    <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
+                      R$ {venda.valorTotal.toFixed(2)}
                     </td>
                   </tr>
                 ))
