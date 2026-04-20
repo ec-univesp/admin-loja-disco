@@ -32,14 +32,14 @@ export default function ComprasPage() {
 
   const linhas = useMemo(() => {
     const comprasOrdenadas = [...comprasComDetalhes].sort((compraA, compraB) =>
-      compraA.dataCpmpra < compraB.dataCpmpra ? 1 : -1
+      compraA.dataCompra < compraB.dataCompra ? 1 : -1
     );
 
     return comprasOrdenadas.map((compra, posicao) => ({
       id: compra.id,
       numero: formatNumeroCompra(posicao),
       fornecedor: compra.fornecedor,
-      data: compra.dataCpmpra,
+      data: compra.dataCompra,
       itens: itensCompra.filter((item) => item.compraId === compra.id).length,
       total: compra.valorTotal,
     }));

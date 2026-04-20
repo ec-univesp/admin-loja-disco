@@ -42,7 +42,7 @@ const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
   const handleFormSubmit = async (dadosFormulario: PurchaseFormData) => {
     await createCompra({
       clienteId: '',
-      dataCpmpra: dadosFormulario.dataCompra,
+      dataCompra: dadosFormulario.dataCompra,
       fornecedor: dadosFormulario.fornecedor,
       valorTotal: Number(dadosFormulario.valorTotal),
     });

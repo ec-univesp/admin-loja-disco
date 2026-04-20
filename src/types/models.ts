@@ -64,7 +64,7 @@ export interface ClienteEndereco {
 export interface Compra {
   id: string;
   clienteId: string;
-  dataCpmpra: string;
+  dataCompra: string;
   fornecedor: string;
   valorTotal: number;
 }

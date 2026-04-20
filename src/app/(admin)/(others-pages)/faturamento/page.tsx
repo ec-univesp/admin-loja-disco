@@ -74,7 +74,7 @@ export default function FaturamentoPage() {
     );
 
     compras.forEach((compra) =>
-      acumular(obterChaveMes(compra.dataCpmpra), { despesas: compra.valorTotal })
+      acumular(obterChaveMes(compra.dataCompra), { despesas: compra.valorTotal })
     );
 
     return Array.from(totaisPorMes.entries())
