@@ -1,8 +1,11 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCompras, useItensCompra } from '@/hooks/useStore';
+import { Modal } from '@/components/ui/modal';
+import { useModal } from '@/hooks/useModal';
+import { TrashBinIcon } from '@/icons';
 
 const formatNumeroCompra = (posicaoNaLista: number) =>
   `CMP-${String(posicaoNaLista + 1).padStart(4, '0')}`;
@@ -12,11 +15,20 @@ export default function ComprasPage() {
   const { itensCompra, fetchItensCompra } = useItensCompra();
 
   const [busca, setBusca] = useState('');
+  const deleteCompraModal = useModal();
+  const [compraParaApagar, setCompraParaApagar] = useState<{ id: string; numero: string } | null>(null);
 
   useEffect(() => {
     fetchCompras();
     fetchItensCompra();
   }, [fetchCompras, fetchItensCompra]);
+
+  const handleConfirmarApagarCompra = async () => {
+    if (!compraParaApagar) return;
+    await deleteCompra(compraParaApagar.id); // TODO: API
+    setCompraParaApagar(null);
+    deleteCompraModal.closeModal();
+  };
 
   const linhas = useMemo(() => {
     const comprasOrdenadas = [...comprasComDetalhes].sort((compraA, compraB) =>
@@ -95,9 +107,7 @@ export default function ComprasPage() {
                 <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
                   Total
                 </th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
-                  Ações
-                </th>
+                <th className="w-16 px-6 py-3" aria-hidden="true" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -129,13 +139,15 @@ export default function ComprasPage() {
                     <td className="px-6 py-4 text-center">
                       <button
                         type="button"
+                        aria-label={`Apagar compra ${compra.numero}`}
+                        title={`Apagar compra ${compra.numero}`}
                         onClick={() => {
-                          if (confirm('Remover esta compra?')) deleteCompra(compra.id);
+                          setCompraParaApagar({ id: compra.id, numero: compra.numero });
+                          deleteCompraModal.openModal();
                         }}
-                        title="Remover"
-                        className="hover:text-error-500 hover:bg-error-50 dark:hover:bg-error-900/20 rounded p-1 text-base text-gray-400 transition-colors"
+                        className="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                       >
-                        🗑
+                        <TrashBinIcon className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>
@@ -145,6 +157,42 @@ export default function ComprasPage() {
           </table>
         </div>
       </div>
+
+      <Modal
+        isOpen={deleteCompraModal.isOpen}
+        onClose={deleteCompraModal.closeModal}
+        className="m-4 max-w-[440px]"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Apagar compra
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Tem certeza que deseja apagar a compra{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">
+              {compraParaApagar?.numero}
+            </span>
+            ? Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={deleteCompraModal.closeModal}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmarApagarCompra}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Apagar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

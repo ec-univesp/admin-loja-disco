@@ -2,7 +2,7 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import Link from 'next/link';
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useDiscos, useGenerosMusical } from '@/hooks/useStore';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
