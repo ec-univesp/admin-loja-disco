@@ -54,8 +54,7 @@ const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
 
   const adicionarItem = () => setItens((prev) => [...prev, { discoId: '', custoDisco: 0 }]);
 
-  const removerItem = (index: number) =>
-    setItens((prev) => prev.filter((_, i) => i !== index));
+  const removerItem = (index: number) => setItens((prev) => prev.filter((_, i) => i !== index));
 
   const atualizarItem = (index: number, campo: keyof ItemCompraForm, valor: string | number) =>
     setItens((prev) => prev.map((item, i) => (i === index ? { ...item, [campo]: valor } : item)));
@@ -210,8 +209,8 @@ const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
           </div>
         </div>
 
-        <div className="rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-900 dark:bg-brand-900/20">
-          <p className="text-sm text-brand-700 dark:text-brand-200">
+        <div className="border-brand-200 bg-brand-50 dark:border-brand-900 dark:bg-brand-900/20 rounded-lg border p-4">
+          <p className="text-brand-700 dark:text-brand-200 text-sm">
             Valor Total da Compra:{' '}
             <span className="ml-2 text-lg font-bold">
               R$ {somaItens.toFixed(2).replace('.', ',')}
@@ -227,7 +226,10 @@ const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
             type="reset"
             variant="outline"
             fullWidth
-            onClick={() => { reset(); setItens([{ discoId: '', custoDisco: 0 }]); }}
+            onClick={() => {
+              reset();
+              setItens([{ discoId: '', custoDisco: 0 }]);
+            }}
           >
             Limpar
           </Button>
