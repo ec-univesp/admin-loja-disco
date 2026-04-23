@@ -97,9 +97,7 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
   const enderecosDoCliente = useMemo(() => {
     if (!clienteId) return [] as typeof enderecos;
     const ids = new Set(
-      clientesEnderecos
-        .filter((v) => v.clienteId === clienteId)
-        .map((v) => v.enderecoId)
+      clientesEnderecos.filter((v) => v.clienteId === clienteId).map((v) => v.enderecoId)
     );
     return enderecos.filter((e) => ids.has(e.id));
   }, [clienteId, clientesEnderecos, enderecos]);
@@ -119,8 +117,7 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
 
   const adicionarItem = () => setItens((prev) => [...prev, { discoId: '', precoVenda: 0 }]);
 
-  const removerItem = (index: number) =>
-    setItens((prev) => prev.filter((_, i) => i !== index));
+  const removerItem = (index: number) => setItens((prev) => prev.filter((_, i) => i !== index));
 
   const atualizarItem = (index: number, campo: keyof ItemVendaForm, valor: string | number) =>
     setItens((prev) => prev.map((item, i) => (i === index ? { ...item, [campo]: valor } : item)));
@@ -382,7 +379,7 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
                   <Label htmlFor="canalVendaId">Canal de Venda</Label>
                   <button
                     type="button"
-                    className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400"
+                    className="text-brand-600 dark:text-brand-400 text-xs font-medium hover:underline"
                     onClick={() => setShowCanalModal(true)}
                   >
                     + Cadastrar canal
@@ -439,8 +436,8 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
               </div>
             </div>
 
-            <div className="rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-900 dark:bg-brand-900/20">
-              <p className="text-sm text-brand-700 dark:text-brand-200">
+            <div className="border-brand-200 bg-brand-50 dark:border-brand-900 dark:bg-brand-900/20 rounded-lg border p-4">
+              <p className="text-brand-700 dark:text-brand-200 text-sm">
                 Valor Total da Venda:{' '}
                 <span className="ml-2 text-lg font-bold">{formatBRL(valorTotal)}</span>
               </p>
@@ -468,7 +465,15 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
           <Button type="submit" variant="primary" fullWidth isLoading={vendaLoading}>
             Registrar Venda
           </Button>
-          <Button type="reset" variant="outline" fullWidth onClick={() => { reset(); setItens([{ discoId: '', precoVenda: 0 }]); }}>
+          <Button
+            type="reset"
+            variant="outline"
+            fullWidth
+            onClick={() => {
+              reset();
+              setItens([{ discoId: '', precoVenda: 0 }]);
+            }}
+          >
             Limpar
           </Button>
         </div>
