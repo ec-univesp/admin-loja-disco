@@ -7,6 +7,7 @@ import ClienteEnderecoModal from '@/components/form/ClienteEnderecoModal';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import { TrashBinIcon } from '@/icons';
+import { exportarTabelaCSV, exportarTabelaExcel } from '@/services/exportExcel';
 
 const statusColor: Record<string, string> = {
   Concluída: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
@@ -33,21 +34,25 @@ export default function VendasPage() {
   const [editClienteId, setEditClienteId] = useState<string | undefined>();
 
   const deleteVendaModal = useModal();
-  const [vendaParaApagar, setVendaParaApagar] = useState<{ id: string; numero: string } | null>(null);
+  const [vendaParaApagar, setVendaParaApagar] = useState<{ id: string; numero: string } | null>(
+    null
+  );
 
   const deleteClienteModal = useModal();
-  const [clienteParaApagar, setClienteParaApagar] = useState<{ id: string; nome: string } | null>(null);
+  const [clienteParaApagar, setClienteParaApagar] = useState<{ id: string; nome: string } | null>(
+    null
+  );
 
   const handleConfirmarApagarVenda = async () => {
     if (!vendaParaApagar) return;
-    await deleteVenda(vendaParaApagar.id); // TODO: API
+    await deleteVenda(vendaParaApagar.id);
     setVendaParaApagar(null);
     deleteVendaModal.closeModal();
   };
 
   const handleConfirmarApagarCliente = async () => {
     if (!clienteParaApagar) return;
-    await deleteCliente(clienteParaApagar.id); // TODO: API
+    await deleteCliente(clienteParaApagar.id);
     setClienteParaApagar(null);
     deleteClienteModal.closeModal();
   };
@@ -86,8 +91,38 @@ export default function VendasPage() {
   });
 
   const totalReceita = linhasFiltradas
-    .filter((linha) => STATUS_CONCLUIDOS.includes(linha.status as (typeof STATUS_CONCLUIDOS)[number]))
+    .filter((linha) =>
+      STATUS_CONCLUIDOS.includes(linha.status as (typeof STATUS_CONCLUIDOS)[number])
+    )
     .reduce((acumulado, linha) => acumulado + linha.total, 0);
+
+  const linhasParaExportar = () =>
+    linhasFiltradas.map(({ numero, cliente, data, itens, total, pagamento, status }) => ({
+      'Nº Venda': numero,
+      Cliente: cliente,
+      Data: data,
+      Itens: itens,
+      'Total (R$)': total.toFixed(2),
+      Pagamento: pagamento,
+      Status: status,
+    }));
+
+  const handleExportCSV = () => {
+    const stamp = new Date().toISOString().slice(0, 10);
+    exportarTabelaCSV(
+      linhasParaExportar() as Array<Record<string, unknown>>,
+      `vendas-${stamp}.csv`
+    );
+  };
+
+  const handleExportExcel = () => {
+    const stamp = new Date().toISOString().slice(0, 10);
+    exportarTabelaExcel(
+      'Vendas',
+      linhasParaExportar() as Array<Record<string, unknown>>,
+      `vendas-${stamp}.xlsx`
+    );
+  };
 
   return (
     <div>
@@ -129,7 +164,7 @@ export default function VendasPage() {
                 setEditClienteId(undefined);
                 setShowClienteModal(true);
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-500 bg-white px-4 py-2 text-sm font-medium text-brand-600 transition-colors hover:bg-brand-50 dark:bg-gray-900 dark:hover:bg-brand-900/20"
+              className="border-brand-500 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 inline-flex items-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm font-medium transition-colors dark:bg-gray-900"
             >
               + Novo Cliente
             </button>
@@ -139,6 +174,20 @@ export default function VendasPage() {
             >
               + Nova Venda
             </Link>
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Exportar CSV
+            </button>
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Exportar Excel
+            </button>
           </div>
         </div>
 
@@ -155,7 +204,7 @@ export default function VendasPage() {
               {clientes.map((cliente) => (
                 <span
                   key={cliente.id}
-                  className="inline-flex items-center gap-1 rounded-full bg-gray-100 pl-3 pr-1 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                  className="inline-flex items-center gap-1 rounded-full bg-gray-100 py-1 pr-1 pl-3 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300"
                 >
                   <button
                     type="button"
@@ -163,7 +212,7 @@ export default function VendasPage() {
                       setEditClienteId(cliente.id);
                       setShowClienteModal(true);
                     }}
-                    className="transition-colors hover:text-brand-700 dark:hover:text-brand-400"
+                    className="hover:text-brand-700 dark:hover:text-brand-400 transition-colors"
                   >
                     ✎ {cliente.nome}
                   </button>
@@ -259,7 +308,7 @@ export default function VendasPage() {
                           }}
                           aria-label="Editar cliente / endereço"
                           title="Editar cliente / endereço"
-                          className="rounded p-1.5 text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 dark:hover:text-brand-400"
+                          className="hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 dark:hover:text-brand-400 rounded p-1.5 text-gray-400 transition-colors"
                         >
                           ✎
                         </button>
