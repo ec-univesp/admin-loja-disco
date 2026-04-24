@@ -2,8 +2,9 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useVendas, useClientes, useItensVenda } from '@/hooks/useStore';
+import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/hooks/useStore';
 import ClienteEnderecoModal from '@/components/form/ClienteEnderecoModal';
+import CanalVendaModal from '@/components/form/CanalVendaModal';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import { TrashBinIcon } from '@/icons';
@@ -26,10 +27,12 @@ export default function VendasPage() {
   const { vendasComDetalhes, fetchVendas, deleteVenda } = useVendas();
   const { clientes, fetchClientes, deleteCliente } = useClientes();
   const { itensVenda, fetchItensVenda } = useItensVenda();
+  const { fetchCanaisVenda } = useCanaisVenda();
 
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('Todos');
   const [showClienteModal, setShowClienteModal] = useState(false);
+  const [showCanalModal, setShowCanalModal] = useState(false);
   const [editClienteId, setEditClienteId] = useState<string | undefined>();
 
   const deleteVendaModal = useModal();
@@ -56,7 +59,8 @@ export default function VendasPage() {
     fetchVendas();
     fetchClientes();
     fetchItensVenda();
-  }, [fetchVendas, fetchClientes, fetchItensVenda]);
+    fetchCanaisVenda();
+  }, [fetchVendas, fetchClientes, fetchItensVenda, fetchCanaisVenda]);
 
   const linhas = useMemo(() => {
     const vendasOrdenadas = [...vendasComDetalhes].sort((vendaA, vendaB) =>
@@ -125,6 +129,20 @@ export default function VendasPage() {
             />
             <button
               type="button"
+              onClick={() => setShowCanalModal(true)}
+              className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
+            >
+              + Novo Canal de Venda
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCanalModal(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40"
+            >
+              Deletar Canal de Venda
+            </button>
+            <button
+              type="button"
               onClick={() => {
                 setEditClienteId(undefined);
                 setShowClienteModal(true);
@@ -169,15 +187,15 @@ export default function VendasPage() {
                   </button>
                   <button
                     type="button"
-                    aria-label={`Apagar cliente ${cliente.nome}`}
-                    title={`Apagar cliente ${cliente.nome}`}
+                    aria-label={`Deletar cliente ${cliente.nome}`}
+                    title={`Deletar cliente ${cliente.nome}`}
                     onClick={() => {
                       setClienteParaApagar({ id: cliente.id, nome: cliente.nome });
                       deleteClienteModal.openModal();
                     }}
-                    className="ml-0.5 rounded-full p-0.5 text-gray-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                    className="ml-2 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40"
                   >
-                    <TrashBinIcon className="h-3 w-3" />
+                    Deletar
                   </button>
                 </span>
               ))}
@@ -265,15 +283,15 @@ export default function VendasPage() {
                         </button>
                         <button
                           type="button"
-                          aria-label={`Apagar venda ${venda.numero}`}
-                          title={`Apagar venda ${venda.numero}`}
+                          aria-label={`Deletar venda ${venda.numero}`}
+                          title={`Deletar venda ${venda.numero}`}
                           onClick={() => {
                             setVendaParaApagar({ id: venda.id, numero: venda.numero });
                             deleteVendaModal.openModal();
                           }}
-                          className="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                          className="rounded-lg border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40"
                         >
-                          <TrashBinIcon className="h-4 w-4" />
+                          Deletar
                         </button>
                       </div>
                     </td>
@@ -290,6 +308,7 @@ export default function VendasPage() {
         onClose={() => setShowClienteModal(false)}
         clienteId={editClienteId}
       />
+      <CanalVendaModal isOpen={showCanalModal} onClose={() => setShowCanalModal(false)} />
 
       <Modal
         isOpen={deleteVendaModal.isOpen}
