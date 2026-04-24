@@ -6,6 +6,7 @@ import { useCompras, useItensCompra } from '@/hooks/useStore';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import { TrashBinIcon } from '@/icons';
+import { exportarTabelaCSV, exportarTabelaExcel } from '@/services/exportExcel';
 
 const formatNumeroCompra = (posicaoNaLista: number) =>
   `CMP-${String(posicaoNaLista + 1).padStart(4, '0')}`;
@@ -16,7 +17,9 @@ export default function ComprasPage() {
 
   const [busca, setBusca] = useState('');
   const deleteCompraModal = useModal();
-  const [compraParaApagar, setCompraParaApagar] = useState<{ id: string; numero: string } | null>(null);
+  const [compraParaApagar, setCompraParaApagar] = useState<{ id: string; numero: string } | null>(
+    null
+  );
 
   useEffect(() => {
     fetchCompras();
@@ -25,7 +28,7 @@ export default function ComprasPage() {
 
   const handleConfirmarApagarCompra = async () => {
     if (!compraParaApagar) return;
-    await deleteCompra(compraParaApagar.id); // TODO: API
+    await deleteCompra(compraParaApagar.id);
     setCompraParaApagar(null);
     deleteCompraModal.closeModal();
   };
@@ -52,10 +55,33 @@ export default function ComprasPage() {
       linha.numero.toLowerCase().includes(buscaNormalizada)
   );
 
-  const totalGasto = linhasFiltradas.reduce(
-    (acumulado, linha) => acumulado + linha.total,
-    0
-  );
+  const totalGasto = linhasFiltradas.reduce((acumulado, linha) => acumulado + linha.total, 0);
+
+  const linhasParaExportar = () =>
+    linhasFiltradas.map(({ numero, fornecedor, data, itens, total }) => ({
+      'Nº Compra': numero,
+      Fornecedor: fornecedor,
+      Data: data,
+      Itens: itens,
+      'Total (R$)': total.toFixed(2),
+    }));
+
+  const handleExportCSV = () => {
+    const stamp = new Date().toISOString().slice(0, 10);
+    exportarTabelaCSV(
+      linhasParaExportar() as Array<Record<string, unknown>>,
+      `compras-${stamp}.csv`
+    );
+  };
+
+  const handleExportExcel = () => {
+    const stamp = new Date().toISOString().slice(0, 10);
+    exportarTabelaExcel(
+      'Compras',
+      linhasParaExportar() as Array<Record<string, unknown>>,
+      `compras-${stamp}.xlsx`
+    );
+  };
 
   return (
     <div>
@@ -85,6 +111,20 @@ export default function ComprasPage() {
             >
               + Nova Compra
             </Link>
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Exportar CSV
+            </button>
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Exportar Excel
+            </button>
           </div>
         </div>
 
