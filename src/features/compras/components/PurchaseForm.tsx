@@ -22,13 +22,13 @@ interface PurchaseFormData {
   dataCompra: string;
 }
 
-interface PurchaseFormZustandProps {
+interface PurchaseFormProps {
   onSuccess?: () => void;
 }
 
 const MENSAGEM_SUCESSO_DURACAO_MS = 3000;
 
-const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
+const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
   const { createCompra, loading } = useCompras();
   const { createItemCompra } = useItensCompra();
   const { discosComArtista, fetchDiscos } = useDiscos();
@@ -283,4 +283,4 @@ const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
   );
 };
 
-export default PurchaseFormZustand;
+export default PurchaseForm;

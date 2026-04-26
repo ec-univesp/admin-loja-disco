@@ -26,7 +26,7 @@ interface ItemVendaForm {
   precoVenda: number;
 }
 
-interface SalesFormZustandData {
+interface SalesFormData {
   clienteId: string;
   enderecoId: string;
   dataVenda: string;
@@ -38,13 +38,13 @@ interface SalesFormZustandData {
   observacoes: string;
 }
 
-interface SalesFormZustandProps {
+interface SalesFormProps {
   onSuccess?: () => void;
 }
 
 const MENSAGEM_SUCESSO_DURACAO_MS = 3000;
 
-const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
+const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const { createVenda, loading: vendaLoading } = useVendas();
   const { clientes, fetchClientes } = useClientes();
   const { enderecos, fetchEnderecos } = useEnderecos();
@@ -67,7 +67,7 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
     reset,
     setValue,
     formState: { errors },
-  } = useForm<SalesFormZustandData>({
+  } = useForm<SalesFormData>({
     defaultValues: {
       clienteId: '',
       enderecoId: '',
@@ -122,7 +122,7 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
   const atualizarItem = (index: number, campo: keyof ItemVendaForm, valor: string | number) =>
     setItens((prev) => prev.map((item, i) => (i === index ? { ...item, [campo]: valor } : item)));
 
-  const handleFormSubmit = async (dadosFormulario: SalesFormZustandData) => {
+  const handleFormSubmit = async (dadosFormulario: SalesFormData) => {
     const itensValidos = itens.filter((item) => item.discoId);
     if (itensValidos.length === 0) return;
 
@@ -498,4 +498,4 @@ const SalesFormZustand: FC<SalesFormZustandProps> = ({ onSuccess }) => {
   );
 };
 
-export default SalesFormZustand;
+export default SalesForm;
