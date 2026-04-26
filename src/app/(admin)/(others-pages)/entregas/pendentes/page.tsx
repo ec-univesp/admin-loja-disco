@@ -2,15 +2,19 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useVendas } from '@/hooks/useStore';
+import { useVendas, useItensVenda, useDiscos } from '@/hooks/useStore';
 
 export default function EntregasPendentesPage() {
   const { vendasComDetalhes, fetchVendas } = useVendas();
+  const { fetchItensVenda } = useItensVenda();
+  const { fetchDiscos } = useDiscos();
   const [busca, setBusca] = useState('');
 
   useEffect(() => {
     fetchVendas();
-  }, [fetchVendas]);
+    fetchItensVenda();
+    fetchDiscos();
+  }, [fetchVendas, fetchItensVenda, fetchDiscos]);
 
   const pendentes = useMemo(
     () =>
@@ -24,9 +28,10 @@ export default function EntregasPendentesPage() {
     const buscaNorm = busca.toLowerCase();
     return pendentes.filter(
       (v) =>
+        v.id.toLowerCase().includes(buscaNorm) ||
         v.clienteNome.toLowerCase().includes(buscaNorm) ||
-        v.enderecoCidade.toLowerCase().includes(buscaNorm) ||
-        v.dataVenda.toLowerCase().includes(buscaNorm)
+        v.enderecoCompleto.toLowerCase().includes(buscaNorm) ||
+        v.produtosResumo.toLowerCase().includes(buscaNorm)
     );
   }, [pendentes, busca]);
 
@@ -73,19 +78,16 @@ export default function EntregasPendentesPage() {
             <thead>
               <tr className="border-t border-gray-100 dark:border-gray-800">
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Venda
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
                   Cliente
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Cidade
+                  Produto
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Data da Venda
-                </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Pagamento
-                </th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                  Total
+                  Endereço
                 </th>
                 <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
                   Status
@@ -96,7 +98,7 @@ export default function EntregasPendentesPage() {
               {filtradas.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="px-6 py-10 text-center text-sm text-gray-400 dark:text-gray-500"
                   >
                     Nenhuma entrega pendente.
@@ -108,20 +110,17 @@ export default function EntregasPendentesPage() {
                     key={venda.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
+                    <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-gray-400">
+                      {venda.id}
+                    </td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
                       {venda.clienteNome}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.enderecoCidade}
+                      {venda.produtosResumo}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.dataVenda}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.pagamento}
-                    </td>
-                    <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
-                      R$ {venda.valorTotal.toFixed(2)}
+                      {venda.enderecoCompleto}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
