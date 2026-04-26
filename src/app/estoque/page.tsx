@@ -11,35 +11,34 @@ import { TrashBinIcon } from '@/shared/icons';
 
 interface ProdutoDisplay {
   id: string;
+  artistaId: string;
   codigo: string;
   titulo: string;
   artista: string;
   genero: string;
+  nacionalidade: string;
   premsagem: string;
-  quantidade: number;
+  encarte: string;
+  gravadora: string;
+  anoLancamento: number;
+  anoPremsagem: number;
+  condicaoCapa: string;
+  condicaoDisco: string;
+  valorMercado: number;
+  custoDisco: number;
   preco: number;
-  status: 'Disponível' | 'Baixo Estoque' | 'Esgotado';
+  status: string;
 }
 
 const statusColor: Record<string, string> = {
   Disponível: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400',
+  Vendido: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
   'Baixo Estoque': 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400',
   Esgotado: 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400',
 };
 
 const gerarCodigo = (index: number): string => {
   return `DISC-${String(index + 1).padStart(4, '0')}`;
-};
-
-const determinarStatus = (condicaoCapa: string, condicaoDisco: string): 'Disponível' | 'Baixo Estoque' | 'Esgotado' => {
-  if ((condicaoCapa === 'Excelente' || condicaoCapa === 'Bom') &&
-      (condicaoDisco === 'Excelente' || condicaoDisco === 'Bom')) {
-    return 'Disponível';
-  }
-  if (condicaoCapa === 'Razoável' || condicaoDisco === 'Razoável') {
-    return 'Baixo Estoque';
-  }
-  return 'Esgotado';
 };
 
 export default function EstoquePage() {
@@ -109,14 +108,23 @@ export default function EstoquePage() {
     () =>
       discosComArtista.map((disco, index) => ({
         id: disco.id,
+        artistaId: disco.artistaId,
         codigo: gerarCodigo(index),
         titulo: disco.album,
         artista: disco.artistaNome,
         genero: disco.generoNome,
+        nacionalidade: disco.nacionalidade,
         premsagem: disco.premsagem,
-        quantidade: 1,
+        encarte: disco.encarte,
+        gravadora: disco.gravadora,
+        anoLancamento: disco.anoLancamento,
+        anoPremsagem: disco.anoPremsagem,
+        condicaoCapa: disco.condicaoCapa,
+        condicaoDisco: disco.condicaoDisco,
+        valorMercado: disco.valorMercado,
+        custoDisco: disco.custoDisco,
         preco: disco.valorMercado,
-        status: determinarStatus(disco.condicaoCapa, disco.condicaoDisco),
+        status: disco.status || 'Disponível',
       })),
     [discosComArtista]
   );
@@ -208,36 +216,30 @@ export default function EstoquePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    Código
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    Álbum
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    Artista
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    Gênero
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    Prensagem
-                  </th>
-                  <th className="px-6 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">
-                    Preço
-                  </th>
-                  <th className="px-6 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">
-                    Ações
-                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Código</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">ID</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Artista ID</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Álbum</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Artista</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Gênero</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Nacionalidade</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Prensagem</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Encarte</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Gravadora</th>
+                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Ano Lanç.</th>
+                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Ano Prens.</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cond. Capa</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cond. Disco</th>
+                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Valor Mercado</th>
+                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Custo</th>
+                  <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">Status</th>
+                  <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
                 {produtosFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center">
+                    <td colSpan={18} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <svg className="h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -259,32 +261,62 @@ export default function EstoquePage() {
                       key={produto.id}
                       className="transition-all duration-200 hover:bg-brand-50/50 dark:hover:bg-brand-900/20"
                     >
-                      <td className="px-6 py-4 font-mono text-xs font-medium text-gray-600 dark:text-gray-400">
+                      <td className="px-4 py-4 font-mono text-xs font-medium text-gray-600 dark:text-gray-400">
                         {produto.codigo}
                       </td>
-                      <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                      <td className="px-4 py-4 font-mono text-[10px] text-gray-500 dark:text-gray-500">
+                        {produto.id}
+                      </td>
+                      <td className="px-4 py-4 font-mono text-[10px] text-gray-500 dark:text-gray-500">
+                        {produto.artistaId}
+                      </td>
+                      <td className="px-4 py-4 font-semibold text-gray-900 dark:text-white">
                         {produto.titulo}
                       </td>
-                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                      <td className="px-4 py-4 text-gray-700 dark:text-gray-300">
                         {produto.artista}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
                         {produto.genero || '—'}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {produto.premsagem}
+                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        {produto.nacionalidade || '—'}
                       </td>
-                      <td className="px-6 py-4 text-right font-medium text-brand-700 dark:text-brand-400">
-                        R$ {produto.preco.toFixed(2)}
+                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        {produto.premsagem || '—'}
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        {produto.encarte || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        {produto.gravadora || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
+                        {produto.anoLancamento || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
+                        {produto.anoPremsagem || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        {produto.condicaoCapa || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        {produto.condicaoDisco || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-right font-medium text-brand-700 dark:text-brand-400">
+                        R$ {produto.valorMercado.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
+                        R$ {produto.custoDisco.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-4 text-center">
                         <span
-                          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusColor[produto.status]}`}
+                          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusColor[produto.status] ?? statusColor['Disponível']}`}
                         >
                           {produto.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"

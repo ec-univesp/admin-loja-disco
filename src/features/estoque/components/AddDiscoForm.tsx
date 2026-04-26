@@ -55,16 +55,16 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
       generoId: '',
       album: '',
       nacionalidade: 'Brasil',
-      premsagem: 'Vinyl',
-      encarte: 'Papel',
+      premsagem: '',
+      encarte: 'Ok',
       gravadora: '',
       anoLancamento: new Date().getFullYear(),
       anoPremsagem: new Date().getFullYear(),
-      condicaoCapa: 'Excelente',
-      condicaoDisco: 'Excelente',
+      condicaoCapa: '',
+      condicaoDisco: '',
       valorMercado: 0,
       custoDisco: 0,
-      status: 'Ativo',
+      status: 'Disponível',
     },
   });
 
@@ -231,16 +231,13 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
 
               <div>
                 <Label htmlFor="premsagem">Prensagem</Label>
-                <select
+                <input
+                  type="text"
                   id="premsagem"
+                  placeholder="Ex: Vinyl, CD..."
                   {...register('premsagem')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
-                >
-                  <option value="Vinyl">Vinyl</option>
-                  <option value="CD">CD</option>
-                  <option value="Cassete">Cassete</option>
-                  <option value="Digital">Digital</option>
-                </select>
+                />
               </div>
 
               <div>
@@ -250,9 +247,9 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
                   {...register('encarte')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 >
-                  <option value="Papel">Papel</option>
-                  <option value="Plástico">Plástico</option>
-                  <option value="Nenhum">Nenhum</option>
+                  <option value="Ok">Ok</option>
+                  <option value="N/A">N/A</option>
+                  <option value="Outro">Outro</option>
                 </select>
               </div>
             </div>
@@ -287,30 +284,24 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="condicaoCapa">Condição da Capa</Label>
-                <select
+                <input
+                  type="text"
                   id="condicaoCapa"
+                  placeholder="Ex: Excelente, Bom..."
                   {...register('condicaoCapa')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
-                >
-                  <option value="Excelente">Excelente</option>
-                  <option value="Bom">Bom</option>
-                  <option value="Razoável">Razoável</option>
-                  <option value="Ruim">Ruim</option>
-                </select>
+                />
               </div>
 
               <div>
                 <Label htmlFor="condicaoDisco">Condição do Disco</Label>
-                <select
+                <input
+                  type="text"
                   id="condicaoDisco"
+                  placeholder="Ex: Excelente, Bom..."
                   {...register('condicaoDisco')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
-                >
-                  <option value="Excelente">Excelente</option>
-                  <option value="Bom">Bom</option>
-                  <option value="Razoável">Razoável</option>
-                  <option value="Ruim">Ruim</option>
-                </select>
+                />
               </div>
             </div>
           </div>
@@ -391,20 +382,6 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Status */}
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <select
-              id="status"
-              {...register('status')}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
-            >
-              <option value="Ativo">Ativo</option>
-              <option value="Inativo">Inativo</option>
-              <option value="Descontinuado">Descontinuado</option>
-            </select>
           </div>
 
           {/* Botões */}
