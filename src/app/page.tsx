@@ -11,7 +11,7 @@ export default function AdminLojaDisco() {
   const router = useRouter();
 
   const handleNewSale = () => {
-    router.push('/nova-venda');
+    router.push('/vendas?novo=1');
   };
 
   const handleNewPurchase = () => {

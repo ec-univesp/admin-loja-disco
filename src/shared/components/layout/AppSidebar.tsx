@@ -38,10 +38,7 @@ const navItems: NavItem[] = [
   {
     icon: <DollarLineIcon />,
     name: 'Vendas',
-    subItems: [
-      { name: 'Lista de Vendas', path: '/vendas' },
-      { name: 'Nova Venda', path: '/nova-venda' },
-    ],
+    subItems: [{ name: 'Lista de Vendas', path: '/vendas' }],
   },
   {
     icon: <BoxCubeIcon />,
