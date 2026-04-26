@@ -8,6 +8,9 @@ import ControlledInput from './input/ControlledInput';
 import CurrencyInput from './input/CurrencyInput';
 import Button from '@/components/ui/button/Button';
 import { useCompras, useDiscos, useItensCompra } from '@/hooks/useStore';
+import { Modal } from '@/components/ui/modal';
+import { useModal } from '@/hooks/useModal';
+import AddDiscoForm from '@/components/products/AddDiscoForm';
 
 interface ItemCompraForm {
   discoId: string;
@@ -31,6 +34,9 @@ const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
   const { discosComArtista, fetchDiscos } = useDiscos();
   const [successMsg, setSuccessMsg] = useState('');
   const [itens, setItens] = useState<ItemCompraForm[]>([{ discoId: '', custoDisco: 0 }]);
+  const cadastrarDiscoModal = useModal();
+  const [indiceCadastro, setIndiceCadastro] = useState<number | null>(null);
+  const [discoIdsAntes, setDiscoIdsAntes] = useState<Set<string>>(new Set());
 
   const {
     register,
@@ -58,6 +64,22 @@ const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
 
   const atualizarItem = (index: number, campo: keyof ItemCompraForm, valor: string | number) =>
     setItens((prev) => prev.map((item, i) => (i === index ? { ...item, [campo]: valor } : item)));
+
+  const abrirCadastroDisco = (index: number) => {
+    setIndiceCadastro(index);
+    setDiscoIdsAntes(new Set(discosComArtista.map((d) => d.id)));
+    cadastrarDiscoModal.openModal();
+  };
+
+  const handleDiscoCadastrado = () => {
+    const novoDisco = discosComArtista.find((d) => !discoIdsAntes.has(d.id));
+    if (indiceCadastro !== null && novoDisco) {
+      atualizarItem(indiceCadastro, 'discoId', novoDisco.id);
+    }
+    setIndiceCadastro(null);
+    setDiscoIdsAntes(new Set());
+    cadastrarDiscoModal.closeModal();
+  };
 
   const handleFormSubmit = async (dadosFormulario: PurchaseFormData) => {
     const itensValidos = itens.filter((item) => item.discoId);
@@ -148,15 +170,24 @@ const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Disco {index + 1}
                     </span>
-                    {itens.length > 1 && (
+                    <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => removerItem(index)}
-                        className="text-sm text-red-500 hover:text-red-700"
+                        onClick={() => abrirCadastroDisco(index)}
+                        className="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
                       >
-                        Remover
+                        + Cadastrar novo disco
                       </button>
-                    )}
+                      {itens.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removerItem(index)}
+                          className="text-sm text-red-500 hover:text-red-700"
+                        >
+                          Remover
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -235,6 +266,19 @@ const PurchaseFormZustand: FC<PurchaseFormZustandProps> = ({ onSuccess }) => {
           </Button>
         </div>
       </Form>
+
+      <Modal
+        isOpen={cadastrarDiscoModal.isOpen}
+        onClose={cadastrarDiscoModal.closeModal}
+        className="m-4 max-h-[90vh] max-w-[900px] overflow-y-auto"
+      >
+        <div className="p-6">
+          <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Cadastrar novo disco
+          </h4>
+          <AddDiscoForm embedded onSuccess={handleDiscoCadastrado} />
+        </div>
+      </Modal>
     </>
   );
 };
