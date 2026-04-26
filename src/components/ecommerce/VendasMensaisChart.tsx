@@ -8,7 +8,7 @@ const ReactApexChart = dynamic(() => import('react-apexcharts'), {
 
 export default function VendasMensaisChart() {
   const options: ApexOptions = {
-    colors: ['#374151', '#6b7280'],
+    colors: ['#374151'],
     chart: {
       fontFamily: 'Outfit, sans-serif',
       type: 'bar',
@@ -90,10 +90,6 @@ export default function VendasMensaisChart() {
       name: 'Vendas',
       data: [4000, 3000, 2000, 2780, 1890, 2390, 3490, 2100, 3800, 4200, 3600, 4100],
     },
-    {
-      name: 'Meta',
-      data: [2400, 1398, 9800, 3908, 4800, 3800, 4300, 2400, 3400, 3900, 3500, 4300],
-    },
   ];
 
   return (
@@ -102,7 +98,7 @@ export default function VendasMensaisChart() {
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Vendas Mensais</h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Comparativo mensal de vendas vs meta
+            Total de vendas por mês
           </p>
         </div>
 
