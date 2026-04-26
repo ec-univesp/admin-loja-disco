@@ -147,7 +147,9 @@ export default function ComprasPage() {
                 <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
                   Total
                 </th>
-                <th className="w-16 px-6 py-3" aria-hidden="true" />
+                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
