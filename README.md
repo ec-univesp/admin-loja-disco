@@ -22,15 +22,15 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/testes-poku-green" alt="Testes" />
+  <img src="https://img.shields.io/badge/testes-Poku_+_%40pokujs%2Freact-yellow" alt="Testes" />
+  &nbsp;&nbsp;
+  <img src="https://img.shields.io/badge/cobertura-pendente-lightgrey" alt="Cobertura" />
   &nbsp;&nbsp;
   <img src="https://img.shields.io/badge/linter-ESLint_9-4B32C3?logo=eslint&logoColor=white" alt="ESLint" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/formatter-Prettier-F7B93E?logo=prettier&logoColor=black" alt="Prettier" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/licença-MIT-blue" alt="Licença MIT" />
+  <img src="https://img.shields.io/badge/licença-GPL--3.0-blue" alt="Licença GPL-3.0" />
   &nbsp;&nbsp;
   <img src="https://img.shields.io/badge/status-em_desenvolvimento-yellow" alt="Status" />
 </p>
@@ -39,7 +39,7 @@
 
 ## Sobre o projeto
 
-Aplicação **Next.js 16 + TypeScript** com App Router que simula o backend via **localStorage** (sem banco de dados externo). Desenvolvida como projeto de estudo para a UNIVESP, cobrindo os principais fluxos de uma loja de discos de vinil:
+Aplicação **Next.js 16 + TypeScript** com App Router que simula o backend via **localStorage**. Desenvolvida como projeto de estudo para a UNIVESP, cobrindo os principais fluxos de uma loja de discos de vinil:
 
 - Cadastro e gerenciamento de discos (estoque)
 - Registro de vendas e compras com suporte a múltiplos discos por transação
@@ -54,28 +54,63 @@ Aplicação **Next.js 16 + TypeScript** com App Router que simula o backend via 
 | Módulo | Descrição |
 |---|---|
 | **Dashboard** | Métricas de vendas, gráficos e resumo de atividades |
-| **Estoque** | CRUD de discos e gêneros musicais |
+| **Estoque** | CRUD de discos, gêneros musicais e artistas |
 | **Nova Venda** | Formulário com múltiplos discos, canal de venda e cálculo automático do total |
-| **Nova Compra** | Formulário com múltiplos discos e custo por disco (`custoDisco`) |
-| **Lista de Vendas** | Histórico de vendas com canais de venda |
+| **Nova Compra** | Formulário com múltiplos discos e custo por disco; cadastro inline de novo disco |
+| **Lista de Vendas** | Histórico de vendas com gestão de canais e clientes |
 | **Entregas** | Listagem por status (todas / pendentes / concluídas) |
-| **Clientes** | Cadastro de clientes e endereços vinculados |
-| **Relatório Financeiro** | Receita, despesas, lucro, canal de venda e top discos — filtráveis por Ano e Mês |
+| **Relatório Financeiro** | Receita, despesas, lucro e análise por dimensão — filtráveis por Ano e Mês |
 
 ---
 
 ## Stack
 
-- **Framework:** Next.js 16 (App Router, output export)
+- **Framework:** Next.js 16 (App Router)
 - **Linguagem:** TypeScript 5.9
 - **Estilo:** Tailwind CSS 4
 - **Estado global:** Zustand 5 com `persist` (localStorage)
 - **Formulários:** react-hook-form 7 + react-number-format
 - **Gráficos:** ApexCharts via react-apexcharts
-- **Calendário:** FullCalendar 6
 - **Exportação:** ExcelJS
-- **Testes:** Poku
+- **Testes:** Poku 4 + `@pokujs/react` + happy-dom *(infra pronta, suíte a ser escrita após integração com o BE)*
 - **Linter / Formatter:** ESLint 9 + Prettier 3
+
+---
+
+## Arquitetura
+
+O projeto segue uma arquitetura por **features** (domínios de negócio) com infraestrutura compartilhada em **shared**:
+
+```
+src/
+├── app/                          # Rotas Next.js (page.tsx + layout root)
+│   ├── compras/ · entregas/ · estoque/ · faturamento/
+│   ├── nova-compra/ · nova-venda/ · vendas/
+│   ├── layout.tsx                # Root layout (providers + AppShell)
+│   └── page.tsx                  # Dashboard
+│
+├── features/                     # Módulos de negócio (componentes e mocks por domínio)
+│   ├── dashboard/components/     # MetricasLoja, VendasMensaisChart, VendasRecentes
+│   ├── estoque/components/       # AddDiscoForm, EditDiscoModal
+│   ├── vendas/components/        # SalesForm, ClienteEnderecoModal, CanalVendaModal
+│   ├── compras/components/       # PurchaseForm
+│   └── faturamento/{components,mocks}/
+│
+└── shared/                       # Tudo reutilizável entre features
+    ├── components/
+    │   ├── ui/                   # Button, Badge, Modal, Dropdown, Table
+    │   ├── form/                 # Form, Label, ControlledInput, CurrencyInput, TextArea
+    │   └── layout/               # AppShell, AppHeader, AppSidebar, Logo, etc.
+    ├── context/                  # SidebarContext, ThemeContext
+    ├── hooks/                    # useModal, useGoBack
+    ├── icons/                    # SVGs como componentes React
+    ├── services/                 # api.ts (localStorage), exportExcel.ts
+    ├── store/                    # appStore (Zustand) + useStore (selectors) + AppStoreInitializer
+    ├── types/                    # Modelos do domínio (Disco, Venda, Cliente...)
+    └── utils/                    # currency.ts (formatBRL, parseBRL)
+```
+
+**Regra de ouro:** componentes em `features/<x>/` só podem importar de outras `features/<x>/` (a mesma) e de `shared/`. Nunca uma feature importa outra.
 
 ---
 
@@ -83,17 +118,14 @@ Aplicação **Next.js 16 + TypeScript** com App Router que simula o backend via 
 
 ### Pré-requisitos
 
-- Node.js >= 18
+- Node.js >= 20
 - npm >= 9
 
 ### Instalação
 
 ```bash
-# Clone o repositório
 git clone git@github.com:ec-univesp/admin-loja-disco.git
 cd admin-loja-disco
-
-# Instale as dependências
 npm install
 ```
 
@@ -112,70 +144,33 @@ npm run build
 npm run start
 ```
 
-> O projeto usa `output: "export"` — gera arquivos estáticos na pasta `out/`.
-
 ---
 
 ## Testes
 
-```bash
-# Executa todos os testes
-npm test
+> **Status:** infraestrutura configurada (Poku + `@pokujs/react` + happy-dom), suíte a ser implementada após a integração com o backend.
 
-# Modo watch
-npm run test:watch
+```bash
+npm test                  # roda toda a suíte (quando existir)
+npm run test:watch        # modo watch
 ```
 
-Os testes ficam em `src/test/` e são executados pelo **Poku** com concorrência paralela.
+Configuração em [`poku.config.mjs`](./poku.config.mjs). Os testes deverão viver em pastas `__tests__/` ao lado do código que validam.
+
+> ⚠️ **Bug conhecido** ao executar testes `.tsx` com `tsx` + `@pokujs/react`: ver [`docs/issues/`](./docs/issues) (a ser criado quando os testes forem retomados).
 
 ---
 
 ## Lint e formatação
 
 ```bash
-# Verifica lint
-npm run lint
-
-# Formata o código
-npm run format
-
-# Verifica formatação sem alterar
-npm run format:check
-```
-
----
-
-## Estrutura de pastas relevante
-
-```
-src/
-├── app/
-│   └── (admin)/
-│       └── (others-pages)/   # Páginas do painel (estoque, faturamento, etc.)
-├── components/
-│   ├── form/                  # Formulários (vendas, compras)
-│   ├── ecommerce/             # Componentes de métricas e gráficos
-│   └── tables/                # Tabelas reutilizáveis
-├── services/
-│   ├── api.ts                 # Simulação de backend via localStorage
-│   └── exportExcel.ts         # Exportação de relatórios Excel
-├── store/
-│   └── appStore.ts            # Estado global com Zustand
-├── types/
-│   ├── models.ts              # Barrel re-exporter
-│   ├── vendaModel.ts
-│   ├── discoModel.ts
-│   ├── clienteModel.ts
-│   ├── compraModel.ts
-│   ├── canalVendaModel.ts
-│   ├── artistaModel.ts
-│   ├── generoMusicalModel.ts
-│   └── appStateModel.ts
-└── test/                      # Testes com Poku
+npm run lint              # verifica lint
+npm run format            # formata o código
+npm run format:check      # apenas verifica
 ```
 
 ---
 
 ## Licença
 
-Distribuído sob a licença **MIT**. Veja [LICENSE](LICENSE) para mais informações.
+Distribuído sob a licença **GNU GPL v3.0**. Veja [LICENSE](LICENSE) para o texto completo.

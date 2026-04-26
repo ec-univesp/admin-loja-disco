@@ -42,8 +42,6 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
     register,
     handleSubmit,
     reset,
-    control,
-    watch,
     formState: { errors },
   } = useForm<PurchaseFormData>({
     defaultValues: {

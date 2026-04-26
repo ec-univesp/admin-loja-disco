@@ -7,7 +7,6 @@ import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoMo
 import CanalVendaModal from '@/features/vendas/components/CanalVendaModal';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import { TrashBinIcon } from '@/shared/icons';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
 

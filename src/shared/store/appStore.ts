@@ -6,10 +6,8 @@ import type {
   GeneroMusical,
   Artista,
   Disco,
-  GeneroDisco,
   Cliente,
   Endereco,
-  ClienteEndereco,
   Compra,
   ItemCompra,
   Venda,
@@ -130,7 +128,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiGenerosMusical.getAll();
             set({ generosMusical: data, loading: false });
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao buscar gêneros musicais',
               loading: false,
@@ -146,7 +144,7 @@ export const useAppStore = create<AppStore>()(
               generosMusical: [...state.generosMusical, newGenero],
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao criar gênero musical',
               loading: false,
@@ -157,14 +155,14 @@ export const useAppStore = create<AppStore>()(
         updateGeneroMusical: async (id, updates) => {
           set({ loading: true, error: null });
           try {
-            const updated = await apiGenerosMusical.update(id, updates);
+            await apiGenerosMusical.update(id, updates);
             set((state) => ({
               generosMusical: state.generosMusical.map((g) =>
                 g.id === id ? { ...g, ...updates } : g
               ),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao atualizar gênero musical',
               loading: false,
@@ -180,7 +178,7 @@ export const useAppStore = create<AppStore>()(
               generosMusical: state.generosMusical.filter((g) => g.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao deletar gênero musical',
               loading: false,
@@ -194,7 +192,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiArtistas.getAll();
             set({ artistas: data, loading: false });
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao buscar artistas',
               loading: false,
@@ -211,7 +209,7 @@ export const useAppStore = create<AppStore>()(
               loading: false,
             }));
             return newArtista;
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao criar artista',
               loading: false,
@@ -229,7 +227,7 @@ export const useAppStore = create<AppStore>()(
               ),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao atualizar artista',
               loading: false,
@@ -245,7 +243,7 @@ export const useAppStore = create<AppStore>()(
               artistas: state.artistas.filter((a) => a.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao deletar artista',
               loading: false,
@@ -259,7 +257,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiDiscos.getAll();
             set({ discos: data, loading: false });
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao buscar discos',
               loading: false,
@@ -275,7 +273,7 @@ export const useAppStore = create<AppStore>()(
               discos: [...state.discos, newDisco],
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao criar disco',
               loading: false,
@@ -293,7 +291,7 @@ export const useAppStore = create<AppStore>()(
               ),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao atualizar disco',
               loading: false,
@@ -309,7 +307,7 @@ export const useAppStore = create<AppStore>()(
               discos: state.discos.filter((d) => d.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao deletar disco',
               loading: false,
@@ -323,7 +321,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiClientes.getAll();
             set({ clientes: data, loading: false });
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao buscar clientes',
               loading: false,
@@ -340,7 +338,7 @@ export const useAppStore = create<AppStore>()(
               loading: false,
             }));
             return newCliente;
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao criar cliente',
               loading: false,
@@ -358,7 +356,7 @@ export const useAppStore = create<AppStore>()(
               ),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao atualizar cliente',
               loading: false,
@@ -374,7 +372,7 @@ export const useAppStore = create<AppStore>()(
               clientes: state.clientes.filter((c) => c.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao deletar cliente',
               loading: false,
@@ -388,7 +386,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiEnderecos.getAll();
             set({ enderecos: data, loading: false });
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao buscar endereços',
               loading: false,
@@ -405,7 +403,7 @@ export const useAppStore = create<AppStore>()(
               loading: false,
             }));
             return newEndereco;
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao criar endereço',
               loading: false,
@@ -423,7 +421,7 @@ export const useAppStore = create<AppStore>()(
               ),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao atualizar endereço',
               loading: false,
@@ -439,7 +437,7 @@ export const useAppStore = create<AppStore>()(
               enderecos: state.enderecos.filter((e) => e.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao deletar endereço',
               loading: false,
@@ -453,7 +451,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiVendas.getAll();
             set({ vendas: data, loading: false });
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao buscar vendas',
               loading: false,
@@ -470,7 +468,7 @@ export const useAppStore = create<AppStore>()(
               loading: false,
             }));
             return newVenda;
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao criar venda',
               loading: false,
@@ -488,7 +486,7 @@ export const useAppStore = create<AppStore>()(
               ),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao atualizar venda',
               loading: false,
@@ -504,7 +502,7 @@ export const useAppStore = create<AppStore>()(
               vendas: state.vendas.filter((v) => v.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao deletar venda',
               loading: false,
@@ -518,7 +516,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiItensVenda.getAll();
             set({ itensVenda: data, loading: false });
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao buscar itens de venda',
               loading: false,
@@ -534,7 +532,7 @@ export const useAppStore = create<AppStore>()(
               itensVenda: [...state.itensVenda, newItemVenda],
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao criar item de venda',
               loading: false,
@@ -550,7 +548,7 @@ export const useAppStore = create<AppStore>()(
               itensVenda: state.itensVenda.filter((v) => v.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao deletar item de venda',
               loading: false,
@@ -564,7 +562,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiCompras.getAll();
             set({ compras: data, loading: false });
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao buscar compras',
               loading: false,
@@ -581,7 +579,7 @@ export const useAppStore = create<AppStore>()(
               loading: false,
             }));
             return newCompra;
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao criar compra',
               loading: false,
@@ -599,7 +597,7 @@ export const useAppStore = create<AppStore>()(
               ),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao atualizar compra',
               loading: false,
@@ -615,7 +613,7 @@ export const useAppStore = create<AppStore>()(
               compras: state.compras.filter((c) => c.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao deletar compra',
               loading: false,
@@ -629,7 +627,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiItensCompra.getAll();
             set({ itensCompra: data, loading: false });
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao buscar itens de compra',
               loading: false,
@@ -645,7 +643,7 @@ export const useAppStore = create<AppStore>()(
               itensCompra: [...state.itensCompra, newItemCompra],
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao criar item de compra',
               loading: false,
@@ -661,7 +659,7 @@ export const useAppStore = create<AppStore>()(
               itensCompra: state.itensCompra.filter((c) => c.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({
               error: 'Erro ao deletar item de compra',
               loading: false,
@@ -675,7 +673,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiClientesEnderecos.getAll();
             set({ clientesEnderecos: data, loading: false });
-          } catch (error) {
+          } catch {
             set({ error: 'Erro ao buscar relação cliente-endereço', loading: false });
           }
         },
@@ -686,7 +684,7 @@ export const useAppStore = create<AppStore>()(
             set((state) => ({
               clientesEnderecos: [...state.clientesEnderecos, { clienteId, enderecoId }],
             }));
-          } catch (error) {
+          } catch {
             set({ error: 'Erro ao vincular endereço ao cliente' });
           }
         },
@@ -700,7 +698,7 @@ export const useAppStore = create<AppStore>()(
                   !(vinculo.clienteId === clienteId && vinculo.enderecoId === enderecoId)
               ),
             }));
-          } catch (error) {
+          } catch {
             set({ error: 'Erro ao desvincular endereço do cliente' });
           }
         },
@@ -711,7 +709,7 @@ export const useAppStore = create<AppStore>()(
           try {
             const data = await apiCanaisVenda.getAll();
             set({ canaisVenda: data, loading: false });
-          } catch (error) {
+          } catch {
             set({ error: 'Erro ao buscar canais de venda', loading: false });
           }
         },
@@ -725,7 +723,7 @@ export const useAppStore = create<AppStore>()(
               loading: false,
             }));
             return newCanal;
-          } catch (error) {
+          } catch {
             set({ error: 'Erro ao criar canal de venda', loading: false });
           }
         },
@@ -740,7 +738,7 @@ export const useAppStore = create<AppStore>()(
               ),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({ error: 'Erro ao atualizar canal de venda', loading: false });
           }
         },
@@ -753,7 +751,7 @@ export const useAppStore = create<AppStore>()(
               canaisVenda: state.canaisVenda.filter((canal) => canal.id !== id),
               loading: false,
             }));
-          } catch (error) {
+          } catch {
             set({ error: 'Erro ao deletar canal de venda', loading: false });
           }
         },
