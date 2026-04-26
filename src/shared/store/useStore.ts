@@ -217,7 +217,6 @@ export const useVendas = () => {
 export const useItensVenda = () => {
   const itensVenda = useAppStore((state) => state.itensVenda);
   const discos = useAppStore((state) => state.discos);
-  const vendas = useAppStore((state) => state.vendas);
   const loading = useAppStore((state) => state.loading);
   const error = useAppStore((state) => state.error);
   const fetchItensVenda = useAppStore((state) => state.fetchItensVenda);

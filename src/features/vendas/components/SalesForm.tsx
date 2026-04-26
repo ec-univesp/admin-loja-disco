@@ -1,7 +1,7 @@
 'use client';
 
 import React, { FC, useEffect, useMemo, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import Form from '@/shared/components/form/Form';
 import Label from '@/shared/components/form/Label';
 import ControlledInput from '@/shared/components/form/ControlledInput';
@@ -63,7 +63,6 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
     register,
     control,
     handleSubmit,
-    watch,
     reset,
     setValue,
     formState: { errors },
@@ -89,10 +88,10 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
     fetchClientesEnderecos();
   }, [fetchClientes, fetchEnderecos, fetchDiscos, fetchCanaisVenda, fetchClientesEnderecos]);
 
-  const clienteId = watch('clienteId');
-  const canalVendaId = watch('canalVendaId');
-  const frete = watch('frete');
-  const custosAdicionais = watch('custosAdicionais');
+  const clienteId = useWatch({ control, name: 'clienteId' });
+  const canalVendaId = useWatch({ control, name: 'canalVendaId' });
+  const frete = useWatch({ control, name: 'frete' });
+  const custosAdicionais = useWatch({ control, name: 'custosAdicionais' });
 
   const enderecosDoCliente = useMemo(() => {
     if (!clienteId) return [] as typeof enderecos;
