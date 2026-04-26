@@ -43,10 +43,7 @@ const navItems: NavItem[] = [
   {
     icon: <BoxCubeIcon />,
     name: 'Compras',
-    subItems: [
-      { name: 'Lista de Compras', path: '/compras' },
-      { name: 'Nova Compra', path: '/nova-compra' },
-    ],
+    subItems: [{ name: 'Lista de Compras', path: '/compras' }],
   },
   {
     icon: <DocsIcon />,

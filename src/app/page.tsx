@@ -15,7 +15,7 @@ export default function AdminLojaDisco() {
   };
 
   const handleNewPurchase = () => {
-    router.push('/nova-compra');
+    router.push('/compras?novo=1');
   };
 
   const handleAddProduct = () => {
