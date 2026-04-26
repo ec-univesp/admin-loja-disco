@@ -2,7 +2,7 @@
 import { useEffect, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import Badge from '../ui/badge/Badge';
-import { useVendas, useItensVenda, useDiscos } from '@/hooks/useStore';
+import { useVendas, useItensVenda, useDiscos } from '@/shared/store/useStore';
 
 const statusColor: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
   Entregue: 'success',

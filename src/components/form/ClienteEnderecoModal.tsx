@@ -8,7 +8,7 @@ import {
   useClientes,
   useEnderecos,
   useClientesEnderecos,
-} from '@/hooks/useStore';
+} from '@/shared/store/useStore';
 
 interface ClienteEnderecoModalProps {
   isOpen: boolean;

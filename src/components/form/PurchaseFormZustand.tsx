@@ -7,7 +7,7 @@ import Label from './Label';
 import ControlledInput from './input/ControlledInput';
 import CurrencyInput from './input/CurrencyInput';
 import Button from '@/components/ui/button/Button';
-import { useCompras, useDiscos, useItensCompra } from '@/hooks/useStore';
+import { useCompras, useDiscos, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import AddDiscoForm from '@/components/products/AddDiscoForm';

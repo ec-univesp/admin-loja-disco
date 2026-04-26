@@ -3,7 +3,7 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
-import { useDiscos, useGenerosMusical, useArtistas } from '@/hooks/useStore';
+import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import EditDiscoModal from '@/components/products/EditDiscoModal';

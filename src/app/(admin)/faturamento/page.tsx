@@ -14,8 +14,8 @@ import {
   useGenerosMusical,
   useArtistas,
   useEnderecos,
-} from '@/hooks/useStore';
-import { useAppStore } from '@/store/appStore';
+} from '@/shared/store/useStore';
+import { useAppStore } from '@/shared/store/appStore';
 import {
   exportarBackupCompleto,
   exportarRelatorioFinanceiro,

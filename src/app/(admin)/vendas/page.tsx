@@ -2,7 +2,7 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/hooks/useStore';
+import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/shared/store/useStore';
 import ClienteEnderecoModal from '@/components/form/ClienteEnderecoModal';
 import CanalVendaModal from '@/components/form/CanalVendaModal';
 import { Modal } from '@/components/ui/modal';

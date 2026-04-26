@@ -17,7 +17,7 @@ import {
   useItensVenda,
   useCanaisVenda,
   useClientesEnderecos,
-} from '@/hooks/useStore';
+} from '@/shared/store/useStore';
 import ClienteEnderecoModal from './ClienteEnderecoModal';
 import CanalVendaModal from './CanalVendaModal';
 

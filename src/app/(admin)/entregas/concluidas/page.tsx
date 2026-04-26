@@ -2,7 +2,7 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useVendas, useItensVenda, useDiscos } from '@/hooks/useStore';
+import { useVendas, useItensVenda, useDiscos } from '@/shared/store/useStore';
 
 export default function EntregasConcluidasPage() {
   const { vendasComDetalhes, fetchVendas } = useVendas();

@@ -3,7 +3,7 @@ import './globals.css';
 import 'flatpickr/dist/flatpickr.css';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
-import { AppStoreInitializer } from '@/components/providers/AppStoreInitializer';
+import { AppStoreInitializer } from '@/shared/store/AppStoreInitializer';
 
 const outfit = Outfit({
   subsets: ['latin'],

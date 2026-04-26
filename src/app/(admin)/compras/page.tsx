@@ -2,7 +2,7 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { useCompras, useItensCompra } from '@/hooks/useStore';
+import { useCompras, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import { TrashBinIcon } from '@/icons';

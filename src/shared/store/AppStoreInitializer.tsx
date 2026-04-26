@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAppStore } from '@/store/appStore';
+import { useAppStore } from '@/shared/store/appStore';
 import { initializeStorage } from '@/shared/services/api';
 
 /**

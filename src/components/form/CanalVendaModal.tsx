@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Modal } from '@/components/ui/modal';
 import Button from '@/components/ui/button/Button';
 import Label from '@/components/form/Label';
-import { useCanaisVenda } from '@/hooks/useStore';
+import { useCanaisVenda } from '@/shared/store/useStore';
 
 interface CanalVendaModalProps {
   isOpen: boolean;

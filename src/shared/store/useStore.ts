@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAppStore } from '@/store/appStore';
+import { useAppStore } from '@/shared/store/appStore';
 
 /**
  * Hook para usar dados de Gênero Musical

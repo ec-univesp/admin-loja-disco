@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
-import { useDiscos, useArtistas, useGenerosMusical } from '@/hooks/useStore';
+import { useDiscos, useArtistas, useGenerosMusical } from '@/shared/store/useStore';
 import Button from '@/components/ui/button/Button';
 import Label from '@/components/form/Label';
 import CurrencyInput from '@/components/form/input/CurrencyInput';

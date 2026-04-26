@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/modal';
 import Button from '@/components/ui/button/Button';
 import Label from '@/components/form/Label';
 import CurrencyInput from '@/components/form/input/CurrencyInput';
-import { useDiscos, useGenerosMusical, useArtistas } from '@/hooks/useStore';
+import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
 import type { Disco } from '@/shared/types/models';
 
 interface EditDiscoModalProps {

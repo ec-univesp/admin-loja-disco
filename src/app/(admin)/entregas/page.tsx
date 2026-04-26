@@ -2,7 +2,7 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useVendas, useItensVenda, useDiscos } from '@/hooks/useStore';
+import { useVendas, useItensVenda, useDiscos } from '@/shared/store/useStore';
 
 const STATUS_ENTREGA = ['Confirmada', 'Enviada', 'Entregue', 'Cancelada'] as const;
 type StatusEntrega = (typeof STATUS_ENTREGA)[number];
