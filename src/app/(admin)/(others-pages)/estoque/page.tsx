@@ -3,7 +3,7 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
-import { useDiscos, useGenerosMusical } from '@/hooks/useStore';
+import { useDiscos, useGenerosMusical, useArtistas } from '@/hooks/useStore';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import EditDiscoModal from '@/components/products/EditDiscoModal';
@@ -45,11 +45,14 @@ const determinarStatus = (condicaoCapa: string, condicaoDisco: string): 'Dispon�
 export default function EstoquePage() {
   const { discosComArtista, loading, deleteDisco } = useDiscos();
   const { generosMusical, fetchGenerosMusical, createGeneroMusical, deleteGeneroMusical } = useGenerosMusical();
+  const { artistas, fetchArtistas, createArtista, deleteArtista } = useArtistas();
   const [busca, setBusca] = useState('');
   const [filtroGenero, setFiltroGenero] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
+  const [novoArtista, setNovoArtista] = useState('');
   const [editDiscoId, setEditDiscoId] = useState<string | null>(null);
   const generoModal = useModal();
+  const artistaModal = useModal();
 
   const deleteDiscoModal = useModal();
   const [discoParaApagar, setDiscoParaApagar] = useState<{ id: string; titulo: string } | null>(null);
@@ -57,9 +60,13 @@ export default function EstoquePage() {
   const deleteGeneroModal = useModal();
   const [generoParaApagar, setGeneroParaApagar] = useState<{ id: string; nome: string } | null>(null);
 
+  const deleteArtistaModal = useModal();
+  const [artistaParaApagar, setArtistaParaApagar] = useState<{ id: string; nome: string } | null>(null);
+
   useEffect(() => {
     fetchGenerosMusical();
-  }, [fetchGenerosMusical]);
+    fetchArtistas();
+  }, [fetchGenerosMusical, fetchArtistas]);
 
   const handleAddGenero = async () => {
     const nome = novoGenero.trim();
@@ -81,6 +88,21 @@ export default function EstoquePage() {
     await deleteGeneroMusical(generoParaApagar.id); // TODO: API
     setGeneroParaApagar(null);
     deleteGeneroModal.closeModal();
+  };
+
+  const handleAddArtista = async () => {
+    const nome = novoArtista.trim();
+    if (!nome) return;
+    await createArtista({ nome, generoId: '' });
+    setNovoArtista('');
+    artistaModal.closeModal();
+  };
+
+  const handleConfirmarApagarArtista = async () => {
+    if (!artistaParaApagar) return;
+    await deleteArtista(artistaParaApagar.id); // TODO: API
+    setArtistaParaApagar(null);
+    deleteArtistaModal.closeModal();
   };
 
   const produtos = useMemo<ProdutoDisplay[]>(
@@ -163,6 +185,14 @@ export default function EstoquePage() {
                 onClick={generoModal.openModal}
               >
                 Gênero Musical
+              </Button>
+              <Button
+                size="md"
+                variant="outline"
+                startIcon={iconPlus}
+                onClick={artistaModal.openModal}
+              >
+                Artista
               </Button>
               <Link href="/estoque/add-produto" className="inline-block">
                 <Button size="md" variant="primary" startIcon={iconPlus}>
@@ -372,6 +402,111 @@ export default function EstoquePage() {
                 Salvar
               </Button>
             </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={artistaModal.isOpen}
+        onClose={artistaModal.closeModal}
+        className="m-4 max-w-[500px]"
+      >
+        <div className="p-6">
+          <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Cadastrar Artista
+          </h4>
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Nome do artista *
+              </label>
+              <input
+                type="text"
+                value={novoArtista}
+                onChange={(e) => setNovoArtista(e.target.value)}
+                placeholder="Ex: The Beatles, Caetano Veloso..."
+                className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddArtista();
+                }}
+                autoFocus
+              />
+            </div>
+
+            {artistas.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Artistas já cadastrados:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {artistas.map((artista) => (
+                    <span
+                      key={artista.id}
+                      className="inline-flex items-center gap-1 rounded-full bg-brand-50 pl-3 pr-1 py-1 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
+                    >
+                      {artista.nome}
+                      <button
+                        type="button"
+                        aria-label={`Apagar artista ${artista.nome}`}
+                        title={`Apagar artista ${artista.nome}`}
+                        onClick={() => {
+                          setArtistaParaApagar({ id: artista.id, nome: artista.nome });
+                          deleteArtistaModal.openModal();
+                        }}
+                        className="ml-0.5 rounded-full p-0.5 text-brand-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                      >
+                        <TrashBinIcon className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button size="sm" variant="outline" onClick={artistaModal.closeModal}>
+                Cancelar
+              </Button>
+              <Button size="sm" variant="primary" onClick={handleAddArtista}>
+                Salvar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={deleteArtistaModal.isOpen}
+        onClose={deleteArtistaModal.closeModal}
+        className="m-4 max-w-[440px]"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Apagar artista
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Tem certeza que deseja apagar o artista{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">
+              {artistaParaApagar?.nome}
+            </span>
+            ? Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={deleteArtistaModal.closeModal}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmarApagarArtista}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Apagar
+            </button>
           </div>
         </div>
       </Modal>
