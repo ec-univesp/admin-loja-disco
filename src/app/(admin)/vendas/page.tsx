@@ -1,5 +1,5 @@
 'use client';
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/shared/store/useStore';

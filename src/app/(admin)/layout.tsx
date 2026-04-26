@@ -1,9 +1,9 @@
 'use client';
 
 import { useSidebar } from '@/shared/context/SidebarContext';
-import AppHeader from '@/layout/AppHeader';
-import AppSidebar from '@/layout/AppSidebar';
-import Backdrop from '@/layout/Backdrop';
+import AppHeader from '@/shared/components/layout/AppHeader';
+import AppSidebar from '@/shared/components/layout/AppSidebar';
+import Backdrop from '@/shared/components/layout/Backdrop';
 import React from 'react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

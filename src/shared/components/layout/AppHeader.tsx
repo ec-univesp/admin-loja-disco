@@ -1,7 +1,7 @@
 'use client';
-import { ThemeToggleButton } from '@/components/common/ThemeToggleButton';
-import Logo from '@/components/common/Logo';
-import UserDropdown from '@/components/header/UserDropdown';
+import { ThemeToggleButton } from '@/shared/components/layout/ThemeToggleButton';
+import Logo from '@/shared/components/layout/Logo';
+import UserDropdown from '@/shared/components/layout/UserDropdown';
 import { useSidebar } from '@/shared/context/SidebarContext';
 import React, { useState } from 'react';
 

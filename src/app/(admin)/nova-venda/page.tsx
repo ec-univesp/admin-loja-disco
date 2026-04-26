@@ -1,6 +1,6 @@
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import SalesFormZustand from '@/components/form/SalesFormZustand';
-import ComponentCard from '@/components/common/ComponentCard';
+import ComponentCard from '@/shared/components/layout/ComponentCard';
 import { Metadata } from 'next';
 import React from 'react';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import AddDiscoForm from '@/components/products/AddDiscoForm';
 
 export default function AddProdutoPage() {
