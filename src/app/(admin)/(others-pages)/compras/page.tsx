@@ -7,6 +7,13 @@ import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import { TrashBinIcon } from '@/icons';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/services/exportExcel';
+import Button from '@/components/ui/button/Button';
+
+const iconPlus = (
+  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+  </svg>
+);
 
 const formatNumeroCompra = (posicaoNaLista: number) =>
   `CMP-${String(posicaoNaLista + 1).padStart(4, '0')}`;
@@ -105,11 +112,10 @@ export default function ComprasPage() {
               onChange={(e) => setBusca(e.target.value)}
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             />
-            <Link
-              href="/nova-compra"
-              className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-            >
-              + Nova Compra
+            <Link href="/nova-compra" className="inline-block">
+              <Button size="md" variant="primary" startIcon={iconPlus}>
+                Nova Compra
+              </Button>
             </Link>
             <button
               type="button"
