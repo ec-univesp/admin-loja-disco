@@ -1,5 +1,5 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
-import SalesFormZustand from '@/components/form/SalesFormZustand';
+import SalesFormZustand from '@/features/vendas/components/SalesForm';
 import ComponentCard from '@/shared/components/layout/ComponentCard';
 import { Metadata } from 'next';
 import React from 'react';

@@ -6,7 +6,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import EditDiscoModal from '@/components/products/EditDiscoModal';
+import EditDiscoModal from '@/features/estoque/components/EditDiscoModal';
 import { TrashBinIcon } from '@/shared/icons';
 
 interface ProdutoDisplay {
