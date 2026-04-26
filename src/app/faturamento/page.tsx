@@ -74,13 +74,12 @@ export default function FaturamentoPage() {
   const [mesFiltro, setMesFiltro] = useState<number>(0);
 
   const [dimensao, setDimensao] = useState<Dimensao>('genero');
-  const [mostrarAvancados, setMostrarAvancados] = useState(false);
 
-  const [fCanal, setFCanal] = useState('');
-  const [fGenero, setFGenero] = useState('');
-  const [fArtista, setFArtista] = useState('');
-  const [fEstado, setFEstado] = useState('');
-  const [fPagamento, setFPagamento] = useState('');
+  const fCanal = '';
+  const fGenero = '';
+  const fArtista = '';
+  const fEstado = '';
+  const fPagamento = '';
 
   useEffect(() => {
     fetchVendas();
@@ -267,6 +266,7 @@ export default function FaturamentoPage() {
   const isMockDimensao = dadosDimensaoReal.length === 0;
 
   const receitaAnalise = dadosDimensao.reduce((s, d) => s + d.total, 0);
+  void receitaAnalise;
 
   const estadosDisponiveis = useMemo(
     () => [...new Set(enderecos.map((e) => e.estado).filter(Boolean))].sort(),
@@ -276,15 +276,8 @@ export default function FaturamentoPage() {
     () => [...new Set(vendas.map((v) => v.pagamento).filter(Boolean))].sort(),
     [vendas]
   );
-
-  const qtdFiltrosAtivos = [fCanal, fGenero, fArtista, fEstado, fPagamento].filter(Boolean).length;
-  const limparAvancados = () => {
-    setFCanal('');
-    setFGenero('');
-    setFArtista('');
-    setFEstado('');
-    setFPagamento('');
-  };
+  void estadosDisponiveis;
+  void pagamentosDisponiveis;
 
   const vendasDetalhe = vendasBase.map((v) => ({
     id: v.id,
@@ -470,59 +463,7 @@ export default function FaturamentoPage() {
               <span className="font-semibold text-gray-600 dark:text-gray-300">
                 R$ {totalReceita.toFixed(2)}
               </span>
-              {qtdFiltrosAtivos > 0 && (
-                <>
-                  {' · '}Filtrado:{' '}
-                  <span className="text-brand-600 dark:text-brand-400 font-semibold">
-                    R$ {receitaAnalise.toFixed(2)}
-                  </span>{' '}
-                  <span className="text-gray-400">
-                    ({totalReceita > 0 ? ((receitaAnalise / totalReceita) * 100).toFixed(1) : '0'}%
-                    do total)
-                  </span>
-                </>
-              )}
             </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {qtdFiltrosAtivos > 0 && (
-              <button
-                onClick={limparAvancados}
-                className="h-8 rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-medium text-red-500 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
-              >
-                Limpar filtros
-              </button>
-            )}
-            <button
-              onClick={() => setMostrarAvancados((v) => !v)}
-              className={`flex h-8 items-center gap-2 rounded-lg border px-3 text-xs font-medium transition-colors ${
-                qtdFiltrosAtivos > 0
-                  ? 'border-brand-300 bg-brand-50 text-brand-600 dark:border-brand-700 dark:bg-brand-900/20 dark:text-brand-400'
-                  : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
-              }`}
-            >
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M3 5h14M6 10h8M9 15h2"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Filtros avançados
-              {qtdFiltrosAtivos > 0 && (
-                <span className="bg-brand-500 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white">
-                  {qtdFiltrosAtivos}
-                </span>
-              )}
-            </button>
           </div>
         </div>
         <div className="mb-4 flex flex-wrap gap-2">
@@ -541,75 +482,6 @@ export default function FaturamentoPage() {
           ))}
         </div>
 
-        {mostrarAvancados && (
-          <div className="mb-4 rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.02]">
-            <p className="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-              Filtros adicionais
-            </p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              <FiltroSelect
-                label="Canal de Venda"
-                value={fCanal}
-                onChange={setFCanal}
-                disabled={dimensao === 'canal'}
-              >
-                {canaisVenda.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nome}
-                  </option>
-                ))}
-              </FiltroSelect>
-              <FiltroSelect
-                label="Gênero Musical"
-                value={fGenero}
-                onChange={setFGenero}
-                disabled={dimensao === 'genero'}
-              >
-                {generosMusical.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.nome}
-                  </option>
-                ))}
-              </FiltroSelect>
-              <FiltroSelect
-                label="Artista"
-                value={fArtista}
-                onChange={setFArtista}
-                disabled={dimensao === 'artista'}
-              >
-                {artistas.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.nome}
-                  </option>
-                ))}
-              </FiltroSelect>
-              <FiltroSelect
-                label="Estado"
-                value={fEstado}
-                onChange={setFEstado}
-                disabled={dimensao === 'estado'}
-              >
-                {estadosDisponiveis.map((e) => (
-                  <option key={e} value={e}>
-                    {e}
-                  </option>
-                ))}
-              </FiltroSelect>
-              <FiltroSelect
-                label="Forma de Pagamento"
-                value={fPagamento}
-                onChange={setFPagamento}
-                disabled={dimensao === 'pagamento'}
-              >
-                {pagamentosDisponiveis.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </FiltroSelect>
-            </div>
-          </div>
-        )}
         <GraficoBarras dados={dadosDimensao} cor={CORES_DIMENSAO[dimensao]} />
       </div>
     </div>
@@ -653,39 +525,6 @@ function KpiCard({
       </div>
       <p className={`mt-1 text-2xl font-bold ${cor}`}>{valor}</p>
       <p className="mt-1 text-xs text-gray-400">{sub}</p>
-    </div>
-  );
-}
-
-function FiltroSelect({
-  label,
-  value,
-  onChange,
-  disabled,
-  children,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  disabled?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-        {label}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        title={disabled ? 'Dimensão atualmente selecionada' : undefined}
-        className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-      >
-        <option value="">Todos</option>
-        {children}
-      </select>
-      {disabled && <p className="mt-0.5 text-[10px] text-gray-400">Agrupamento ativo</p>}
     </div>
   );
 }
