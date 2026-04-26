@@ -1,6 +1,6 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import Button from '@/components/ui/button/Button';
+import Button from '@/shared/components/ui/button/Button';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';

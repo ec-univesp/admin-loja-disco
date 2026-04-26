@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { Dropdown } from '../ui/dropdown/Dropdown';
+import { Dropdown } from '@/shared/components/ui/dropdown/Dropdown';
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);

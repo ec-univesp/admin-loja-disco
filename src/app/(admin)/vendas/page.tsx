@@ -5,11 +5,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/shared/store/useStore';
 import ClienteEnderecoModal from '@/components/form/ClienteEnderecoModal';
 import CanalVendaModal from '@/components/form/CanalVendaModal';
-import { Modal } from '@/components/ui/modal';
+import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { TrashBinIcon } from '@/shared/icons';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
-import Button from '@/components/ui/button/Button';
+import Button from '@/shared/components/ui/button/Button';
 
 const iconPlus = (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

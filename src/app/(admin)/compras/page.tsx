@@ -3,11 +3,11 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useCompras, useItensCompra } from '@/shared/store/useStore';
-import { Modal } from '@/components/ui/modal';
+import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { TrashBinIcon } from '@/shared/icons';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
-import Button from '@/components/ui/button/Button';
+import Button from '@/shared/components/ui/button/Button';
 
 const iconPlus = (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

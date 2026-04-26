@@ -2,12 +2,12 @@
 
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import Form from './Form';
-import Label from './Label';
-import ControlledInput from './input/ControlledInput';
-import CurrencyInput from './input/CurrencyInput';
-import TextArea from './input/TextArea';
-import Button from '@/components/ui/button/Button';
+import Form from '@/shared/components/form/Form';
+import Label from '@/shared/components/form/Label';
+import ControlledInput from '@/shared/components/form/ControlledInput';
+import CurrencyInput from '@/shared/components/form/CurrencyInput';
+import TextArea from '@/shared/components/form/TextArea';
+import Button from '@/shared/components/ui/button/Button';
 import { formatBRL } from '@/shared/utils/currency';
 import {
   useVendas,

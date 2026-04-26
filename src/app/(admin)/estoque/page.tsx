@@ -1,10 +1,10 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import Button from '@/components/ui/button/Button';
+import Button from '@/shared/components/ui/button/Button';
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
 import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
-import { Modal } from '@/components/ui/modal';
+import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import EditDiscoModal from '@/components/products/EditDiscoModal';
 import { TrashBinIcon } from '@/shared/icons';

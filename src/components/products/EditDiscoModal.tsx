@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Modal } from '@/components/ui/modal';
-import Button from '@/components/ui/button/Button';
-import Label from '@/components/form/Label';
-import CurrencyInput from '@/components/form/input/CurrencyInput';
+import { Modal } from '@/shared/components/ui/modal';
+import Button from '@/shared/components/ui/button/Button';
+import Label from '@/shared/components/form/Label';
+import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
 import type { Disco } from '@/shared/types/models';
 

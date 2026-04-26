@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { useDiscos, useArtistas, useGenerosMusical } from '@/shared/store/useStore';
-import Button from '@/components/ui/button/Button';
-import Label from '@/components/form/Label';
-import CurrencyInput from '@/components/form/input/CurrencyInput';
+import Button from '@/shared/components/ui/button/Button';
+import Label from '@/shared/components/form/Label';
+import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import { formatBRL } from '@/shared/utils/currency';
 
 interface AddDiscoFormData {

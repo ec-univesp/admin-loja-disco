@@ -2,13 +2,13 @@
 
 import React, { FC, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import Form from './Form';
-import Label from './Label';
-import ControlledInput from './input/ControlledInput';
-import CurrencyInput from './input/CurrencyInput';
-import Button from '@/components/ui/button/Button';
+import Form from '@/shared/components/form/Form';
+import Label from '@/shared/components/form/Label';
+import ControlledInput from '@/shared/components/form/ControlledInput';
+import CurrencyInput from '@/shared/components/form/CurrencyInput';
+import Button from '@/shared/components/ui/button/Button';
 import { useCompras, useDiscos, useItensCompra } from '@/shared/store/useStore';
-import { Modal } from '@/components/ui/modal';
+import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import AddDiscoForm from '@/components/products/AddDiscoForm';
 

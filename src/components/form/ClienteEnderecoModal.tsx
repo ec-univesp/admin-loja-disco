@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Modal } from '@/components/ui/modal';
-import Button from '@/components/ui/button/Button';
-import Label from '@/components/form/Label';
+import { Modal } from '@/shared/components/ui/modal';
+import Button from '@/shared/components/ui/button/Button';
+import Label from '@/shared/components/form/Label';
 import {
   useClientes,
   useEnderecos,

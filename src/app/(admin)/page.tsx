@@ -4,7 +4,7 @@ import { MetricasLoja } from '@/components/ecommerce/MetricasLoja';
 import React from 'react';
 import VendasMensaisChart from '@/components/ecommerce/VendasMensaisChart';
 import VendasRecentes from '@/components/ecommerce/VendasRecentes';
-import Button from '@/components/ui/button/Button';
+import Button from '@/shared/components/ui/button/Button';
 import { useRouter } from 'next/navigation';
 
 export default function AdminLojaDisco() {
