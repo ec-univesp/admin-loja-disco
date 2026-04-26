@@ -30,7 +30,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/licença-MIT-blue" alt="Licença MIT" />
+  <img src="https://img.shields.io/badge/licença-GPL--3.0-blue" alt="Licença GPL-3.0" />
   &nbsp;&nbsp;
   <img src="https://img.shields.io/badge/status-em_desenvolvimento-yellow" alt="Status" />
 </p>
@@ -173,4 +173,4 @@ npm run format:check      # apenas verifica
 
 ## Licença
 
-Distribuído sob a licença **MIT**. Veja [LICENSE](LICENSE) para mais informações.
+Distribuído sob a licença **GNU GPL v3.0**. Veja [LICENSE](LICENSE) para o texto completo.
