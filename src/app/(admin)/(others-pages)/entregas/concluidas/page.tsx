@@ -2,15 +2,19 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useVendas } from '@/hooks/useStore';
+import { useVendas, useItensVenda, useDiscos } from '@/hooks/useStore';
 
 export default function EntregasConcluidasPage() {
   const { vendasComDetalhes, fetchVendas } = useVendas();
+  const { fetchItensVenda } = useItensVenda();
+  const { fetchDiscos } = useDiscos();
   const [busca, setBusca] = useState('');
 
   useEffect(() => {
     fetchVendas();
-  }, [fetchVendas]);
+    fetchItensVenda();
+    fetchDiscos();
+  }, [fetchVendas, fetchItensVenda, fetchDiscos]);
 
   const concluidas = useMemo(
     () => vendasComDetalhes.filter((v) => v.statusPedido === 'Entregue'),
@@ -21,9 +25,10 @@ export default function EntregasConcluidasPage() {
     const buscaNorm = busca.toLowerCase();
     return concluidas.filter(
       (v) =>
+        v.id.toLowerCase().includes(buscaNorm) ||
         v.clienteNome.toLowerCase().includes(buscaNorm) ||
-        v.enderecoCidade.toLowerCase().includes(buscaNorm) ||
-        v.dataVenda.toLowerCase().includes(buscaNorm)
+        v.enderecoCompleto.toLowerCase().includes(buscaNorm) ||
+        v.produtosResumo.toLowerCase().includes(buscaNorm)
     );
   }, [concluidas, busca]);
 
@@ -87,19 +92,19 @@ export default function EntregasConcluidasPage() {
             <thead>
               <tr className="border-t border-gray-100 dark:border-gray-800">
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Venda
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
                   Cliente
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Cidade
+                  Produto
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Data da Venda
+                  Endereço
                 </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Pagamento
-                </th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                  Total
+                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                  Status
                 </th>
               </tr>
             </thead>
@@ -119,20 +124,22 @@ export default function EntregasConcluidasPage() {
                     key={venda.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
+                    <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-gray-400">
+                      {venda.id}
+                    </td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
                       {venda.clienteNome}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.enderecoCidade}
+                      {venda.produtosResumo}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.dataVenda}
+                      {venda.enderecoCompleto}
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.pagamento}
-                    </td>
-                    <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
-                      R$ {venda.valorTotal.toFixed(2)}
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        {venda.statusPedido}
+                      </span>
                     </td>
                   </tr>
                 ))
