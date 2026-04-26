@@ -2,7 +2,7 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useVendas } from '@/hooks/useStore';
+import { useVendas, useItensVenda, useDiscos } from '@/hooks/useStore';
 
 const STATUS_ENTREGA = ['Confirmada', 'Enviada', 'Entregue', 'Cancelada'] as const;
 type StatusEntrega = (typeof STATUS_ENTREGA)[number];
@@ -16,12 +16,16 @@ const statusColor: Record<string, string> = {
 
 export default function EntregasPage() {
   const { vendasComDetalhes, fetchVendas } = useVendas();
+  const { fetchItensVenda } = useItensVenda();
+  const { fetchDiscos } = useDiscos();
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('Todos');
 
   useEffect(() => {
     fetchVendas();
-  }, [fetchVendas]);
+    fetchItensVenda();
+    fetchDiscos();
+  }, [fetchVendas, fetchItensVenda, fetchDiscos]);
 
   const entregas = useMemo(
     () =>
@@ -35,9 +39,10 @@ export default function EntregasPage() {
     const buscaNorm = busca.toLowerCase();
     return entregas.filter((v) => {
       const matchBusca =
+        v.id.toLowerCase().includes(buscaNorm) ||
         v.clienteNome.toLowerCase().includes(buscaNorm) ||
-        v.enderecoCidade.toLowerCase().includes(buscaNorm) ||
-        v.dataVenda.toLowerCase().includes(buscaNorm);
+        v.enderecoCompleto.toLowerCase().includes(buscaNorm) ||
+        v.produtosResumo.toLowerCase().includes(buscaNorm);
       const matchStatus = filtroStatus === 'Todos' || v.statusPedido === filtroStatus;
       return matchBusca && matchStatus;
     });
@@ -114,19 +119,16 @@ export default function EntregasPage() {
             <thead>
               <tr className="border-t border-gray-100 dark:border-gray-800">
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Venda
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
                   Cliente
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Cidade
+                  Produto
                 </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Data da Venda
-                </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Pagamento
-                </th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                  Total
+                  Endereço
                 </th>
                 <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
                   Status
@@ -137,7 +139,7 @@ export default function EntregasPage() {
               {entregasFiltradas.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="px-6 py-10 text-center text-sm text-gray-400 dark:text-gray-500"
                   >
                     Nenhuma entrega registrada.
@@ -149,20 +151,17 @@ export default function EntregasPage() {
                     key={venda.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
+                    <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-gray-400">
+                      {venda.id}
+                    </td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
                       {venda.clienteNome}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.enderecoCidade}
+                      {venda.produtosResumo}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.dataVenda}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.pagamento}
-                    </td>
-                    <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
-                      R$ {venda.valorTotal.toFixed(2)}
+                      {venda.enderecoCompleto}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
