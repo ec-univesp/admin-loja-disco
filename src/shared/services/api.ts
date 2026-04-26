@@ -13,7 +13,7 @@ import type {
   Venda,
   ItemVenda,
   CanalVenda,
-} from '@/types/models';
+} from '@/shared/types/models';
 
 const STORAGE_KEYS = {
   GENEROS_MUSICAL: 'app_generos_musical',

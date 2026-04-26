@@ -7,7 +7,7 @@ import { useDiscos, useArtistas, useGenerosMusical } from '@/hooks/useStore';
 import Button from '@/components/ui/button/Button';
 import Label from '@/components/form/Label';
 import CurrencyInput from '@/components/form/input/CurrencyInput';
-import { formatBRL } from '@/utils/currency';
+import { formatBRL } from '@/shared/utils/currency';
 
 interface AddDiscoFormData {
   artistaNome: string;

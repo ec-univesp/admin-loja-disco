@@ -16,7 +16,7 @@ import type {
   ItemVenda,
   CanalVenda,
   AppState,
-} from '@/types/models';
+} from '@/shared/types/models';
 import {
   apiGenerosMusical,
   apiArtistas,
@@ -29,7 +29,7 @@ import {
   apiItensCompra,
   apiCanaisVenda,
   apiClientesEnderecos,
-} from '@/services/api';
+} from '@/shared/services/api';
 
 interface AppStore extends AppState {
   // Ações para Generos Musicais

@@ -20,7 +20,7 @@ import {
   exportarBackupCompleto,
   exportarRelatorioFinanceiro,
   exportarRelatorioFinanceiroCSV,
-} from '@/services/exportExcel';
+} from '@/shared/services/exportExcel';
 import { getMockMensal, mockDimensoesProporcoes, escalarDimensao } from '@/mocks/faturamento';
 
 const MESES_PT = [

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useAppStore } from '@/store/appStore';
-import { initializeStorage } from '@/services/api';
+import { initializeStorage } from '@/shared/services/api';
 
 /**
  * Componente que inicializa o store e carrega todos os dados

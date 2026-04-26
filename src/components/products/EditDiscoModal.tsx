@@ -6,7 +6,7 @@ import Button from '@/components/ui/button/Button';
 import Label from '@/components/form/Label';
 import CurrencyInput from '@/components/form/input/CurrencyInput';
 import { useDiscos, useGenerosMusical, useArtistas } from '@/hooks/useStore';
-import type { Disco } from '@/types/models';
+import type { Disco } from '@/shared/types/models';
 
 interface EditDiscoModalProps {
   isOpen: boolean;

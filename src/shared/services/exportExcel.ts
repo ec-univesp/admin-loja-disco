@@ -1,7 +1,7 @@
 'use client';
 
 import ExcelJS from 'exceljs';
-import type { AppState } from '@/types/models';
+import type { AppState } from '@/shared/types/models';
 
 async function downloadWorkbook(workbook: ExcelJS.Workbook, filename: string) {
   const buffer = await workbook.xlsx.writeBuffer();

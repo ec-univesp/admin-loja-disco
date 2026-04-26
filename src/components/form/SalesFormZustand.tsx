@@ -8,7 +8,7 @@ import ControlledInput from './input/ControlledInput';
 import CurrencyInput from './input/CurrencyInput';
 import TextArea from './input/TextArea';
 import Button from '@/components/ui/button/Button';
-import { formatBRL } from '@/utils/currency';
+import { formatBRL } from '@/shared/utils/currency';
 import {
   useVendas,
   useClientes,

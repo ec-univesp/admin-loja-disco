@@ -8,7 +8,7 @@ import CanalVendaModal from '@/components/form/CanalVendaModal';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import { TrashBinIcon } from '@/icons';
-import { exportarTabelaCSV, exportarTabelaExcel } from '@/services/exportExcel';
+import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/components/ui/button/Button';
 
 const iconPlus = (
