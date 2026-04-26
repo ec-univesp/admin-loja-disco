@@ -17,6 +17,15 @@ export default function CanalVendaModal({ isOpen, onClose, onCreated }: CanalVen
   const [nome, setNome] = useState('');
   const [taxa, setTaxa] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [canalParaApagar, setCanalParaApagar] = useState<{ id: string; nome: string } | null>(
+    null
+  );
+
+  const handleConfirmarExclusao = async () => {
+    if (!canalParaApagar) return;
+    await deleteCanalVenda(canalParaApagar.id);
+    setCanalParaApagar(null);
+  };
 
   const handleSalvar = async () => {
     if (!nome.trim()) {
@@ -85,7 +94,7 @@ export default function CanalVendaModal({ isOpen, onClose, onCreated }: CanalVen
                     {canal.nome} {canal.taxaPadrao ? `· ${canal.taxaPadrao}%` : ''}
                     <button
                       type="button"
-                      onClick={() => deleteCanalVenda(canal.id)}
+                      onClick={() => setCanalParaApagar({ id: canal.id, nome: canal.nome })}
                       className="ml-1 text-brand-500 hover:text-error-500"
                       title="Remover"
                     >
@@ -107,6 +116,42 @@ export default function CanalVendaModal({ isOpen, onClose, onCreated }: CanalVen
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={canalParaApagar !== null}
+        onClose={() => setCanalParaApagar(null)}
+        className="m-4 max-w-[440px]"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Apagar canal de venda
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Tem certeza que deseja apagar o canal{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">
+              {canalParaApagar?.nome}
+            </span>
+            ? Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setCanalParaApagar(null)}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmarExclusao}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Apagar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </Modal>
   );
 }
