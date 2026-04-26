@@ -9,6 +9,13 @@ import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import { TrashBinIcon } from '@/icons';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/services/exportExcel';
+import Button from '@/components/ui/button/Button';
+
+const iconPlus = (
+  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+  </svg>
+);
 
 const statusColor: Record<string, string> = {
   Concluída: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
@@ -162,35 +169,29 @@ export default function VendasPage() {
               onChange={(e) => setBusca(e.target.value)}
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             />
-            <button
-              type="button"
+            <Button
+              size="md"
+              variant="outline"
+              startIcon={iconPlus}
               onClick={() => setShowCanalModal(true)}
-              className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
             >
-              + Novo Canal de Venda
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowCanalModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40"
-            >
-              Deletar Canal de Venda
-            </button>
-            <button
-              type="button"
+              Canal de Venda
+            </Button>
+            <Button
+              size="md"
+              variant="outline"
+              startIcon={iconPlus}
               onClick={() => {
                 setEditClienteId(undefined);
                 setShowClienteModal(true);
               }}
-              className="border-brand-500 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 inline-flex items-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm font-medium transition-colors dark:bg-gray-900"
             >
-              + Novo Cliente
-            </button>
-            <Link
-              href="/nova-venda"
-              className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-            >
-              + Nova Venda
+              Cliente
+            </Button>
+            <Link href="/nova-venda" className="inline-block">
+              <Button size="md" variant="primary" startIcon={iconPlus}>
+                Nova Venda
+              </Button>
             </Link>
             <button
               type="button"
