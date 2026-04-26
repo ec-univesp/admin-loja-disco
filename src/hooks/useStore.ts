@@ -160,6 +160,8 @@ export const useVendas = () => {
   const vendas = useAppStore((state) => state.vendas);
   const clientes = useAppStore((state) => state.clientes);
   const enderecos = useAppStore((state) => state.enderecos);
+  const itensVenda = useAppStore((state) => state.itensVenda);
+  const discos = useAppStore((state) => state.discos);
   const loading = useAppStore((state) => state.loading);
   const error = useAppStore((state) => state.error);
   const fetchVendas = useAppStore((state) => state.fetchVendas);
@@ -167,19 +169,34 @@ export const useVendas = () => {
   const updateVenda = useAppStore((state) => state.updateVenda);
   const deleteVenda = useAppStore((state) => state.deleteVenda);
 
-  // Mapeia vendas com informações de cliente e endereço
+  // Mapeia vendas com informações de cliente, endereço e produtos
   const vendasComDetalhes = useMemo(
     () =>
       vendas.map((venda) => {
         const cliente = clientes.find((c) => c.id === venda.clienteId);
         const endereco = enderecos.find((e) => e.id === venda.enderecoId);
+        const produtos = itensVenda
+          .filter((i) => i.vendaId === venda.id)
+          .map((i) => discos.find((d) => d.id === i.discoId)?.album)
+          .filter((album): album is string => !!album);
+        const enderecoCompleto = endereco
+          ? `${endereco.logradouro}, ${endereco.numero} - ${endereco.cidade}/${endereco.estado}`
+          : 'Endereço não informado';
         return {
           ...venda,
           clienteNome: cliente?.nome || 'Desconhecido',
           enderecoCidade: endereco?.cidade || 'Cidade desconhecida',
+          enderecoCompleto,
+          produtos,
+          produtosResumo:
+            produtos.length === 0
+              ? '—'
+              : produtos.length === 1
+                ? produtos[0]
+                : `${produtos[0]} +${produtos.length - 1}`,
         };
       }),
-    [vendas, clientes, enderecos]
+    [vendas, clientes, enderecos, itensVenda, discos]
   );
 
   return {
