@@ -1,25 +1,21 @@
 import { Outfit } from 'next/font/google';
 import './globals.css';
-import 'flatpickr/dist/flatpickr.css';
-import { SidebarProvider } from '@/context/SidebarContext';
-import { ThemeProvider } from '@/context/ThemeContext';
-import { AppStoreInitializer } from '@/components/providers/AppStoreInitializer';
+import { SidebarProvider } from '@/shared/context/SidebarContext';
+import { ThemeProvider } from '@/shared/context/ThemeContext';
+import { AppStoreInitializer } from '@/shared/store/AppStoreInitializer';
+import AppShell from '@/shared/components/layout/AppShell';
 
-const outfit = Outfit({
-  subsets: ['latin'],
-});
+const outfit = Outfit({ subsets: ['latin'] });
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <AppStoreInitializer />
         <ThemeProvider>
-          <SidebarProvider>{children}</SidebarProvider>
+          <SidebarProvider>
+            <AppShell>{children}</AppShell>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>
