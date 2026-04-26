@@ -1,6 +1,5 @@
 import { Outfit } from 'next/font/google';
 import './globals.css';
-import 'flatpickr/dist/flatpickr.css';
 import { SidebarProvider } from '@/shared/context/SidebarContext';
 import { ThemeProvider } from '@/shared/context/ThemeContext';
 import { AppStoreInitializer } from '@/shared/store/AppStoreInitializer';
