@@ -1,10 +1,10 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
-import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/shared/store/useStore';
 import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoModal';
-import CanalVendaModal from '@/features/vendas/components/CanalVendaModal';
+import NovoCadastroModal from '@/features/vendas/components/NovoCadastroModal';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
@@ -36,10 +36,13 @@ export default function VendasPage() {
   const { itensVenda, fetchItensVenda } = useItensVenda();
   const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
 
+  const searchParams = useSearchParams();
+  const abrirNaVenda = searchParams.get('novo') === '1';
+
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('Todos');
   const [showClienteModal, setShowClienteModal] = useState(false);
-  const [showCanalModal, setShowCanalModal] = useState(false);
+  const [showNovoCadastroModal, setShowNovoCadastroModal] = useState(() => abrirNaVenda);
   const [editClienteId, setEditClienteId] = useState<string | undefined>();
 
   const deleteVendaModal = useModal();
@@ -172,28 +175,12 @@ export default function VendasPage() {
             />
             <Button
               size="md"
-              variant="outline"
+              variant="primary"
               startIcon={iconPlus}
-              onClick={() => setShowCanalModal(true)}
+              onClick={() => setShowNovoCadastroModal(true)}
             >
-              Canal de Venda
+              Novo
             </Button>
-            <Button
-              size="md"
-              variant="outline"
-              startIcon={iconPlus}
-              onClick={() => {
-                setEditClienteId(undefined);
-                setShowClienteModal(true);
-              }}
-            >
-              Cliente
-            </Button>
-            <Link href="/nova-venda" className="inline-block">
-              <Button size="md" variant="primary" startIcon={iconPlus}>
-                Nova Venda
-              </Button>
-            </Link>
             <button
               type="button"
               onClick={handleExportCSV}
@@ -365,7 +352,11 @@ export default function VendasPage() {
         onClose={() => setShowClienteModal(false)}
         clienteId={editClienteId}
       />
-      <CanalVendaModal isOpen={showCanalModal} onClose={() => setShowCanalModal(false)} />
+      <NovoCadastroModal
+        isOpen={showNovoCadastroModal}
+        onClose={() => setShowNovoCadastroModal(false)}
+        initialView={abrirNaVenda ? 'venda' : 'select'}
+      />
 
       <Modal
         isOpen={deleteVendaModal.isOpen}
