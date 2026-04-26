@@ -26,7 +26,12 @@ interface AddDiscoFormData {
   status: string;
 }
 
-export default function AddDiscoForm() {
+interface AddDiscoFormProps {
+  onSuccess?: () => void;
+  embedded?: boolean;
+}
+
+export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFormProps = {}) {
   const router = useRouter();
   const { createDisco, loading, error } = useDiscos();
   const { createArtista } = useArtistas();
@@ -96,26 +101,41 @@ export default function AddDiscoForm() {
       setSuccessMessage('Disco adicionado com sucesso!');
       reset();
 
-      setTimeout(() => {
-        setSuccessMessage('');
-        router.push('/estoque');
-      }, 2000);
+      if (onSuccess) {
+        setTimeout(() => {
+          setSuccessMessage('');
+          onSuccess();
+        }, 800);
+      } else {
+        setTimeout(() => {
+          setSuccessMessage('');
+          router.push('/estoque');
+        }, 2000);
+      }
     } catch (err) {
       console.error('Erro ao adicionar disco:', err);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900/50">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-brand-900 dark:text-brand-50">
-            🎵 Novo Disco
-          </h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Adicione um novo disco ao seu estoque
-          </p>
-        </div>
+    <div className={embedded ? '' : 'space-y-6'}>
+      <div
+        className={
+          embedded
+            ? ''
+            : 'rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900/50'
+        }
+      >
+        {!embedded && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-brand-900 dark:text-brand-50">
+              🎵 Novo Disco
+            </h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Adicione um novo disco ao seu estoque
+            </p>
+          </div>
+        )}
 
         {successMessage && (
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-success-200 bg-success-50 p-4 dark:border-success-900/50 dark:bg-success-900/20">
