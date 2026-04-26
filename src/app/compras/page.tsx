@@ -1,6 +1,6 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
-import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useCompras, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
@@ -8,6 +8,7 @@ import { useModal } from '@/shared/hooks/useModal';
 import { TrashBinIcon } from '@/shared/icons';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
+import NovaCompraModal from '@/features/compras/components/NovaCompraModal';
 
 const iconPlus = (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,7 +23,12 @@ export default function ComprasPage() {
   const { comprasComDetalhes, fetchCompras, deleteCompra } = useCompras();
   const { itensCompra, fetchItensCompra } = useItensCompra();
 
+  const searchParams = useSearchParams();
+
   const [busca, setBusca] = useState('');
+  const [showNovaCompraModal, setShowNovaCompraModal] = useState(
+    () => searchParams.get('novo') === '1'
+  );
   const deleteCompraModal = useModal();
   const [compraParaApagar, setCompraParaApagar] = useState<{ id: string; numero: string } | null>(
     null
@@ -112,11 +118,14 @@ export default function ComprasPage() {
               onChange={(e) => setBusca(e.target.value)}
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             />
-            <Link href="/nova-compra" className="inline-block">
-              <Button size="md" variant="primary" startIcon={iconPlus}>
-                Nova Compra
-              </Button>
-            </Link>
+            <Button
+              size="md"
+              variant="primary"
+              startIcon={iconPlus}
+              onClick={() => setShowNovaCompraModal(true)}
+            >
+              Nova Compra
+            </Button>
             <button
               type="button"
               onClick={handleExportCSV}
@@ -205,6 +214,11 @@ export default function ComprasPage() {
           </table>
         </div>
       </div>
+
+      <NovaCompraModal
+        isOpen={showNovaCompraModal}
+        onClose={() => setShowNovaCompraModal(false)}
+      />
 
       <Modal
         isOpen={deleteCompraModal.isOpen}
