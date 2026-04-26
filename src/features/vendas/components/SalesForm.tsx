@@ -48,7 +48,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const { createVenda, loading: vendaLoading } = useVendas();
   const { clientes, fetchClientes } = useClientes();
   const { enderecos, fetchEnderecos } = useEnderecos();
-  const { discosComArtista, fetchDiscos } = useDiscos();
+  const { discosComArtista, fetchDiscos, updateDisco } = useDiscos();
   const { createItemVenda } = useItensVenda();
   const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
   const { clientesEnderecos, fetchClientesEnderecos } = useClientesEnderecos();
@@ -147,6 +147,9 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               precoVenda: Number(item.precoVenda),
             })
           )
+        );
+        await Promise.all(
+          itensValidos.map((item) => updateDisco(item.discoId, { status: 'Vendido' }))
         );
         reset();
         setItens([{ discoId: '', precoVenda: 0 }]);
