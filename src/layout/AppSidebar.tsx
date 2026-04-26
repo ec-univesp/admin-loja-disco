@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '../context/SidebarContext';
+import { useSidebar } from '@/shared/context/SidebarContext';
 import Logo from '../components/common/Logo';
 import {
   BoxCubeIcon,
@@ -12,7 +12,7 @@ import {
   GridIcon,
   HorizontaLDots,
   PaperPlaneIcon,
-} from '../icons/index';
+} from '@/shared/icons';
 
 type NavItem = {
   name: string;

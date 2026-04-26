@@ -6,8 +6,8 @@ import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/shared/
 import ClienteEnderecoModal from '@/components/form/ClienteEnderecoModal';
 import CanalVendaModal from '@/components/form/CanalVendaModal';
 import { Modal } from '@/components/ui/modal';
-import { useModal } from '@/hooks/useModal';
-import { TrashBinIcon } from '@/icons';
+import { useModal } from '@/shared/hooks/useModal';
+import { TrashBinIcon } from '@/shared/icons';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/components/ui/button/Button';
 

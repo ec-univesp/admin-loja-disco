@@ -9,7 +9,7 @@ import CurrencyInput from './input/CurrencyInput';
 import Button from '@/components/ui/button/Button';
 import { useCompras, useDiscos, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/components/ui/modal';
-import { useModal } from '@/hooks/useModal';
+import { useModal } from '@/shared/hooks/useModal';
 import AddDiscoForm from '@/components/products/AddDiscoForm';
 
 interface ItemCompraForm {

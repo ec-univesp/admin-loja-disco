@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Badge from '../ui/badge/Badge';
-import { ArrowUpIcon, BoxIconLine, GroupIcon } from '@/icons';
+import { ArrowUpIcon, BoxIconLine, GroupIcon } from '@/shared/icons';
 
 export const MetricasLoja = () => {
   return (

@@ -2,7 +2,7 @@
 import { ThemeToggleButton } from '@/components/common/ThemeToggleButton';
 import Logo from '@/components/common/Logo';
 import UserDropdown from '@/components/header/UserDropdown';
-import { useSidebar } from '@/context/SidebarContext';
+import { useSidebar } from '@/shared/context/SidebarContext';
 import React, { useState } from 'react';
 
 const AppHeader: React.FC = () => {

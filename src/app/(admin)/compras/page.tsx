@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useCompras, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/components/ui/modal';
-import { useModal } from '@/hooks/useModal';
-import { TrashBinIcon } from '@/icons';
+import { useModal } from '@/shared/hooks/useModal';
+import { TrashBinIcon } from '@/shared/icons';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/components/ui/button/Button';
 
