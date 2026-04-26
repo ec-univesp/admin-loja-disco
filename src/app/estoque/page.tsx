@@ -1,13 +1,15 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
-import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
 import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import EditDiscoModal from '@/features/estoque/components/EditDiscoModal';
+import AddDiscoForm from '@/features/estoque/components/AddDiscoForm';
 import { TrashBinIcon } from '@/shared/icons';
+
+type AddOption = 'menu' | 'genero' | 'artista' | 'disco';
 
 interface ProdutoDisplay {
   id: string;
@@ -30,13 +32,6 @@ interface ProdutoDisplay {
   status: string;
 }
 
-const statusColor: Record<string, string> = {
-  Disponível: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400',
-  Vendido: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-  'Baixo Estoque': 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400',
-  Esgotado: 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400',
-};
-
 const gerarCodigo = (index: number): string => {
   return `DISC-${String(index + 1).padStart(4, '0')}`;
 };
@@ -50,8 +45,13 @@ export default function EstoquePage() {
   const [novoGenero, setNovoGenero] = useState('');
   const [novoArtista, setNovoArtista] = useState('');
   const [editDiscoId, setEditDiscoId] = useState<string | null>(null);
-  const generoModal = useModal();
-  const artistaModal = useModal();
+  const addModal = useModal();
+  const [addOption, setAddOption] = useState<AddOption>('menu');
+
+  const closeAddModal = () => {
+    addModal.closeModal();
+    setAddOption('menu');
+  };
 
   const deleteDiscoModal = useModal();
   const [discoParaApagar, setDiscoParaApagar] = useState<{ id: string; titulo: string } | null>(null);
@@ -72,7 +72,6 @@ export default function EstoquePage() {
     if (!nome) return;
     await createGeneroMusical({ nome });
     setNovoGenero('');
-    generoModal.closeModal();
   };
 
   const handleConfirmarApagarDisco = async () => {
@@ -94,7 +93,6 @@ export default function EstoquePage() {
     if (!nome) return;
     await createArtista({ nome, generoId: '' });
     setNovoArtista('');
-    artistaModal.closeModal();
   };
 
   const handleConfirmarApagarArtista = async () => {
@@ -188,25 +186,12 @@ export default function EstoquePage() {
               </select>
               <Button
                 size="md"
-                variant="outline"
+                variant="primary"
                 startIcon={iconPlus}
-                onClick={generoModal.openModal}
+                onClick={addModal.openModal}
               >
-                Gênero Musical
+                Adicionar
               </Button>
-              <Button
-                size="md"
-                variant="outline"
-                startIcon={iconPlus}
-                onClick={artistaModal.openModal}
-              >
-                Artista
-              </Button>
-              <Link href="/estoque/add-produto" className="inline-block">
-                <Button size="md" variant="primary" startIcon={iconPlus}>
-                  Adicionar Disco
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
@@ -217,10 +202,8 @@ export default function EstoquePage() {
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Código</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">ID</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Artista ID</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Álbum</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Artista</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Nome Artista</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Gênero</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Nacionalidade</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Prensagem</th>
@@ -232,14 +215,13 @@ export default function EstoquePage() {
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cond. Disco</th>
                   <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Valor Mercado</th>
                   <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Custo</th>
-                  <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">Status</th>
                   <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
                 {produtosFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan={18} className="px-6 py-12 text-center">
+                    <td colSpan={15} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <svg className="h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -263,12 +245,6 @@ export default function EstoquePage() {
                     >
                       <td className="px-4 py-4 font-mono text-xs font-medium text-gray-600 dark:text-gray-400">
                         {produto.codigo}
-                      </td>
-                      <td className="px-4 py-4 font-mono text-[10px] text-gray-500 dark:text-gray-500">
-                        {produto.id}
-                      </td>
-                      <td className="px-4 py-4 font-mono text-[10px] text-gray-500 dark:text-gray-500">
-                        {produto.artistaId}
                       </td>
                       <td className="px-4 py-4 font-semibold text-gray-900 dark:text-white">
                         {produto.titulo}
@@ -308,13 +284,6 @@ export default function EstoquePage() {
                       </td>
                       <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
                         R$ {produto.custoDisco.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <span
-                          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusColor[produto.status] ?? statusColor['Disponível']}`}
-                        >
-                          {produto.status}
-                        </span>
                       </td>
                       <td className="px-4 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
@@ -370,140 +339,219 @@ export default function EstoquePage() {
       </div>
 
       <Modal
-        isOpen={generoModal.isOpen}
-        onClose={generoModal.closeModal}
-        className="m-4 max-w-[500px]"
+        isOpen={addModal.isOpen}
+        onClose={closeAddModal}
+        className={`m-4 ${addOption === 'disco' ? 'max-w-[1000px]' : 'max-w-[560px]'}`}
       >
         <div className="p-6">
-          <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Cadastrar Gênero Musical
-          </h4>
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Nome do gênero *
-              </label>
-              <input
-                type="text"
-                value={novoGenero}
-                onChange={(e) => setNovoGenero(e.target.value)}
-                placeholder="Ex: MPB, Reggae, Samba..."
-                className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddGenero();
-                }}
-                autoFocus
-              />
-            </div>
+          {addOption !== 'menu' && (
+            <button
+              type="button"
+              onClick={() => setAddOption('menu')}
+              className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-700 transition-colors hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Voltar
+            </button>
+          )}
 
-            {generosMusical.length > 0 && (
-              <div>
-                <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-                  Gêneros já cadastrados:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {generosMusical.map((genero) => (
-                    <span
-                      key={genero.id}
-                      className="inline-flex items-center gap-1 rounded-full bg-brand-50 pl-3 pr-1 py-1 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
-                    >
-                      {genero.nome}
-                      <button
-                        type="button"
-                        aria-label={`Apagar gênero ${genero.nome}`}
-                        title={`Apagar gênero ${genero.nome}`}
-                        onClick={() => {
-                          setGeneroParaApagar({ id: genero.id, nome: genero.nome });
-                          deleteGeneroModal.openModal();
-                        }}
-                        className="ml-0.5 rounded-full p-0.5 text-brand-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                      >
-                        <TrashBinIcon className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
+          {addOption === 'menu' && (
+            <>
+              <h4 className="mb-1 text-lg font-semibold text-gray-800 dark:text-white/90">
+                O que deseja adicionar?
+              </h4>
+              <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
+                Escolha uma das opções abaixo para continuar.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => setAddOption('genero')}
+                  className="group flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
+                >
+                  <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19a3 3 0 11-6 0 3 3 0 016 0zm12-3a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </span>
+                  <span className="font-semibold text-gray-800 dark:text-white/90">Gênero Musical</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Cadastre um novo gênero.</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAddOption('artista')}
+                  className="group flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
+                >
+                  <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </span>
+                  <span className="font-semibold text-gray-800 dark:text-white/90">Artista</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Cadastre um novo artista.</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAddOption('disco')}
+                  className="group flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
+                >
+                  <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                      <circle cx="12" cy="12" r="3" strokeWidth={2} />
+                    </svg>
+                  </span>
+                  <span className="font-semibold text-gray-800 dark:text-white/90">Adicionar Disco</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Cadastre um novo disco no estoque.</span>
+                </button>
+              </div>
+            </>
+          )}
+
+          {addOption === 'genero' && (
+            <>
+              <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Cadastrar Gênero Musical
+              </h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Nome do gênero *
+                  </label>
+                  <input
+                    type="text"
+                    value={novoGenero}
+                    onChange={(e) => setNovoGenero(e.target.value)}
+                    placeholder="Ex: MPB, Reggae, Samba..."
+                    className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleAddGenero();
+                    }}
+                    autoFocus
+                  />
+                </div>
+
+                {generosMusical.length > 0 && (
+                  <div>
+                    <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                      Gêneros já cadastrados:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {generosMusical.map((genero) => (
+                        <span
+                          key={genero.id}
+                          className="inline-flex items-center gap-1 rounded-full bg-brand-50 pl-3 pr-1 py-1 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
+                        >
+                          {genero.nome}
+                          <button
+                            type="button"
+                            aria-label={`Apagar gênero ${genero.nome}`}
+                            title={`Apagar gênero ${genero.nome}`}
+                            onClick={() => {
+                              setGeneroParaApagar({ id: genero.id, nome: genero.nome });
+                              deleteGeneroModal.openModal();
+                            }}
+                            className="ml-0.5 rounded-full p-0.5 text-brand-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                          >
+                            <TrashBinIcon className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button size="sm" variant="outline" onClick={closeAddModal}>
+                    Cancelar
+                  </Button>
+                  <Button size="sm" variant="primary" onClick={handleAddGenero}>
+                    Salvar
+                  </Button>
                 </div>
               </div>
-            )}
+            </>
+          )}
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button size="sm" variant="outline" onClick={generoModal.closeModal}>
-                Cancelar
-              </Button>
-              <Button size="sm" variant="primary" onClick={handleAddGenero}>
-                Salvar
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Modal>
+          {addOption === 'artista' && (
+            <>
+              <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Cadastrar Artista
+              </h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Nome do artista *
+                  </label>
+                  <input
+                    type="text"
+                    value={novoArtista}
+                    onChange={(e) => setNovoArtista(e.target.value)}
+                    placeholder="Ex: The Beatles, Caetano Veloso..."
+                    className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleAddArtista();
+                    }}
+                    autoFocus
+                  />
+                </div>
 
-      <Modal
-        isOpen={artistaModal.isOpen}
-        onClose={artistaModal.closeModal}
-        className="m-4 max-w-[500px]"
-      >
-        <div className="p-6">
-          <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Cadastrar Artista
-          </h4>
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Nome do artista *
-              </label>
-              <input
-                type="text"
-                value={novoArtista}
-                onChange={(e) => setNovoArtista(e.target.value)}
-                placeholder="Ex: The Beatles, Caetano Veloso..."
-                className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddArtista();
-                }}
-                autoFocus
-              />
-            </div>
+                {artistas.length > 0 && (
+                  <div>
+                    <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                      Artistas já cadastrados:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {artistas.map((artista) => (
+                        <span
+                          key={artista.id}
+                          className="inline-flex items-center gap-1 rounded-full bg-brand-50 pl-3 pr-1 py-1 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
+                        >
+                          {artista.nome}
+                          <button
+                            type="button"
+                            aria-label={`Apagar artista ${artista.nome}`}
+                            title={`Apagar artista ${artista.nome}`}
+                            onClick={() => {
+                              setArtistaParaApagar({ id: artista.id, nome: artista.nome });
+                              deleteArtistaModal.openModal();
+                            }}
+                            className="ml-0.5 rounded-full p-0.5 text-brand-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                          >
+                            <TrashBinIcon className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            {artistas.length > 0 && (
-              <div>
-                <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-                  Artistas já cadastrados:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {artistas.map((artista) => (
-                    <span
-                      key={artista.id}
-                      className="inline-flex items-center gap-1 rounded-full bg-brand-50 pl-3 pr-1 py-1 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
-                    >
-                      {artista.nome}
-                      <button
-                        type="button"
-                        aria-label={`Apagar artista ${artista.nome}`}
-                        title={`Apagar artista ${artista.nome}`}
-                        onClick={() => {
-                          setArtistaParaApagar({ id: artista.id, nome: artista.nome });
-                          deleteArtistaModal.openModal();
-                        }}
-                        className="ml-0.5 rounded-full p-0.5 text-brand-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                      >
-                        <TrashBinIcon className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button size="sm" variant="outline" onClick={closeAddModal}>
+                    Cancelar
+                  </Button>
+                  <Button size="sm" variant="primary" onClick={handleAddArtista}>
+                    Salvar
+                  </Button>
                 </div>
               </div>
-            )}
+            </>
+          )}
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button size="sm" variant="outline" onClick={artistaModal.closeModal}>
-                Cancelar
-              </Button>
-              <Button size="sm" variant="primary" onClick={handleAddArtista}>
-                Salvar
-              </Button>
-            </div>
-          </div>
+          {addOption === 'disco' && (
+            <>
+              <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Adicionar Disco
+              </h4>
+              <div className="max-h-[70vh] overflow-y-auto pr-1">
+                <AddDiscoForm embedded onSuccess={closeAddModal} />
+              </div>
+            </>
+          )}
         </div>
       </Modal>
 
