@@ -34,7 +34,7 @@ export default function VendasPage() {
   const { vendasComDetalhes, fetchVendas, deleteVenda } = useVendas();
   const { clientes, fetchClientes, deleteCliente } = useClientes();
   const { itensVenda, fetchItensVenda } = useItensVenda();
-  const { fetchCanaisVenda } = useCanaisVenda();
+  const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
 
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('Todos');
@@ -87,9 +87,10 @@ export default function VendasPage() {
       itens: itensVenda.filter((item) => item.vendaId === venda.id).length,
       total: venda.valorTotal,
       pagamento: venda.pagamento,
+      canalVenda: canaisVenda.find((c) => c.id === venda.canalVendaId)?.nome ?? '—',
       status: venda.statusPedido || 'Pendente',
     }));
-  }, [vendasComDetalhes, itensVenda]);
+  }, [vendasComDetalhes, itensVenda, canaisVenda]);
 
   const buscaNormalizada = busca.toLowerCase();
   const linhasFiltradas = linhas.filter((linha) => {
@@ -107,13 +108,14 @@ export default function VendasPage() {
     .reduce((acumulado, linha) => acumulado + linha.total, 0);
 
   const linhasParaExportar = () =>
-    linhasFiltradas.map(({ numero, cliente, data, itens, total, pagamento, status }) => ({
+    linhasFiltradas.map(({ numero, cliente, data, itens, total, pagamento, canalVenda, status }) => ({
       'Nº Venda': numero,
       Cliente: cliente,
       Data: data,
       Itens: itens,
       'Total (R$)': total.toFixed(2),
       Pagamento: pagamento,
+      'Canal de Venda': canalVenda,
       Status: status,
     }));
 
@@ -274,6 +276,9 @@ export default function VendasPage() {
                 <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
                   Pagamento
                 </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Canal de Venda
+                </th>
                 <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
                   Status
                 </th>
@@ -283,7 +288,7 @@ export default function VendasPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {linhasFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-gray-400">
+                  <td colSpan={9} className="px-6 py-10 text-center text-gray-400">
                     Nenhuma venda encontrada.
                   </td>
                 </tr>
@@ -308,6 +313,9 @@ export default function VendasPage() {
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
                       {venda.pagamento}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {venda.canalVenda}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
