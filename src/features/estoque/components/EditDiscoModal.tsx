@@ -36,16 +36,16 @@ const initialForm: FormState = {
   artistaNome: '',
   generoId: '',
   nacionalidade: '',
-  premsagem: 'Vinyl',
-  encarte: 'Papel',
+  premsagem: '',
+  encarte: 'Ok',
   gravadora: '',
   anoLancamento: 0,
   anoPremsagem: 0,
-  condicaoCapa: 'Excelente',
-  condicaoDisco: 'Excelente',
+  condicaoCapa: '',
+  condicaoDisco: '',
   valorMercado: 0,
   custoDisco: 0,
-  status: 'Ativo',
+  status: 'Disponível',
 };
 
 export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoModalProps) {
@@ -201,17 +201,13 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
               </div>
               <div>
                 <Label htmlFor="edit-premsagem">Prensagem</Label>
-                <select
+                <input
                   id="edit-premsagem"
+                  type="text"
                   value={form.premsagem}
                   onChange={handleChange('premsagem')}
                   className={inputClass}
-                >
-                  <option value="Vinyl">Vinyl</option>
-                  <option value="CD">CD</option>
-                  <option value="Cassete">Cassete</option>
-                  <option value="Digital">Digital</option>
-                </select>
+                />
               </div>
               <div>
                 <Label htmlFor="edit-encarte">Encarte</Label>
@@ -221,9 +217,9 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                   onChange={handleChange('encarte')}
                   className={inputClass}
                 >
-                  <option value="Papel">Papel</option>
-                  <option value="Plastico">Plastico</option>
-                  <option value="Nenhum">Nenhum</option>
+                  <option value="Ok">Ok</option>
+                  <option value="N/A">N/A</option>
+                  <option value="Outro">Outro</option>
                 </select>
               </div>
               <div>
@@ -267,31 +263,23 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
                 <Label htmlFor="edit-condicaoCapa">Condicao da Capa</Label>
-                <select
+                <input
                   id="edit-condicaoCapa"
+                  type="text"
                   value={form.condicaoCapa}
                   onChange={handleChange('condicaoCapa')}
                   className={inputClass}
-                >
-                  <option value="Excelente">Excelente</option>
-                  <option value="Bom">Bom</option>
-                  <option value="Razoavel">Razoavel</option>
-                  <option value="Ruim">Ruim</option>
-                </select>
+                />
               </div>
               <div>
                 <Label htmlFor="edit-condicaoDisco">Condicao do Disco</Label>
-                <select
+                <input
                   id="edit-condicaoDisco"
+                  type="text"
                   value={form.condicaoDisco}
                   onChange={handleChange('condicaoDisco')}
                   className={inputClass}
-                >
-                  <option value="Excelente">Excelente</option>
-                  <option value="Bom">Bom</option>
-                  <option value="Razoavel">Razoavel</option>
-                  <option value="Ruim">Ruim</option>
-                </select>
+                />
               </div>
             </div>
           </div>
@@ -331,9 +319,8 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 onChange={handleChange('status')}
                 className={inputClass}
               >
-                <option value="Ativo">Ativo</option>
-                <option value="Inativo">Inativo</option>
-                <option value="Descontinuado">Descontinuado</option>
+                <option value="Disponível">Disponível</option>
+                <option value="Vendido">Vendido</option>
               </select>
             </div>
           </div>
