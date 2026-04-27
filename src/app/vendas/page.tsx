@@ -1,7 +1,7 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/shared/store/useStore';
 import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoModal';
 import NovoCadastroModal from '@/features/vendas/components/NovoCadastroModal';
@@ -31,6 +31,14 @@ const formatNumeroVenda = (posicaoNaLista: number) =>
 const STATUS_CONCLUIDOS = ['Concluída', 'Entregue'] as const;
 
 export default function VendasPage() {
+  return (
+    <Suspense fallback={null}>
+      <VendasContent />
+    </Suspense>
+  );
+}
+
+function VendasContent() {
   const { vendasComDetalhes, fetchVendas, deleteVenda } = useVendas();
   const { clientes, fetchClientes, deleteCliente } = useClientes();
   const { itensVenda, fetchItensVenda } = useItensVenda();

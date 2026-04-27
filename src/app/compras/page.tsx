@@ -1,7 +1,7 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useCompras, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
@@ -20,6 +20,14 @@ const formatNumeroCompra = (posicaoNaLista: number) =>
   `CMP-${String(posicaoNaLista + 1).padStart(4, '0')}`;
 
 export default function ComprasPage() {
+  return (
+    <Suspense fallback={null}>
+      <ComprasContent />
+    </Suspense>
+  );
+}
+
+function ComprasContent() {
   const { comprasComDetalhes, fetchCompras, deleteCompra } = useCompras();
   const { itensCompra, fetchItensCompra } = useItensCompra();
 
