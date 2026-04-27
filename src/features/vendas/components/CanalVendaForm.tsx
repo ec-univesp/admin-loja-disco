@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
@@ -80,20 +81,24 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
           </p>
           <div className="flex flex-wrap gap-2">
             {canaisVenda.map((canal) => (
-              <span
+              <div
                 key={canal.id}
-                className="group bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
+                className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
               >
-                {canal.nome} {canal.taxaPadrao ? `· ${canal.taxaPadrao}%` : ''}
+                <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
+                  {canal.nome}
+                  {canal.taxaPadrao ? ` · ${canal.taxaPadrao}%` : ''}
+                </span>
                 <button
                   type="button"
+                  aria-label={`Excluir canal ${canal.nome}`}
+                  title={`Excluir canal ${canal.nome}`}
                   onClick={() => setCanalParaApagar({ id: canal.id, nome: canal.nome })}
-                  className="text-brand-500 hover:text-error-500 ml-1"
-                  title="Remover"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                 >
-                  ×
+                  <Trash2 size={14} strokeWidth={2.25} />
                 </button>
-              </span>
+              </div>
             ))}
           </div>
         </div>
@@ -116,14 +121,14 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
       >
         <div className="p-6">
           <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Apagar canal de venda
+            Excluir canal de venda
           </h4>
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-            Tem certeza que deseja apagar o canal{' '}
+            Tem certeza que deseja excluir esse canal{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
               {canalParaApagar?.nome}
             </span>
-            ? Esta ação não pode ser desfeita.
+            ?
           </p>
           <div className="flex justify-end gap-3">
             <button
