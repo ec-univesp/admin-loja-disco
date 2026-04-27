@@ -15,7 +15,6 @@ interface CanalVendaFormProps {
 export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormProps) {
   const { canaisVenda, createCanalVenda, deleteCanalVenda } = useCanaisVenda();
   const [nome, setNome] = useState('');
-  const [taxa, setTaxa] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [canalParaApagar, setCanalParaApagar] = useState<{ id: string; nome: string } | null>(
     null
@@ -34,10 +33,9 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
     }
     setSubmitting(true);
     try {
-      const novo = await createCanalVenda({ nome: nome.trim(), taxaPadrao: Number(taxa) || 0 });
+      const novo = await createCanalVenda({ nome: nome.trim(), taxaPadrao: 0 });
       if (novo) onCreated?.(novo.id);
       setNome('');
-      setTaxa(0);
       onClose();
     } finally {
       setSubmitting(false);
@@ -58,22 +56,6 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
         />
       </div>
 
-      <div>
-        <Label htmlFor="canal-taxa">Taxa Padrão (%)</Label>
-        <input
-          id="canal-taxa"
-          type="number"
-          step="0.1"
-          value={taxa || ''}
-          onChange={(e) => setTaxa(Number(e.target.value))}
-          placeholder="0"
-          className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Será usada para sugerir custos adicionais ao registrar uma venda nesse canal
-        </p>
-      </div>
-
       {canaisVenda.length > 0 && (
         <div>
           <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -87,7 +69,6 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
               >
                 <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
                   {canal.nome}
-                  {canal.taxaPadrao ? ` · ${canal.taxaPadrao}%` : ''}
                 </span>
                 <button
                   type="button"
