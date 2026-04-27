@@ -326,7 +326,7 @@ function VendasContent() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className="inline-flex items-center gap-1">
+                      <div className="inline-flex items-center justify-center gap-2">
                         <button
                           type="button"
                           onClick={() => {
@@ -335,9 +335,9 @@ function VendasContent() {
                           }}
                           aria-label="Editar cliente / endereço"
                           title="Editar cliente / endereço"
-                          className="hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 dark:hover:text-brand-400 rounded p-1.5 text-gray-400 transition-colors"
+                          className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
                         >
-                          ✎
+                          <Pencil size={15} strokeWidth={2.25} />
                         </button>
                         <button
                           type="button"
@@ -347,9 +347,9 @@ function VendasContent() {
                             setVendaParaApagar({ id: venda.id, numero: venda.numero });
                             deleteVendaModal.openModal();
                           }}
-                          className="rounded-lg border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                         >
-                          Deletar
+                          <Trash2 size={15} strokeWidth={2.25} />
                         </button>
                       </div>
                     </td>
