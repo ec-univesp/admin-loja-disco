@@ -7,8 +7,7 @@ import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import EditDiscoModal from '@/features/estoque/components/EditDiscoModal';
 import AddDiscoForm from '@/features/estoque/components/AddDiscoForm';
-import { TrashBinIcon } from '@/shared/icons';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 type AddOption = 'menu' | 'genero' | 'artista' | 'disco';
 
@@ -141,12 +140,6 @@ export default function EstoquePage() {
   const iconPlus = (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-    </svg>
-  );
-
-  const iconEdit = (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
     </svg>
   );
 
@@ -293,9 +286,9 @@ export default function EstoquePage() {
                             aria-label={`Editar disco ${produto.titulo}`}
                             title={`Editar disco ${produto.titulo}`}
                             onClick={() => setEditDiscoId(produto.id)}
-                            className="rounded-lg p-2 text-gray-500 transition-all duration-200 hover:bg-brand-100 hover:text-brand-700 dark:hover:bg-brand-900/30 dark:hover:text-brand-400"
+                            className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
                           >
-                            {iconEdit}
+                            <Pencil size={15} strokeWidth={2.25} />
                           </button>
                           <button
                             type="button"
@@ -305,9 +298,9 @@ export default function EstoquePage() {
                               setDiscoParaApagar({ id: produto.id, titulo: produto.titulo });
                               deleteDiscoModal.openModal();
                             }}
-                            className="rounded-lg p-2 text-gray-500 transition-all duration-200 hover:bg-error-100 hover:text-error-700 dark:hover:bg-error-900/30 dark:hover:text-error-400"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                           >
-                            <TrashBinIcon className="h-4 w-4" />
+                            <Trash2 size={15} strokeWidth={2.25} />
                           </button>
                         </div>
                       </td>
