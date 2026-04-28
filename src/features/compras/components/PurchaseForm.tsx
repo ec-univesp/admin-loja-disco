@@ -1,6 +1,7 @@
 'use client';
 
 import React, { FC, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import Form from '@/shared/components/form/Form';
 import Label from '@/shared/components/form/Label';
@@ -11,7 +12,6 @@ import { useCompras, useDiscos, useFornecedores, useItensCompra } from '@/shared
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import AddDiscoForm from '@/features/estoque/components/AddDiscoForm';
-import FornecedorModal from './FornecedorModal';
 
 interface ItemCompraForm {
   discoId: string;
@@ -37,7 +37,6 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
   const [successMsg, setSuccessMsg] = useState('');
   const [itens, setItens] = useState<ItemCompraForm[]>([{ discoId: '', custoDisco: 0 }]);
   const cadastrarDiscoModal = useModal();
-  const [showFornecedorModal, setShowFornecedorModal] = useState(false);
   const [indiceCadastro, setIndiceCadastro] = useState<number | null>(null);
   const [discoIdsAntes, setDiscoIdsAntes] = useState<Set<string>>(new Set());
 
@@ -45,7 +44,6 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
     register,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm<PurchaseFormData>({
     defaultValues: {
@@ -129,34 +127,41 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="fornecedor">Fornecedor *</Label>
-                <button
-                  type="button"
-                  className="text-brand-600 dark:text-brand-400 text-xs font-medium hover:underline"
-                  onClick={() => setShowFornecedorModal(true)}
-                >
-                  + Gerenciar fornecedores
-                </button>
-              </div>
+              <Label htmlFor="fornecedor">Fornecedor *</Label>
               <select
                 id="fornecedor"
                 {...register('fornecedor', { required: 'Fornecedor é obrigatório' })}
+                disabled={fornecedores.length === 0}
                 className={`h-11 w-full rounded-lg border bg-white px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white ${
                   errors.fornecedor
                     ? 'border-red-500 dark:border-red-500'
                     : 'border-gray-300 dark:border-gray-700'
-                }`}
+                } disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-800`}
               >
-                <option value="">-- Selecione --</option>
+                <option value="">
+                  {fornecedores.length === 0 ? 'Nenhum fornecedor cadastrado' : '-- Selecione --'}
+                </option>
                 {fornecedores.map((fornecedor) => (
                   <option key={fornecedor.id} value={fornecedor.nome}>
                     {fornecedor.nome}
                   </option>
                 ))}
               </select>
-              {errors.fornecedor && (
-                <span className="mt-1 text-sm text-red-500">{errors.fornecedor.message}</span>
+              {fornecedores.length === 0 ? (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Cadastre fornecedores em{' '}
+                  <Link
+                    href="/fornecedores"
+                    className="text-brand-600 dark:text-brand-400 font-medium hover:underline"
+                  >
+                    Fornecedores
+                  </Link>{' '}
+                  para vincular à compra.
+                </p>
+              ) : (
+                errors.fornecedor && (
+                  <span className="mt-1 text-sm text-red-500">{errors.fornecedor.message}</span>
+                )
               )}
             </div>
             <div>
@@ -300,12 +305,6 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
           <AddDiscoForm embedded onSuccess={handleDiscoCadastrado} />
         </div>
       </Modal>
-
-      <FornecedorModal
-        isOpen={showFornecedorModal}
-        onClose={() => setShowFornecedorModal(false)}
-        onSaved={(nome) => setValue('fornecedor', nome)}
-      />
     </>
   );
 };
