@@ -7,28 +7,31 @@ import FornecedorForm from './FornecedorForm';
 interface FornecedorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreated?: (nome: string) => void;
+  onSaved?: (nome: string) => void;
   fornecedorIdInicial?: string;
 }
 
 export default function FornecedorModal({
   isOpen,
   onClose,
-  onCreated,
+  onSaved,
   fornecedorIdInicial,
 }: FornecedorModalProps) {
+  const editando = Boolean(fornecedorIdInicial);
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="m-4 max-w-[640px]">
       <div className="p-6">
         <h4 className="mb-1 text-lg font-semibold text-gray-800 dark:text-white/90">
-          Gerenciar Fornecedores
+          {editando ? 'Editar fornecedor' : 'Novo fornecedor'}
         </h4>
-        <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-          Cadastre, edite ou remova fornecedores e seus contatos.
+        <p className="mb-5 text-xs text-gray-500 dark:text-gray-400">
+          {editando
+            ? 'Atualize as informações cadastrais e de contato.'
+            : 'Preencha as informações para cadastrar um novo fornecedor.'}
         </p>
         <FornecedorForm
           onClose={onClose}
-          onCreated={onCreated}
+          onSaved={onSaved}
           fornecedorIdInicial={fornecedorIdInicial}
         />
       </div>

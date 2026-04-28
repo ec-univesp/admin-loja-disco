@@ -304,7 +304,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
       <FornecedorModal
         isOpen={showFornecedorModal}
         onClose={() => setShowFornecedorModal(false)}
-        onCreated={(nome) => setValue('fornecedor', nome)}
+        onSaved={(nome) => setValue('fornecedor', nome)}
       />
     </>
   );
