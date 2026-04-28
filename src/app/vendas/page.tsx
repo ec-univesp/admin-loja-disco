@@ -40,7 +40,7 @@ export default function VendasPage() {
 }
 
 function VendasContent() {
-  const { vendasComDetalhes, fetchVendas, deleteVenda } = useVendas();
+  const { vendasComDetalhes, fetchVendas, deleteVenda, updateVenda } = useVendas();
   const { clientes, fetchClientes, deleteCliente } = useClientes();
   const { itensVenda, fetchItensVenda } = useItensVenda();
   const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
@@ -76,6 +76,11 @@ function VendasContent() {
     await deleteCliente(clienteParaApagar.id);
     setClienteParaApagar(null);
     deleteClienteModal.closeModal();
+  };
+
+  const handleToggleEntregue = async (id: string, statusAtual: string) => {
+    const novoStatus = statusAtual === 'Entregue' ? 'Pendente' : 'Entregue';
+    await updateVenda(id, { statusPedido: novoStatus });
   };
 
   useEffect(() => {
@@ -339,6 +344,22 @@ function VendasContent() {
                         >
                           <Pencil size={15} strokeWidth={2.25} />
                         </button>
+                        <label
+                          title={
+                            venda.status === 'Entregue'
+                              ? 'Marcar como não entregue'
+                              : 'Marcar como entregue'
+                          }
+                          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gray-200 bg-white shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={venda.status === 'Entregue'}
+                            onChange={() => handleToggleEntregue(venda.id, venda.status)}
+                            aria-label={`Marcar venda ${venda.numero} como entregue`}
+                            className="h-4 w-4 cursor-pointer accent-green-600"
+                          />
+                        </label>
                         <button
                           type="button"
                           aria-label={`Deletar venda ${venda.numero}`}
