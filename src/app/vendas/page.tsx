@@ -29,6 +29,12 @@ const statusColor: Record<string, string> = {
 const formatNumeroVenda = (posicaoNaLista: number) =>
   `VND-${String(posicaoNaLista + 1).padStart(4, '0')}`;
 
+const formatarDataBR = (dataIso: string) => {
+  if (!dataIso || dataIso.length < 10) return dataIso || '—';
+  const [ano, mes, dia] = dataIso.slice(0, 10).split('-');
+  return `${dia}/${mes}/${ano}`;
+};
+
 const STATUS_CONCLUIDOS = ['Concluída', 'Entregue'] as const;
 
 export default function VendasPage() {
@@ -128,7 +134,7 @@ function VendasContent() {
     linhasFiltradas.map(({ numero, cliente, data, itens, total, pagamento, canalVenda, status }) => ({
       'Nº Venda': numero,
       Cliente: cliente,
-      Data: data,
+      Data: formatarDataBR(data),
       Itens: itens,
       'Total (R$)': total.toFixed(2),
       Pagamento: pagamento,
@@ -310,7 +316,9 @@ function VendasContent() {
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
                       {venda.cliente}
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{venda.data}</td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {formatarDataBR(venda.data)}
+                    </td>
                     <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
                       {venda.itens}
                     </td>
