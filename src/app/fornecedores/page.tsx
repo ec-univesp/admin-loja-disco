@@ -147,7 +147,9 @@ function FornecedoresContent() {
                   <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
                     WhatsApp
                   </th>
-                  <th className="w-24 px-6 py-3" aria-hidden="true" />
+                  <th className="w-24 px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -196,7 +198,7 @@ function FornecedoresContent() {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"
                             aria-label={`Editar fornecedor ${fornecedor.nome}`}
