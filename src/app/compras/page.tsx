@@ -6,7 +6,7 @@ import { useCompras, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { Trash2 } from 'lucide-react';
-import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
+import { exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
 import NovaCompraModal from '@/features/compras/components/NovaCompraModal';
 
@@ -87,14 +87,6 @@ function ComprasContent() {
       'Total (R$)': total.toFixed(2),
     }));
 
-  const handleExportCSV = () => {
-    const stamp = new Date().toISOString().slice(0, 10);
-    exportarTabelaCSV(
-      linhasParaExportar() as Array<Record<string, unknown>>,
-      `compras-${stamp}.csv`
-    );
-  };
-
   const handleExportExcel = () => {
     const stamp = new Date().toISOString().slice(0, 10);
     exportarTabelaExcel(
@@ -121,10 +113,10 @@ function ComprasContent() {
           <div className="flex flex-wrap items-center gap-3">
             <input
               type="text"
-              placeholder="Buscar fornecedor..."
+              placeholder="Buscar por número da compra ou fornecedor..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+              className="focus:border-brand-500 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none sm:w-72 md:w-80 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             />
             <Button
               size="md"
@@ -134,13 +126,6 @@ function ComprasContent() {
             >
               Nova Compra
             </Button>
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
-            >
-              Exportar CSV
-            </button>
             <button
               type="button"
               onClick={handleExportExcel}

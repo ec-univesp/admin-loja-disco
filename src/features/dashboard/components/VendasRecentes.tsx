@@ -63,22 +63,40 @@ export default function VendasRecentes() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableCell isHeader className="min-w-[110px] px-4 py-3">
+              <TableCell
+                isHeader
+                className="min-w-[110px] px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+              >
                 Nº Venda
               </TableCell>
-              <TableCell isHeader className="min-w-[200px] px-4 py-3">
+              <TableCell
+                isHeader
+                className="min-w-[200px] px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+              >
                 Disco
               </TableCell>
-              <TableCell isHeader className="min-w-[150px] px-4 py-3">
+              <TableCell
+                isHeader
+                className="min-w-[150px] px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+              >
                 Cliente
               </TableCell>
-              <TableCell isHeader className="px-4 py-3">
+              <TableCell
+                isHeader
+                className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400"
+              >
                 Qtd.
               </TableCell>
-              <TableCell isHeader className="min-w-[120px] px-4 py-3">
+              <TableCell
+                isHeader
+                className="min-w-[120px] px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400"
+              >
                 Valor
               </TableCell>
-              <TableCell isHeader className="min-w-[120px] px-4 py-3">
+              <TableCell
+                isHeader
+                className="min-w-[120px] px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400"
+              >
                 Status
               </TableCell>
             </TableRow>
@@ -93,22 +111,22 @@ export default function VendasRecentes() {
             ) : (
               linhas.map((linha) => (
                 <TableRow key={linha.id}>
-                  <TableCell className="px-4 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
+                  <TableCell className="px-4 py-4 text-left font-mono text-xs text-gray-500 dark:text-gray-400">
                     {linha.numero}
                   </TableCell>
-                  <TableCell className="px-4 py-4">
+                  <TableCell className="px-4 py-4 text-left">
                     <div className="font-medium text-gray-800 dark:text-white">{linha.disco}</div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-gray-600 dark:text-gray-400">
+                  <TableCell className="px-4 py-4 text-left text-gray-600 dark:text-gray-400">
                     {linha.cliente}
                   </TableCell>
-                  <TableCell className="px-4 py-4 font-medium text-gray-800 dark:text-white">
+                  <TableCell className="px-4 py-4 text-center font-medium text-gray-800 dark:text-white">
                     {linha.quantidade}
                   </TableCell>
-                  <TableCell className="px-4 py-4 font-semibold text-gray-800 dark:text-white">
+                  <TableCell className="px-4 py-4 text-right font-semibold text-gray-800 dark:text-white">
                     R$ {linha.valor.toFixed(2)}
                   </TableCell>
-                  <TableCell className="px-4 py-4">
+                  <TableCell className="px-4 py-4 text-center">
                     <Badge color={statusColor[linha.status] || 'warning'}>{linha.status}</Badge>
                   </TableCell>
                 </TableRow>
