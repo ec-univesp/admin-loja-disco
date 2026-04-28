@@ -1,14 +1,16 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useCompras, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import { Trash2 } from 'lucide-react';
-import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
+import { Trash2, Users } from 'lucide-react';
+import { exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
 import NovaCompraModal from '@/features/compras/components/NovaCompraModal';
+import FornecedorModal from '@/features/compras/components/FornecedorModal';
 
 const iconPlus = (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,6 +39,7 @@ function ComprasContent() {
   const [showNovaCompraModal, setShowNovaCompraModal] = useState(
     () => searchParams.get('novo') === '1'
   );
+  const [showFornecedorModal, setShowFornecedorModal] = useState(false);
   const deleteCompraModal = useModal();
   const [compraParaApagar, setCompraParaApagar] = useState<{ id: string; numero: string } | null>(
     null
@@ -87,14 +90,6 @@ function ComprasContent() {
       'Total (R$)': total.toFixed(2),
     }));
 
-  const handleExportCSV = () => {
-    const stamp = new Date().toISOString().slice(0, 10);
-    exportarTabelaCSV(
-      linhasParaExportar() as Array<Record<string, unknown>>,
-      `compras-${stamp}.csv`
-    );
-  };
-
   const handleExportExcel = () => {
     const stamp = new Date().toISOString().slice(0, 10);
     exportarTabelaExcel(
@@ -121,11 +116,19 @@ function ComprasContent() {
           <div className="flex flex-wrap items-center gap-3">
             <input
               type="text"
-              placeholder="Buscar fornecedor..."
+              placeholder="Buscar por número da compra ou fornecedor..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+              className="focus:border-brand-500 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none sm:w-72 md:w-80 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             />
+            <Button
+              size="md"
+              variant="outline"
+              startIcon={<Users size={16} />}
+              onClick={() => setShowFornecedorModal(true)}
+            >
+              Gerenciar Fornecedores
+            </Button>
             <Button
               size="md"
               variant="primary"
@@ -134,13 +137,6 @@ function ComprasContent() {
             >
               Nova Compra
             </Button>
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
-            >
-              Exportar CSV
-            </button>
             <button
               type="button"
               onClick={handleExportExcel}
@@ -227,6 +223,20 @@ function ComprasContent() {
         isOpen={showNovaCompraModal}
         onClose={() => setShowNovaCompraModal(false)}
       />
+
+      <FornecedorModal
+        isOpen={showFornecedorModal}
+        onClose={() => setShowFornecedorModal(false)}
+      />
+
+      <div className="mt-4 text-right">
+        <Link
+          href="/fornecedores"
+          className="text-sm text-gray-400 underline underline-offset-2 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+        >
+          Ver lista completa de fornecedores →
+        </Link>
+      </div>
 
       <Modal
         isOpen={deleteCompraModal.isOpen}
