@@ -7,10 +7,11 @@ import Label from '@/shared/components/form/Label';
 import ControlledInput from '@/shared/components/form/ControlledInput';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import Button from '@/shared/components/ui/button/Button';
-import { useCompras, useDiscos, useItensCompra } from '@/shared/store/useStore';
+import { useCompras, useDiscos, useFornecedores, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import AddDiscoForm from '@/features/estoque/components/AddDiscoForm';
+import FornecedorModal from './FornecedorModal';
 
 interface ItemCompraForm {
   discoId: string;
@@ -32,9 +33,11 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
   const { createCompra, loading } = useCompras();
   const { createItemCompra } = useItensCompra();
   const { discosComArtista, fetchDiscos } = useDiscos();
+  const { fornecedores, fetchFornecedores } = useFornecedores();
   const [successMsg, setSuccessMsg] = useState('');
   const [itens, setItens] = useState<ItemCompraForm[]>([{ discoId: '', custoDisco: 0 }]);
   const cadastrarDiscoModal = useModal();
+  const [showFornecedorModal, setShowFornecedorModal] = useState(false);
   const [indiceCadastro, setIndiceCadastro] = useState<number | null>(null);
   const [discoIdsAntes, setDiscoIdsAntes] = useState<Set<string>>(new Set());
 
@@ -42,6 +45,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<PurchaseFormData>({
     defaultValues: {
@@ -52,7 +56,8 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
 
   useEffect(() => {
     fetchDiscos();
-  }, [fetchDiscos]);
+    fetchFornecedores();
+  }, [fetchDiscos, fetchFornecedores]);
 
   const somaItens = itens.reduce((acc, item) => acc + Number(item.custoDisco || 0), 0);
 
@@ -124,14 +129,32 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <Label htmlFor="fornecedor">Fornecedor *</Label>
-              <ControlledInput
-                type="text"
+              <div className="flex items-center justify-between">
+                <Label htmlFor="fornecedor">Fornecedor *</Label>
+                <button
+                  type="button"
+                  className="text-brand-600 dark:text-brand-400 text-xs font-medium hover:underline"
+                  onClick={() => setShowFornecedorModal(true)}
+                >
+                  + Cadastrar fornecedor
+                </button>
+              </div>
+              <select
                 id="fornecedor"
-                placeholder="Nome do fornecedor"
                 {...register('fornecedor', { required: 'Fornecedor é obrigatório' })}
-                error={!!errors.fornecedor}
-              />
+                className={`h-11 w-full rounded-lg border bg-white px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white ${
+                  errors.fornecedor
+                    ? 'border-red-500 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-700'
+                }`}
+              >
+                <option value="">-- Selecione --</option>
+                {fornecedores.map((fornecedor) => (
+                  <option key={fornecedor.id} value={fornecedor.nome}>
+                    {fornecedor.nome}
+                  </option>
+                ))}
+              </select>
               {errors.fornecedor && (
                 <span className="mt-1 text-sm text-red-500">{errors.fornecedor.message}</span>
               )}
@@ -277,6 +300,12 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
           <AddDiscoForm embedded onSuccess={handleDiscoCadastrado} />
         </div>
       </Modal>
+
+      <FornecedorModal
+        isOpen={showFornecedorModal}
+        onClose={() => setShowFornecedorModal(false)}
+        onCreated={(nome) => setValue('fornecedor', nome)}
+      />
     </>
   );
 };

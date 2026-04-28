@@ -13,6 +13,7 @@ import type {
   Venda,
   ItemVenda,
   CanalVenda,
+  Fornecedor,
 } from '@/shared/types/models';
 
 const STORAGE_KEYS = {
@@ -28,6 +29,7 @@ const STORAGE_KEYS = {
   VENDAS: 'app_vendas',
   ITENS_VENDA: 'app_itens_venda',
   CANAIS_VENDA: 'app_canais_venda',
+  FORNECEDORES: 'app_fornecedores',
 } as const;
 
 // Simula delay de requisição
@@ -109,6 +111,9 @@ export const initializeStorage = () => {
         { id: '4', nome: 'Shopee', taxaPadrao: 14 },
       ])
     );
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.FORNECEDORES)) {
+    localStorage.setItem(STORAGE_KEYS.FORNECEDORES, JSON.stringify([]));
   }
 };
 
@@ -540,6 +545,32 @@ export const apiCanaisVenda = {
     const data = localStorage.getItem(STORAGE_KEYS.CANAIS_VENDA) || '[]';
     const items = (JSON.parse(data) as CanalVenda[]).filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEYS.CANAIS_VENDA, JSON.stringify(items));
+  },
+};
+
+// ============ FORNECEDORES ============
+export const apiFornecedores = {
+  getAll: async (): Promise<Fornecedor[]> => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.FORNECEDORES);
+    return data ? JSON.parse(data) : [];
+  },
+
+  create: async (fornecedor: Omit<Fornecedor, 'id'>): Promise<Fornecedor> => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.FORNECEDORES) || '[]';
+    const items: Fornecedor[] = JSON.parse(data);
+    const newItem: Fornecedor = { ...fornecedor, id: String(Date.now()) };
+    items.push(newItem);
+    localStorage.setItem(STORAGE_KEYS.FORNECEDORES, JSON.stringify(items));
+    return newItem;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.FORNECEDORES) || '[]';
+    const items = (JSON.parse(data) as Fornecedor[]).filter((item) => item.id !== id);
+    localStorage.setItem(STORAGE_KEYS.FORNECEDORES, JSON.stringify(items));
   },
 };
 
