@@ -41,7 +41,6 @@ export default function EstoquePage() {
   const { generosMusical, fetchGenerosMusical, createGeneroMusical, deleteGeneroMusical } = useGenerosMusical();
   const { artistas, fetchArtistas, createArtista, deleteArtista } = useArtistas();
   const [busca, setBusca] = useState('');
-  const [filtroGenero, setFiltroGenero] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
   const [novoArtista, setNovoArtista] = useState('');
   const [editDiscoId, setEditDiscoId] = useState<string | null>(null);
@@ -128,13 +127,13 @@ export default function EstoquePage() {
   );
 
   const produtosFiltrados = produtos.filter((p) => {
-    const matchBusca =
-      !busca ||
-      p.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-      p.artista.toLowerCase().includes(busca.toLowerCase()) ||
-      p.codigo.toLowerCase().includes(busca.toLowerCase());
-    const matchGenero = !filtroGenero || p.genero === filtroGenero;
-    return matchBusca && matchGenero;
+    if (!busca) return true;
+    const termo = busca.toLowerCase();
+    return (
+      p.titulo.toLowerCase().includes(termo) ||
+      p.artista.toLowerCase().includes(termo) ||
+      p.codigo.toLowerCase().includes(termo)
+    );
   });
 
   const iconPlus = (
@@ -166,18 +165,6 @@ export default function EstoquePage() {
                 onChange={(e) => setBusca(e.target.value)}
                 className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
               />
-              <select
-                value={filtroGenero}
-                onChange={(e) => setFiltroGenero(e.target.value)}
-                className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
-              >
-                <option value="">Todos os gêneros</option>
-                {generosMusical.map((g) => (
-                  <option key={g.id} value={g.nome}>
-                    {g.nome}
-                  </option>
-                ))}
-              </select>
               <Button
                 size="md"
                 variant="primary"
