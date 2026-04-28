@@ -8,9 +8,15 @@ interface FornecedorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated?: (nome: string) => void;
+  fornecedorIdInicial?: string;
 }
 
-export default function FornecedorModal({ isOpen, onClose, onCreated }: FornecedorModalProps) {
+export default function FornecedorModal({
+  isOpen,
+  onClose,
+  onCreated,
+  fornecedorIdInicial,
+}: FornecedorModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="m-4 max-w-[640px]">
       <div className="p-6">
@@ -20,7 +26,11 @@ export default function FornecedorModal({ isOpen, onClose, onCreated }: Forneced
         <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
           Cadastre, edite ou remova fornecedores e seus contatos.
         </p>
-        <FornecedorForm onClose={onClose} onCreated={onCreated} />
+        <FornecedorForm
+          onClose={onClose}
+          onCreated={onCreated}
+          fornecedorIdInicial={fornecedorIdInicial}
+        />
       </div>
     </Modal>
   );

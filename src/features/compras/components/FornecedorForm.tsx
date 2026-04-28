@@ -11,6 +11,7 @@ import type { Fornecedor } from '@/shared/types/models';
 interface FornecedorFormProps {
   onClose: () => void;
   onCreated?: (nome: string) => void;
+  fornecedorIdInicial?: string;
 }
 
 interface FormState {
@@ -36,7 +37,11 @@ const montarLinkWhatsapp = (contato: string) => {
   return `https://wa.me/${numeroComDdi}`;
 };
 
-export default function FornecedorForm({ onClose, onCreated }: FornecedorFormProps) {
+export default function FornecedorForm({
+  onClose,
+  onCreated,
+  fornecedorIdInicial,
+}: FornecedorFormProps) {
   const {
     fornecedores,
     fetchFornecedores,
@@ -56,6 +61,14 @@ export default function FornecedorForm({ onClose, onCreated }: FornecedorFormPro
   useEffect(() => {
     fetchFornecedores();
   }, [fetchFornecedores]);
+
+  useEffect(() => {
+    if (!fornecedorIdInicial || fornecedores.length === 0) return;
+    const alvo = fornecedores.find((f) => f.id === fornecedorIdInicial);
+    if (alvo) iniciarEdicao(alvo);
+    // Deve rodar apenas uma vez após os fornecedores serem carregados com o id inicial
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fornecedorIdInicial, fornecedores.length]);
 
   const atualizarCampo = <Campo extends keyof FormState>(
     campo: Campo,
