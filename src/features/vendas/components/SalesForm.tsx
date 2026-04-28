@@ -1,10 +1,10 @@
 'use client';
 
-import React, { FC, useEffect, useMemo, useState } from 'react';
+import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
+import { Calendar } from 'lucide-react';
 import Form from '@/shared/components/form/Form';
 import Label from '@/shared/components/form/Label';
-import ControlledInput from '@/shared/components/form/ControlledInput';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import TextArea from '@/shared/components/form/TextArea';
 import Button from '@/shared/components/ui/button/Button';
@@ -58,6 +58,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const [showCanalModal, setShowCanalModal] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [itens, setItens] = useState<ItemVendaForm[]>([{ discoId: '', precoVenda: 0 }]);
+  const dataVendaRef = useRef<HTMLInputElement | null>(null);
 
   const {
     register,
@@ -347,12 +348,43 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="dataVenda">Data da Venda *</Label>
-                <ControlledInput
-                  type="date"
-                  id="dataVenda"
-                  {...register('dataVenda', { required: 'Data é obrigatória' })}
-                  error={!!errors.dataVenda}
-                />
+                <div className="relative">
+                  <input
+                    type="date"
+                    id="dataVenda"
+                    {...register('dataVenda', {
+                      required: 'Data é obrigatória',
+                    })}
+                    ref={(el) => {
+                      register('dataVenda').ref(el);
+                      dataVendaRef.current = el;
+                    }}
+                    className={`h-11 w-full rounded-lg border bg-white px-4 py-2.5 pr-11 text-sm shadow-theme-xs focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 ${
+                      errors.dataVenda
+                        ? 'border-error-500 focus:ring-error-500/10'
+                        : 'border-gray-300 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:focus:border-brand-800'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    aria-label="Abrir calendário"
+                    onClick={() => {
+                      const input = dataVendaRef.current;
+                      if (!input) return;
+                      if (typeof input.showPicker === 'function') {
+                        input.showPicker();
+                      } else {
+                        input.focus();
+                      }
+                    }}
+                    className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-gray-500 transition-colors hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-400"
+                  >
+                    <Calendar size={18} strokeWidth={2} />
+                  </button>
+                </div>
+                {errors.dataVenda && (
+                  <span className="mt-1 text-sm text-red-500">{errors.dataVenda.message}</span>
+                )}
               </div>
 
               <div>
