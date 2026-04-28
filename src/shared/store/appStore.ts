@@ -98,6 +98,7 @@ interface AppStore extends AppState {
   // Ações para Fornecedores
   fetchFornecedores: () => Promise<void>;
   createFornecedor: (fornecedor: Omit<Fornecedor, 'id'>) => Promise<Fornecedor | undefined>;
+  updateFornecedor: (id: string, updates: Partial<Fornecedor>) => Promise<void>;
   deleteFornecedor: (id: string) => Promise<void>;
 
   // Ações gerais
@@ -786,6 +787,21 @@ export const useAppStore = create<AppStore>()(
             return novo;
           } catch {
             set({ error: 'Erro ao criar fornecedor', loading: false });
+          }
+        },
+
+        updateFornecedor: async (id, updates) => {
+          set({ loading: true, error: null });
+          try {
+            await apiFornecedores.update(id, updates);
+            set((state) => ({
+              fornecedores: state.fornecedores.map((f) =>
+                f.id === id ? { ...f, ...updates } : f
+              ),
+              loading: false,
+            }));
+          } catch {
+            set({ error: 'Erro ao atualizar fornecedor', loading: false });
           }
         },
 

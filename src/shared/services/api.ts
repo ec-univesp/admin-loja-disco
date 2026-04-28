@@ -566,6 +566,21 @@ export const apiFornecedores = {
     return newItem;
   },
 
+  update: async (
+    id: string,
+    updates: Partial<Fornecedor>
+  ): Promise<Fornecedor | undefined> => {
+    await delay();
+    const data = localStorage.getItem(STORAGE_KEYS.FORNECEDORES) || '[]';
+    const items: Fornecedor[] = JSON.parse(data);
+    const index = items.findIndex((item) => item.id === id);
+    if (index >= 0) {
+      items[index] = { ...items[index], ...updates };
+      localStorage.setItem(STORAGE_KEYS.FORNECEDORES, JSON.stringify(items));
+    }
+    return items[index];
+  },
+
   delete: async (id: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.FORNECEDORES) || '[]';

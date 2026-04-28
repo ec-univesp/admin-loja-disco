@@ -355,6 +355,7 @@ export const useFornecedores = () => {
   const error = useAppStore((state) => state.error);
   const fetchFornecedores = useAppStore((state) => state.fetchFornecedores);
   const createFornecedor = useAppStore((state) => state.createFornecedor);
+  const updateFornecedor = useAppStore((state) => state.updateFornecedor);
   const deleteFornecedor = useAppStore((state) => state.deleteFornecedor);
 
   return {
@@ -363,6 +364,7 @@ export const useFornecedores = () => {
     error,
     fetchFornecedores,
     createFornecedor,
+    updateFornecedor,
     deleteFornecedor,
   };
 };

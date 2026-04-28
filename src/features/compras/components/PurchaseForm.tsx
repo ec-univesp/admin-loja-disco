@@ -136,7 +136,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                   className="text-brand-600 dark:text-brand-400 text-xs font-medium hover:underline"
                   onClick={() => setShowFornecedorModal(true)}
                 >
-                  + Cadastrar fornecedor
+                  + Gerenciar fornecedores
                 </button>
               </div>
               <select
