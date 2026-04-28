@@ -1,6 +1,7 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
+import { Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/shared/store/useStore';
 import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoModal';
@@ -213,37 +214,42 @@ function VendasContent() {
         ) : (
           <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
             <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-              Clientes cadastrados (clique no nome para editar endereço):
+              Clientes cadastrados:
             </p>
             <div className="flex flex-wrap gap-2">
               {clientes.map((cliente) => (
-                <span
+                <div
                   key={cliente.id}
-                  className="inline-flex items-center gap-1 rounded-full bg-gray-100 py-1 pr-1 pl-3 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                  className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
                 >
+                  <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
+                    {cliente.nome}
+                  </span>
                   <button
                     type="button"
+                    aria-label={`Editar cliente ${cliente.nome}`}
+                    title={`Editar cliente ${cliente.nome}`}
                     onClick={() => {
                       setEditClienteId(cliente.id);
                       setShowClienteModal(true);
                     }}
-                    className="hover:text-brand-700 dark:hover:text-brand-400 transition-colors"
+                    className="bg-brand-500 hover:bg-brand-600 inline-flex h-7 w-7 items-center justify-center rounded-md text-white shadow-sm transition-colors"
                   >
-                    ✎ {cliente.nome}
+                    <Pencil size={14} strokeWidth={2.25} />
                   </button>
                   <button
                     type="button"
-                    aria-label={`Deletar cliente ${cliente.nome}`}
-                    title={`Deletar cliente ${cliente.nome}`}
+                    aria-label={`Excluir cliente ${cliente.nome}`}
+                    title={`Excluir cliente ${cliente.nome}`}
                     onClick={() => {
                       setClienteParaApagar({ id: cliente.id, nome: cliente.nome });
                       deleteClienteModal.openModal();
                     }}
-                    className="ml-2 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                   >
-                    Deletar
+                    <Trash2 size={14} strokeWidth={2.25} />
                   </button>
-                </span>
+                </div>
               ))}
             </div>
           </div>
@@ -320,7 +326,7 @@ function VendasContent() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className="inline-flex items-center gap-1">
+                      <div className="inline-flex items-center justify-center gap-2">
                         <button
                           type="button"
                           onClick={() => {
@@ -329,9 +335,9 @@ function VendasContent() {
                           }}
                           aria-label="Editar cliente / endereço"
                           title="Editar cliente / endereço"
-                          className="hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 dark:hover:text-brand-400 rounded p-1.5 text-gray-400 transition-colors"
+                          className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
                         >
-                          ✎
+                          <Pencil size={15} strokeWidth={2.25} />
                         </button>
                         <button
                           type="button"
@@ -341,9 +347,9 @@ function VendasContent() {
                             setVendaParaApagar({ id: venda.id, numero: venda.numero });
                             deleteVendaModal.openModal();
                           }}
-                          className="rounded-lg border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                         >
-                          Deletar
+                          <Trash2 size={15} strokeWidth={2.25} />
                         </button>
                       </div>
                     </td>
@@ -410,14 +416,14 @@ function VendasContent() {
       >
         <div className="p-6">
           <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Apagar cliente
+            Excluir cliente
           </h4>
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-            Tem certeza que deseja apagar o cliente{' '}
+            Tem certeza que deseja excluir esse cliente{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
               {clienteParaApagar?.nome}
             </span>
-            ? Esta ação não pode ser desfeita.
+            ?
           </p>
           <div className="flex justify-end gap-3">
             <button

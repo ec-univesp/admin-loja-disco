@@ -5,7 +5,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useCompras, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import { TrashBinIcon } from '@/shared/icons';
+import { Trash2 } from 'lucide-react';
 import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
 import NovaCompraModal from '@/features/compras/components/NovaCompraModal';
@@ -210,9 +210,9 @@ function ComprasContent() {
                           setCompraParaApagar({ id: compra.id, numero: compra.numero });
                           deleteCompraModal.openModal();
                         }}
-                        className="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                       >
-                        <TrashBinIcon className="h-4 w-4" />
+                        <Trash2 size={15} strokeWidth={2.25} />
                       </button>
                     </td>
                   </tr>
