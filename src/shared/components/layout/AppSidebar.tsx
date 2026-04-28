@@ -10,6 +10,7 @@ import {
   DocsIcon,
   DollarLineIcon,
   GridIcon,
+  GroupIcon,
   HorizontaLDots,
   PaperPlaneIcon,
 } from '@/shared/icons';
@@ -47,6 +48,11 @@ const navItems: NavItem[] = [
     name: 'Compras',
      path: "/compras",
     /*subItems: [{ name: 'Lista de Compras', path: '/compras' }],*/
+  },
+  {
+    icon: <GroupIcon />,
+    name: 'Fornecedores',
+    path: '/fornecedores',
   },
   {
     icon: <DocsIcon />,

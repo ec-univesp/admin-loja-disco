@@ -5,6 +5,7 @@ import type { Cliente, Endereco, ClienteEndereco } from './clienteModel';
 import type { Compra, ItemCompra } from './compraModel';
 import type { Venda, ItemVenda } from './vendaModel';
 import type { CanalVenda } from './canalVendaModel';
+import type { Fornecedor } from './fornecedorModel';
 
 export interface AppState {
   generosMusical: GeneroMusical[];
@@ -19,6 +20,7 @@ export interface AppState {
   vendas: Venda[];
   itensVenda: ItemVenda[];
   canaisVenda: CanalVenda[];
+  fornecedores: Fornecedor[];
   loading: boolean;
   error: string | null;
 }

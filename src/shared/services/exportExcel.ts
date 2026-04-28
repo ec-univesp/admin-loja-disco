@@ -68,10 +68,6 @@ function downloadCSV(conteudo: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export function exportarTabelaCSV(linhas: Array<Record<string, unknown>>, filename: string) {
-  downloadCSV(gerarCSV(linhas), filename);
-}
-
 export async function exportarTabelaExcel(
   nomeAba: string,
   linhas: Array<Record<string, unknown>>,

@@ -13,6 +13,7 @@ import type {
   Venda,
   ItemVenda,
   CanalVenda,
+  Fornecedor,
   AppState,
 } from '@/shared/types/models';
 import {
@@ -27,6 +28,7 @@ import {
   apiItensCompra,
   apiCanaisVenda,
   apiClientesEnderecos,
+  apiFornecedores,
 } from '@/shared/services/api';
 
 interface AppStore extends AppState {
@@ -93,6 +95,12 @@ interface AppStore extends AppState {
   updateCanalVenda: (id: string, updates: Partial<CanalVenda>) => Promise<void>;
   deleteCanalVenda: (id: string) => Promise<void>;
 
+  // Ações para Fornecedores
+  fetchFornecedores: () => Promise<void>;
+  createFornecedor: (fornecedor: Omit<Fornecedor, 'id'>) => Promise<Fornecedor | undefined>;
+  updateFornecedor: (id: string, updates: Partial<Fornecedor>) => Promise<void>;
+  deleteFornecedor: (id: string) => Promise<void>;
+
   // Ações gerais
   setError: (error: string | null) => void;
   clearError: () => void;
@@ -112,6 +120,7 @@ const initialState: AppState = {
   vendas: [],
   itensVenda: [],
   canaisVenda: [],
+  fornecedores: [],
   loading: false,
   error: null,
 };
@@ -756,6 +765,59 @@ export const useAppStore = create<AppStore>()(
           }
         },
 
+        // ============ FORNECEDORES ============
+        fetchFornecedores: async () => {
+          set({ loading: true, error: null });
+          try {
+            const data = await apiFornecedores.getAll();
+            set({ fornecedores: data, loading: false });
+          } catch {
+            set({ error: 'Erro ao buscar fornecedores', loading: false });
+          }
+        },
+
+        createFornecedor: async (fornecedor) => {
+          set({ loading: true, error: null });
+          try {
+            const novo = await apiFornecedores.create(fornecedor);
+            set((state) => ({
+              fornecedores: [...state.fornecedores, novo],
+              loading: false,
+            }));
+            return novo;
+          } catch {
+            set({ error: 'Erro ao criar fornecedor', loading: false });
+          }
+        },
+
+        updateFornecedor: async (id, updates) => {
+          set({ loading: true, error: null });
+          try {
+            await apiFornecedores.update(id, updates);
+            set((state) => ({
+              fornecedores: state.fornecedores.map((f) =>
+                f.id === id ? { ...f, ...updates } : f
+              ),
+              loading: false,
+            }));
+          } catch {
+            set({ error: 'Erro ao atualizar fornecedor', loading: false });
+          }
+        },
+
+        deleteFornecedor: async (id) => {
+          set({ loading: true, error: null });
+          try {
+            await apiFornecedores.delete(id);
+            set((state) => ({
+              fornecedores: state.fornecedores.filter((f) => f.id !== id),
+              loading: false,
+            }));
+          } catch {
+            set({ error: 'Erro ao deletar fornecedor', loading: false });
+          }
+        },
+
         // ============ AÇÕES GERAIS ============
         setError: (error) => set({ error }),
         clearError: () => set({ error: null }),
@@ -763,10 +825,16 @@ export const useAppStore = create<AppStore>()(
       }),
       {
         name: 'app-storage',
-        version: 2,
+        version: 3,
         migrate: (persistedState, version) => {
           if (version < 2) {
             return { ...initialState, ...(persistedState as Partial<AppStore>) };
+          }
+          if (version < 3) {
+            return {
+              ...(persistedState as Partial<AppStore>),
+              fornecedores: [],
+            } as AppStore;
           }
           return persistedState as AppStore;
         },
