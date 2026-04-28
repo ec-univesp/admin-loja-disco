@@ -101,6 +101,14 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
     return enderecos.filter((e) => ids.has(e.id));
   }, [clienteId, clientesEnderecos, enderecos]);
 
+  useEffect(() => {
+    if (enderecosDoCliente.length === 1) {
+      setValue('enderecoId', enderecosDoCliente[0].id);
+    } else if (enderecosDoCliente.length === 0) {
+      setValue('enderecoId', '');
+    }
+  }, [enderecosDoCliente, setValue]);
+
   const somaItens = itens.reduce((acc, item) => acc + Number(item.precoVenda || 0), 0);
 
   useEffect(() => {
