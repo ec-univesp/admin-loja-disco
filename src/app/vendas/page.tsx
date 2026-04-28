@@ -8,7 +8,7 @@ import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoMo
 import NovoCadastroModal from '@/features/vendas/components/NovoCadastroModal';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
+import { exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
 
 const iconPlus = (
@@ -142,14 +142,6 @@ function VendasContent() {
       Status: status,
     }));
 
-  const handleExportCSV = () => {
-    const stamp = new Date().toISOString().slice(0, 10);
-    exportarTabelaCSV(
-      linhasParaExportar() as Array<Record<string, unknown>>,
-      `vendas-${stamp}.csv`
-    );
-  };
-
   const handleExportExcel = () => {
     const stamp = new Date().toISOString().slice(0, 10);
     exportarTabelaExcel(
@@ -201,13 +193,6 @@ function VendasContent() {
             >
               Novo
             </Button>
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
-            >
-              Exportar CSV
-            </button>
             <button
               type="button"
               onClick={handleExportExcel}
