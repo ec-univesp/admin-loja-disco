@@ -34,13 +34,14 @@ interface AddDiscoFormProps {
 export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFormProps = {}) {
   const router = useRouter();
   const { createDisco, loading, error } = useDiscos();
-  const { createArtista } = useArtistas();
+  const { artistas, fetchArtistas, createArtista } = useArtistas();
   const { generosMusical, fetchGenerosMusical } = useGenerosMusical();
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     fetchGenerosMusical();
-  }, [fetchGenerosMusical]);
+    fetchArtistas();
+  }, [fetchGenerosMusical, fetchArtistas]);
 
   const {
     register,
@@ -75,14 +76,25 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
 
   const onSubmit = async (data: AddDiscoFormData) => {
     try {
-      const novoArtista = await createArtista({
-        nome: data.artistaNome,
-        generoId: '',
-      });
-      if (!novoArtista) throw new Error('Falha ao criar artista');
+      const nomeArtista = data.artistaNome.trim();
+      const artistaExistente = artistas.find(
+        (artista) => artista.nome.toLowerCase() === nomeArtista.toLowerCase()
+      );
+
+      let artistaId: string;
+      if (artistaExistente) {
+        artistaId = artistaExistente.id;
+      } else {
+        const novoArtista = await createArtista({
+          nome: nomeArtista,
+          generoId: '',
+        });
+        if (!novoArtista) throw new Error('Falha ao criar artista');
+        artistaId = novoArtista.id;
+      }
 
       await createDisco({
-        artistaId: novoArtista.id,
+        artistaId,
         generoId: data.generoId || undefined,
         album: data.album,
         nacionalidade: data.nacionalidade,
@@ -165,7 +177,9 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
                 <input
                   type="text"
                   id="artistaNome"
+                  list="artistas-disponiveis"
                   placeholder="Ex: The Beatles"
+                  autoComplete="off"
                   {...register('artistaNome', { required: 'Artista é obrigatório' })}
                   className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                     errors.artistaNome
@@ -173,6 +187,11 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
                       : 'border-gray-300 bg-white focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600'
                   }`}
                 />
+                <datalist id="artistas-disponiveis">
+                  {artistas.map((artista) => (
+                    <option key={artista.id} value={artista.nome} />
+                  ))}
+                </datalist>
                 {errors.artistaNome && (
                   <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.artistaNome.message}</span>
                 )}
