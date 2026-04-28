@@ -30,25 +30,29 @@ const navItems: NavItem[] = [
   {
     icon: <BoxCubeIcon />,
     name: 'Estoque',
-    subItems: [
+    path: "/estoque",
+    /*subItems: [
       { name: 'Produtos', path: '/estoque' },
       { name: 'Adicionar Produto', path: '/estoque/add-produto' },
-    ],
+    ],*/
   },
   {
     icon: <DollarLineIcon />,
     name: 'Vendas',
-    subItems: [{ name: 'Lista de Vendas', path: '/vendas' }],
+    path: "/vendas",
+    /*subItems: [{ name: 'Lista de Vendas', path: '/vendas' }],*/
   },
   {
     icon: <BoxCubeIcon />,
     name: 'Compras',
-    subItems: [{ name: 'Lista de Compras', path: '/compras' }],
+     path: "/compras",
+    /*subItems: [{ name: 'Lista de Compras', path: '/compras' }],*/
   },
   {
     icon: <DocsIcon />,
-    name: 'Faturamento',
-    subItems: [{ name: 'Relatório Financeiro', path: '/faturamento' }],
+    name: 'Relatório Financeiro',
+     path: "/faturamento",
+    /*subItems: [{ name: 'Relatório Financeiro', path: '/faturamento' }],*/
   },
   {
     icon: <PaperPlaneIcon />,
