@@ -5,7 +5,12 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
-import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
+import { useDiscos } from '@/shared/store/useStore';
+import { useListaDeGenerosMusicais } from '@/app/estoque/model/genero-musical.model';
+import {
+  useListaDeArtistas,
+  useAtualizarArtista,
+} from '@/app/estoque/model/artista.model';
 import type { Disco } from '@/shared/types/models';
 
 interface EditDiscoModalProps {
@@ -50,16 +55,13 @@ const initialForm: FormState = {
 
 export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoModalProps) {
   const { discosComArtista, updateDisco } = useDiscos();
-  const { generosMusical, fetchGenerosMusical } = useGenerosMusical();
-  const { artistas, updateArtista } = useArtistas();
+  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
+  const { data: artistas = [] } = useListaDeArtistas();
+  const { mutateAsync: atualizarArtista } = useAtualizarArtista();
 
   const [form, setForm] = useState<FormState>(initialForm);
   const [artistaId, setArtistaId] = useState('');
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) fetchGenerosMusical();
-  }, [isOpen, fetchGenerosMusical]);
 
   useEffect(() => {
     if (!isOpen || !discoId) return;
@@ -99,9 +101,14 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
     setSaving(true);
     try {
       // Atualiza nome do artista se mudou
-      const artista = artistas.find((a) => a.id === artistaId);
-      if (artista && artista.nome !== form.artistaNome) {
-        await updateArtista(artistaId, { nome: form.artistaNome });
+      const artista = artistas.find(
+        (item) => String(item.artistaId) === artistaId
+      );
+      if (artista && artista.nomeArtista !== form.artistaNome) {
+        await atualizarArtista({
+          artistaId: artista.artistaId,
+          nomeArtista: form.artistaNome,
+        });
       }
 
       const updates: Partial<Disco> = {
@@ -163,9 +170,12 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                   className={inputClass}
                 >
                   <option value="">-- Selecione --</option>
-                  {generosMusical.map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.nome}
+                  {generosMusicais.map((genero) => (
+                    <option
+                      key={genero.generoMusicalId}
+                      value={genero.generoMusicalId ?? ''}
+                    >
+                      {genero.nomeGenero}
                     </option>
                   ))}
                 </select>

@@ -1,23 +1,21 @@
 'use client';
 
-import React, { FC, useEffect, useMemo, useState } from 'react';
+import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
+import { Calendar } from 'lucide-react';
 import Form from '@/shared/components/form/Form';
 import Label from '@/shared/components/form/Label';
-import ControlledInput from '@/shared/components/form/ControlledInput';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import TextArea from '@/shared/components/form/TextArea';
 import Button from '@/shared/components/ui/button/Button';
 import { formatBRL } from '@/shared/utils/currency';
 import {
   useVendas,
-  useClientes,
-  useEnderecos,
   useDiscos,
   useItensVenda,
-  useCanaisVenda,
-  useClientesEnderecos,
 } from '@/shared/store/useStore';
+import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
+import { useListaDeClientes } from '@/app/vendas/model/cliente.model';
 import ClienteEnderecoModal from './ClienteEnderecoModal';
 import CanalVendaModal from './CanalVendaModal';
 
@@ -46,18 +44,17 @@ const MENSAGEM_SUCESSO_DURACAO_MS = 3000;
 
 const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const { createVenda, loading: vendaLoading } = useVendas();
-  const { clientes, fetchClientes } = useClientes();
-  const { enderecos, fetchEnderecos } = useEnderecos();
+  const { data: clientes = [] } = useListaDeClientes();
   const { discosComArtista, fetchDiscos, updateDisco } = useDiscos();
   const { createItemVenda } = useItensVenda();
-  const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
-  const { clientesEnderecos, fetchClientesEnderecos } = useClientesEnderecos();
+  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
 
   const [showClienteModal, setShowClienteModal] = useState(false);
   const [editClienteId, setEditClienteId] = useState<string | undefined>();
   const [showCanalModal, setShowCanalModal] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [itens, setItens] = useState<ItemVendaForm[]>([{ discoId: '', precoVenda: 0 }]);
+  const dataVendaRef = useRef<HTMLInputElement | null>(null);
 
   const {
     register,
@@ -81,12 +78,8 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   });
 
   useEffect(() => {
-    fetchClientes();
-    fetchEnderecos();
     fetchDiscos();
-    fetchCanaisVenda();
-    fetchClientesEnderecos();
-  }, [fetchClientes, fetchEnderecos, fetchDiscos, fetchCanaisVenda, fetchClientesEnderecos]);
+  }, [fetchDiscos]);
 
   const clienteId = useWatch({ control, name: 'clienteId' });
   const canalVendaId = useWatch({ control, name: 'canalVendaId' });
@@ -94,23 +87,24 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const custosAdicionais = useWatch({ control, name: 'custosAdicionais' });
 
   const enderecosDoCliente = useMemo(() => {
-    if (!clienteId) return [] as typeof enderecos;
-    const ids = new Set(
-      clientesEnderecos.filter((v) => v.clienteId === clienteId).map((v) => v.enderecoId)
+    if (!clienteId) return [];
+    const cliente = clientes.find(
+      (item) => String(item.clienteId) === clienteId
     );
-    return enderecos.filter((e) => ids.has(e.id));
-  }, [clienteId, clientesEnderecos, enderecos]);
+    return cliente?.enderecos ?? [];
+  }, [clienteId, clientes]);
+
+  useEffect(() => {
+    if (enderecosDoCliente.length === 1 && enderecosDoCliente[0].enderecoId !== undefined) {
+      setValue('enderecoId', String(enderecosDoCliente[0].enderecoId));
+    } else if (enderecosDoCliente.length === 0) {
+      setValue('enderecoId', '');
+    }
+  }, [enderecosDoCliente, setValue]);
 
   const somaItens = itens.reduce((acc, item) => acc + Number(item.precoVenda || 0), 0);
 
-  useEffect(() => {
-    if (!canalVendaId) return;
-    const canal = canaisVenda.find((c) => c.id === canalVendaId);
-    if (canal && somaItens) {
-      const custoSugerido = (somaItens * canal.taxaPadrao) / 100;
-      setValue('custosAdicionais', Number(custoSugerido.toFixed(2)));
-    }
-  }, [canalVendaId, somaItens, canaisVenda, setValue]);
+  // taxaPadrao foi removida do contrato do backend; custosAdicionais agora e digitado a mao.
 
   const valorTotal = somaItens + Number(frete || 0) + Number(custosAdicionais || 0);
 
@@ -214,8 +208,8 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               >
                 <option value="">-- Selecione --</option>
                 {clientes.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>
-                    {cliente.nome}
+                  <option key={cliente.clienteId} value={cliente.clienteId ?? ''}>
+                    {cliente.nomeCliente}
                     {cliente.idade ? ` (${cliente.idade} anos)` : ''}
                   </option>
                 ))}
@@ -237,7 +231,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   {clienteId ? '-- Selecione --' : 'Escolha um cliente primeiro'}
                 </option>
                 {enderecosDoCliente.map((endereco) => (
-                  <option key={endereco.id} value={endereco.id}>
+                  <option key={endereco.enderecoId} value={endereco.enderecoId ?? ''}>
                     {endereco.logradouro}, {endereco.numero} - {endereco.cidade}/{endereco.estado}
                   </option>
                 ))}
@@ -339,12 +333,43 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="dataVenda">Data da Venda *</Label>
-                <ControlledInput
-                  type="date"
-                  id="dataVenda"
-                  {...register('dataVenda', { required: 'Data é obrigatória' })}
-                  error={!!errors.dataVenda}
-                />
+                <div className="relative">
+                  <input
+                    type="date"
+                    id="dataVenda"
+                    {...register('dataVenda', {
+                      required: 'Data é obrigatória',
+                    })}
+                    ref={(el) => {
+                      register('dataVenda').ref(el);
+                      dataVendaRef.current = el;
+                    }}
+                    className={`h-11 w-full rounded-lg border bg-white px-4 py-2.5 pr-11 text-sm shadow-theme-xs focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 ${
+                      errors.dataVenda
+                        ? 'border-error-500 focus:ring-error-500/10'
+                        : 'border-gray-300 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:focus:border-brand-800'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    aria-label="Abrir calendário"
+                    onClick={() => {
+                      const input = dataVendaRef.current;
+                      if (!input) return;
+                      if (typeof input.showPicker === 'function') {
+                        input.showPicker();
+                      } else {
+                        input.focus();
+                      }
+                    }}
+                    className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-gray-500 transition-colors hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-400"
+                  >
+                    <Calendar size={18} strokeWidth={2} />
+                  </button>
+                </div>
+                {errors.dataVenda && (
+                  <span className="mt-1 text-sm text-red-500">{errors.dataVenda.message}</span>
+                )}
               </div>
 
               <div>
@@ -394,9 +419,8 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                 >
                   <option value="">-- Selecione --</option>
                   {canaisVenda.map((canal) => (
-                    <option key={canal.id} value={canal.id}>
-                      {canal.nome}
-                      {canal.taxaPadrao ? ` (taxa ${canal.taxaPadrao}%)` : ''}
+                    <option key={canal.canalVendaId} value={canal.canalVendaId ?? ''}>
+                      {canal.nomeCanalVenda}
                     </option>
                   ))}
                 </select>
@@ -484,17 +508,17 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
       <ClienteEnderecoModal
         isOpen={showClienteModal}
         onClose={() => setShowClienteModal(false)}
-        clienteId={editClienteId}
+        clienteId={editClienteId !== undefined ? Number(editClienteId) : undefined}
         onSaved={(cId, eId) => {
-          setValue('clienteId', cId);
-          if (eId) setValue('enderecoId', eId);
+          setValue('clienteId', String(cId));
+          if (eId !== null) setValue('enderecoId', String(eId));
         }}
       />
 
       <CanalVendaModal
         isOpen={showCanalModal}
         onClose={() => setShowCanalModal(false)}
-        onCreated={(id) => setValue('canalVendaId', id)}
+        onCreated={(id) => setValue('canalVendaId', String(id))}
       />
     </>
   );

@@ -2,52 +2,6 @@ import { useMemo } from 'react';
 import { useAppStore } from '@/shared/store/appStore';
 
 /**
- * Hook para usar dados de Gênero Musical
- */
-export const useGenerosMusical = () => {
-  const generosMusical = useAppStore((state) => state.generosMusical);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchGenerosMusical = useAppStore((state) => state.fetchGenerosMusical);
-  const createGeneroMusical = useAppStore((state) => state.createGeneroMusical);
-  const updateGeneroMusical = useAppStore((state) => state.updateGeneroMusical);
-  const deleteGeneroMusical = useAppStore((state) => state.deleteGeneroMusical);
-
-  return {
-    generosMusical,
-    loading,
-    error,
-    fetchGenerosMusical,
-    createGeneroMusical,
-    updateGeneroMusical,
-    deleteGeneroMusical,
-  };
-};
-
-/**
- * Hook para usar dados de Artista
- */
-export const useArtistas = () => {
-  const artistas = useAppStore((state) => state.artistas);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchArtistas = useAppStore((state) => state.fetchArtistas);
-  const createArtista = useAppStore((state) => state.createArtista);
-  const updateArtista = useAppStore((state) => state.updateArtista);
-  const deleteArtista = useAppStore((state) => state.deleteArtista);
-
-  return {
-    artistas,
-    loading,
-    error,
-    fetchArtistas,
-    createArtista,
-    updateArtista,
-    deleteArtista,
-  };
-};
-
-/**
  * Hook para usar dados de Disco
  */
 export const useDiscos = () => {
@@ -87,69 +41,6 @@ export const useDiscos = () => {
     createDisco,
     updateDisco,
     deleteDisco,
-  };
-};
-
-/**
- * Hook para usar dados de Cliente
- */
-export const useClientes = () => {
-  const clientes = useAppStore((state) => state.clientes);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchClientes = useAppStore((state) => state.fetchClientes);
-  const createCliente = useAppStore((state) => state.createCliente);
-  const updateCliente = useAppStore((state) => state.updateCliente);
-  const deleteCliente = useAppStore((state) => state.deleteCliente);
-
-  return {
-    clientes,
-    loading,
-    error,
-    fetchClientes,
-    createCliente,
-    updateCliente,
-    deleteCliente,
-  };
-};
-
-/**
- * Hook para usar dados de Endereço
- */
-export const useEnderecos = () => {
-  const enderecos = useAppStore((state) => state.enderecos);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchEnderecos = useAppStore((state) => state.fetchEnderecos);
-  const createEndereco = useAppStore((state) => state.createEndereco);
-  const updateEndereco = useAppStore((state) => state.updateEndereco);
-  const deleteEndereco = useAppStore((state) => state.deleteEndereco);
-
-  return {
-    enderecos,
-    loading,
-    error,
-    fetchEnderecos,
-    createEndereco,
-    updateEndereco,
-    deleteEndereco,
-  };
-};
-
-/**
- * Hook para usar relação Cliente-Endereço
- */
-export const useClientesEnderecos = () => {
-  const clientesEnderecos = useAppStore((state) => state.clientesEnderecos);
-  const fetchClientesEnderecos = useAppStore((state) => state.fetchClientesEnderecos);
-  const vincularClienteEndereco = useAppStore((state) => state.vincularClienteEndereco);
-  const desvincularClienteEndereco = useAppStore((state) => state.desvincularClienteEndereco);
-
-  return {
-    clientesEnderecos,
-    fetchClientesEnderecos,
-    vincularClienteEndereco,
-    desvincularClienteEndereco,
   };
 };
 
@@ -320,29 +211,6 @@ export const useItensCompra = () => {
     fetchItensCompra,
     createItemCompra,
     deleteItemCompra,
-  };
-};
-
-/**
- * Hook para usar dados de Canais de Venda
- */
-export const useCanaisVenda = () => {
-  const canaisVenda = useAppStore((state) => state.canaisVenda);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchCanaisVenda = useAppStore((state) => state.fetchCanaisVenda);
-  const createCanalVenda = useAppStore((state) => state.createCanalVenda);
-  const updateCanalVenda = useAppStore((state) => state.updateCanalVenda);
-  const deleteCanalVenda = useAppStore((state) => state.deleteCanalVenda);
-
-  return {
-    canaisVenda,
-    loading,
-    error,
-    fetchCanaisVenda,
-    createCanalVenda,
-    updateCanalVenda,
-    deleteCanalVenda,
   };
 };
 

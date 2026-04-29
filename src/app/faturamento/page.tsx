@@ -10,18 +10,18 @@ import {
   useCompras,
   useItensVenda,
   useDiscos,
-  useCanaisVenda,
-  useGenerosMusical,
-  useArtistas,
-  useEnderecos,
 } from '@/shared/store/useStore';
+import { useListaDeGenerosMusicais } from '@/app/estoque/model/genero-musical.model';
+import { useListaDeArtistas } from '@/app/estoque/model/artista.model';
+import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
+import { useListaDeEnderecos } from '@/app/vendas/model/endereco.model';
 import { useAppStore } from '@/shared/store/appStore';
 import {
   exportarBackupCompleto,
   exportarRelatorioFinanceiro,
   exportarRelatorioFinanceiroCSV,
 } from '@/shared/services/exportExcel';
-import { getMockMensal, mockDimensoesProporcoes, escalarDimensao } from '@/features/faturamento/mocks';
+import { getMockMensal, mockDimensoesProporcoes, escalarDimensao } from '@/app/faturamento/mocks';
 
 const MESES_PT = [
   'Jan',
@@ -64,10 +64,10 @@ export default function FaturamentoPage() {
   const { compras, fetchCompras } = useCompras();
   const { itensVenda, fetchItensVenda } = useItensVenda();
   const { discos, fetchDiscos } = useDiscos();
-  const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
-  const { generosMusical, fetchGenerosMusical } = useGenerosMusical();
-  const { artistas, fetchArtistas } = useArtistas();
-  const { enderecos, fetchEnderecos } = useEnderecos();
+  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
+  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
+  const { data: artistas = [] } = useListaDeArtistas();
+  const { data: enderecos = [] } = useListaDeEnderecos();
   const fullState = useAppStore();
 
   const [anoFiltro, setAnoFiltro] = useState<number>(ANO_ATUAL);
@@ -86,19 +86,11 @@ export default function FaturamentoPage() {
     fetchCompras();
     fetchItensVenda();
     fetchDiscos();
-    fetchCanaisVenda();
-    fetchGenerosMusical();
-    fetchArtistas();
-    fetchEnderecos();
   }, [
     fetchVendas,
     fetchCompras,
     fetchItensVenda,
     fetchDiscos,
-    fetchCanaisVenda,
-    fetchGenerosMusical,
-    fetchArtistas,
-    fetchEnderecos,
   ]);
 
   const vendasBase = useMemo(
@@ -132,7 +124,7 @@ export default function FaturamentoPage() {
         if (fCanal && v.canalVendaId !== fCanal) return false;
         if (fPagamento && v.pagamento !== fPagamento) return false;
         if (fEstado) {
-          const est = enderecos.find((e) => e.id === v.enderecoId)?.estado ?? '';
+          const est = enderecos.find((endereco) => String(endereco.enderecoId) === v.enderecoId)?.estado ?? '';
           if (est !== fEstado) return false;
         }
         return true;
@@ -201,7 +193,10 @@ export default function FaturamentoPage() {
   const dadosCanalVendaReal = useMemo(() => {
     const map = new Map<string, number>();
     vendasBase.forEach((v) => {
-      const nome = canaisVenda.find((c) => c.id === v.canalVendaId)?.nome ?? 'Sem canal';
+      const nome =
+        canaisVenda.find(
+          (canal) => String(canal.canalVendaId) === v.canalVendaId
+        )?.nomeCanalVenda ?? 'Sem canal';
       map.set(nome, (map.get(nome) ?? 0) + v.valorTotal);
     });
     return agrupar(Array.from(map.entries()));
@@ -217,7 +212,10 @@ export default function FaturamentoPage() {
 
     if (dimensao === 'canal') {
       vendasAnalise.forEach((v) => {
-        const nome = canaisVenda.find((c) => c.id === v.canalVendaId)?.nome ?? 'Sem canal';
+        const nome =
+          canaisVenda.find(
+            (canal) => String(canal.canalVendaId) === v.canalVendaId
+          )?.nomeCanalVenda ?? 'Sem canal';
         map.set(nome, (map.get(nome) ?? 0) + v.valorTotal);
       });
     } else if (dimensao === 'pagamento') {
@@ -227,14 +225,16 @@ export default function FaturamentoPage() {
       });
     } else if (dimensao === 'estado') {
       vendasAnalise.forEach((v) => {
-        const est = enderecos.find((e) => e.id === v.enderecoId)?.estado ?? 'Sem estado';
+        const est = enderecos.find((endereco) => String(endereco.enderecoId) === v.enderecoId)?.estado ?? 'Sem estado';
         map.set(est, (map.get(est) ?? 0) + v.valorTotal);
       });
     } else if (dimensao === 'genero') {
       itensAnalise.forEach((item) => {
         const disco = discos.find((d) => d.id === item.discoId);
         const nome = disco?.generoId
-          ? (generosMusical.find((g) => g.id === disco.generoId)?.nome ?? 'Sem gênero')
+          ? (generosMusicais.find(
+              (genero) => String(genero.generoMusicalId) === disco.generoId
+            )?.nomeGenero ?? 'Sem gênero')
           : 'Sem gênero';
         map.set(nome, (map.get(nome) ?? 0) + item.precoVenda);
       });
@@ -242,7 +242,9 @@ export default function FaturamentoPage() {
       itensAnalise.forEach((item) => {
         const disco = discos.find((d) => d.id === item.discoId);
         const nome = disco?.artistaId
-          ? (artistas.find((a) => a.id === disco.artistaId)?.nome ?? 'Desconhecido')
+          ? (artistas.find(
+              (artista) => String(artista.artistaId) === disco.artistaId
+            )?.nomeArtista ?? 'Desconhecido')
           : 'Desconhecido';
         map.set(nome, (map.get(nome) ?? 0) + item.precoVenda);
       });
@@ -256,7 +258,7 @@ export default function FaturamentoPage() {
     canaisVenda,
     enderecos,
     discos,
-    generosMusical,
+    generosMusicais,
     artistas,
   ]);
 
@@ -269,7 +271,7 @@ export default function FaturamentoPage() {
   void receitaAnalise;
 
   const estadosDisponiveis = useMemo(
-    () => [...new Set(enderecos.map((e) => e.estado).filter(Boolean))].sort(),
+    () => [...new Set(enderecos.map((endereco) => endereco.estado).filter(Boolean))].sort(),
     [enderecos]
   );
   const pagamentosDisponiveis = useMemo(
@@ -283,7 +285,10 @@ export default function FaturamentoPage() {
     id: v.id,
     data: v.dataVenda,
     cliente: v.clienteId,
-    canal: canaisVenda.find((c) => c.id === v.canalVendaId)?.nome ?? '',
+    canal:
+      canaisVenda.find(
+        (canal) => String(canal.canalVendaId) === v.canalVendaId
+      )?.nomeCanalVenda ?? '',
     pagamento: v.pagamento,
     frete: v.frete,
     custosAdicionais: v.custosAdicionais,
@@ -306,7 +311,7 @@ export default function FaturamentoPage() {
   const handleExportRelatorioCSV = () =>
     exportarRelatorioFinanceiroCSV({ resumoMensal, vendasDetalhe });
 
-  const handleBackupCompleto = () => exportarBackupCompleto(fullState);
+  const handleBackupCompleto = () => exportarBackupCompleto(fullState, generosMusicais);
 
   return (
     <div>

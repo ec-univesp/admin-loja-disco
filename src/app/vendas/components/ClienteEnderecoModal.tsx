@@ -8,9 +8,9 @@ interface ClienteEnderecoModalProps {
   isOpen: boolean;
   onClose: () => void;
   /** Se passado, abre em modo edição */
-  clienteId?: string;
+  clienteId?: number;
   /** Callback chamado quando salva, com clienteId e enderecoId resultantes */
-  onSaved?: (clienteId: string, enderecoId: string) => void;
+  onSaved?: (clienteId: number, enderecoId: number | null) => void;
 }
 
 export default function ClienteEnderecoModal({

@@ -2,11 +2,21 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
 import { useState, useMemo, useEffect } from 'react';
-import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
+import { useDiscos } from '@/shared/store/useStore';
+import {
+  useListaDeGenerosMusicais,
+  useCriarGeneroMusical,
+  useExcluirGeneroMusical,
+} from '@/app/estoque/model/genero-musical.model';
+import {
+  useListaDeArtistas,
+  useCriarArtista,
+  useExcluirArtista,
+} from '@/app/estoque/model/artista.model';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import EditDiscoModal from '@/features/estoque/components/EditDiscoModal';
-import AddDiscoForm from '@/features/estoque/components/AddDiscoForm';
+import EditDiscoModal from '@/app/estoque/components/EditDiscoModal';
+import AddDiscoForm from '@/app/estoque/components/AddDiscoForm';
 import { Pencil, Trash2 } from 'lucide-react';
 
 type AddOption = 'menu' | 'genero' | 'artista' | 'disco';
@@ -38,10 +48,13 @@ const gerarCodigo = (index: number): string => {
 
 export default function EstoquePage() {
   const { discosComArtista, loading, deleteDisco } = useDiscos();
-  const { generosMusical, fetchGenerosMusical, createGeneroMusical, deleteGeneroMusical } = useGenerosMusical();
-  const { artistas, fetchArtistas, createArtista, deleteArtista } = useArtistas();
+  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
+  const { mutateAsync: criarGeneroMusical } = useCriarGeneroMusical();
+  const { mutateAsync: excluirGeneroMusical } = useExcluirGeneroMusical();
+  const { data: artistas = [] } = useListaDeArtistas();
+  const { mutateAsync: criarArtista } = useCriarArtista();
+  const { mutateAsync: excluirArtista } = useExcluirArtista();
   const [busca, setBusca] = useState('');
-  const [filtroGenero, setFiltroGenero] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
   const [novoArtista, setNovoArtista] = useState('');
   const [editDiscoId, setEditDiscoId] = useState<string | null>(null);
@@ -57,20 +70,21 @@ export default function EstoquePage() {
   const [discoParaApagar, setDiscoParaApagar] = useState<{ id: string; titulo: string } | null>(null);
 
   const deleteGeneroModal = useModal();
-  const [generoParaApagar, setGeneroParaApagar] = useState<{ id: string; nome: string } | null>(null);
+  const [generoParaApagar, setGeneroParaApagar] = useState<{
+    generoMusicalId: number;
+    nomeGenero: string;
+  } | null>(null);
 
   const deleteArtistaModal = useModal();
-  const [artistaParaApagar, setArtistaParaApagar] = useState<{ id: string; nome: string } | null>(null);
-
-  useEffect(() => {
-    fetchGenerosMusical();
-    fetchArtistas();
-  }, [fetchGenerosMusical, fetchArtistas]);
+  const [artistaParaApagar, setArtistaParaApagar] = useState<{
+    artistaId: number;
+    nomeArtista: string;
+  } | null>(null);
 
   const handleAddGenero = async () => {
-    const nome = novoGenero.trim();
-    if (!nome) return;
-    await createGeneroMusical({ nome });
+    const nomeGenero = novoGenero.trim();
+    if (!nomeGenero) return;
+    await criarGeneroMusical({ nomeGenero });
     setNovoGenero('');
   };
 
@@ -83,21 +97,21 @@ export default function EstoquePage() {
 
   const handleConfirmarApagarGenero = async () => {
     if (!generoParaApagar) return;
-    await deleteGeneroMusical(generoParaApagar.id); // TODO: API
+    await excluirGeneroMusical(generoParaApagar.generoMusicalId);
     setGeneroParaApagar(null);
     deleteGeneroModal.closeModal();
   };
 
   const handleAddArtista = async () => {
-    const nome = novoArtista.trim();
-    if (!nome) return;
-    await createArtista({ nome, generoId: '' });
+    const nomeArtista = novoArtista.trim();
+    if (!nomeArtista) return;
+    await criarArtista({ nomeArtista });
     setNovoArtista('');
   };
 
   const handleConfirmarApagarArtista = async () => {
     if (!artistaParaApagar) return;
-    await deleteArtista(artistaParaApagar.id); // TODO: API
+    await excluirArtista(artistaParaApagar.artistaId);
     setArtistaParaApagar(null);
     deleteArtistaModal.closeModal();
   };
@@ -128,13 +142,13 @@ export default function EstoquePage() {
   );
 
   const produtosFiltrados = produtos.filter((p) => {
-    const matchBusca =
-      !busca ||
-      p.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-      p.artista.toLowerCase().includes(busca.toLowerCase()) ||
-      p.codigo.toLowerCase().includes(busca.toLowerCase());
-    const matchGenero = !filtroGenero || p.genero === filtroGenero;
-    return matchBusca && matchGenero;
+    if (!busca) return true;
+    const termo = busca.toLowerCase();
+    return (
+      p.titulo.toLowerCase().includes(termo) ||
+      p.artista.toLowerCase().includes(termo) ||
+      p.codigo.toLowerCase().includes(termo)
+    );
   });
 
   const iconPlus = (
@@ -166,18 +180,6 @@ export default function EstoquePage() {
                 onChange={(e) => setBusca(e.target.value)}
                 className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
               />
-              <select
-                value={filtroGenero}
-                onChange={(e) => setFiltroGenero(e.target.value)}
-                className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
-              >
-                <option value="">Todos os gêneros</option>
-                {generosMusical.map((g) => (
-                  <option key={g.id} value={g.nome}>
-                    {g.nome}
-                  </option>
-                ))}
-              </select>
               <Button
                 size="md"
                 variant="primary"
@@ -429,26 +431,30 @@ export default function EstoquePage() {
                   />
                 </div>
 
-                {generosMusical.length > 0 && (
+                {generosMusicais.length > 0 && (
                   <div>
                     <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
                       Gêneros já cadastrados:
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {generosMusical.map((genero) => (
+                      {generosMusicais.map((genero) => (
                         <div
-                          key={genero.id}
+                          key={genero.generoMusicalId}
                           className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
                         >
                           <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
-                            {genero.nome}
+                            {genero.nomeGenero}
                           </span>
                           <button
                             type="button"
-                            aria-label={`Excluir gênero ${genero.nome}`}
-                            title={`Excluir gênero ${genero.nome}`}
+                            aria-label={`Excluir gênero ${genero.nomeGenero}`}
+                            title={`Excluir gênero ${genero.nomeGenero}`}
                             onClick={() => {
-                              setGeneroParaApagar({ id: genero.id, nome: genero.nome });
+                              if (genero.generoMusicalId === undefined) return;
+                              setGeneroParaApagar({
+                                generoMusicalId: genero.generoMusicalId,
+                                nomeGenero: genero.nomeGenero ?? '',
+                              });
                               deleteGeneroModal.openModal();
                             }}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
@@ -504,18 +510,22 @@ export default function EstoquePage() {
                     <div className="flex flex-wrap gap-2">
                       {artistas.map((artista) => (
                         <div
-                          key={artista.id}
+                          key={artista.artistaId}
                           className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
                         >
                           <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
-                            {artista.nome}
+                            {artista.nomeArtista}
                           </span>
                           <button
                             type="button"
-                            aria-label={`Excluir artista ${artista.nome}`}
-                            title={`Excluir artista ${artista.nome}`}
+                            aria-label={`Excluir artista ${artista.nomeArtista}`}
+                            title={`Excluir artista ${artista.nomeArtista}`}
                             onClick={() => {
-                              setArtistaParaApagar({ id: artista.id, nome: artista.nome });
+                              if (artista.artistaId === undefined) return;
+                              setArtistaParaApagar({
+                                artistaId: artista.artistaId,
+                                nomeArtista: artista.nomeArtista ?? '',
+                              });
                               deleteArtistaModal.openModal();
                             }}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
@@ -566,7 +576,7 @@ export default function EstoquePage() {
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
             Tem certeza que deseja excluir esse artista{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {artistaParaApagar?.nome}
+              {artistaParaApagar?.nomeArtista}
             </span>
             ?
           </p>
@@ -644,7 +654,7 @@ export default function EstoquePage() {
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
             Tem certeza que deseja excluir esse gênero{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {generoParaApagar?.nome}
+              {generoParaApagar?.nomeGenero}
             </span>
             ?
           </p>

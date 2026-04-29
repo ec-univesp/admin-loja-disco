@@ -27,7 +27,7 @@ import {
   apiItensCompra,
   apiCanaisVenda,
   apiClientesEnderecos,
-} from '@/shared/services/api';
+} from '@/shared/services/apiMock';
 
 interface AppStore extends AppState {
   // Ações para Generos Musicais
@@ -763,10 +763,15 @@ export const useAppStore = create<AppStore>()(
       }),
       {
         name: 'app-storage',
-        version: 2,
+        version: 4,
         migrate: (persistedState, version) => {
           if (version < 2) {
             return { ...initialState, ...(persistedState as Partial<AppStore>) };
+          }
+          if (version < 4) {
+            const { fornecedores: _removed, ...rest } =
+              (persistedState as Partial<AppStore> & { fornecedores?: unknown }) ?? {};
+            return rest as AppStore;
           }
           return persistedState as AppStore;
         },

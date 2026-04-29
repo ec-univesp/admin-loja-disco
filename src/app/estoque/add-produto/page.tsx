@@ -1,7 +1,7 @@
 'use client';
 
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
-import AddDiscoForm from '@/features/estoque/components/AddDiscoForm';
+import AddDiscoForm from '@/app/estoque/components/AddDiscoForm';
 
 export default function AddProdutoPage() {
   return (

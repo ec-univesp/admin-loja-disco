@@ -1,9 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
-import { useDiscos, useArtistas, useGenerosMusical } from '@/shared/store/useStore';
+import { useListaDeGenerosMusicais } from '@/app/estoque/model/genero-musical.model';
+import {
+  useListaDeArtistas,
+  useCriarArtista,
+} from '@/app/estoque/model/artista.model';
+import { useCriarDisco } from '@/app/estoque/model/disco.model';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
@@ -11,14 +16,14 @@ import { formatBRL } from '@/shared/utils/currency';
 
 interface AddDiscoFormData {
   artistaNome: string;
-  generoId: string;
+  generoMusicalId: string;
   album: string;
   nacionalidade: string;
-  premsagem: string;
+  prensagem: string;
   encarte: string;
   gravadora: string;
   anoLancamento: number;
-  anoPremsagem: number;
+  anoPrensagem: number;
   condicaoCapa: string;
   condicaoDisco: string;
   valorMercado: number;
@@ -33,14 +38,11 @@ interface AddDiscoFormProps {
 
 export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFormProps = {}) {
   const router = useRouter();
-  const { createDisco, loading, error } = useDiscos();
-  const { createArtista } = useArtistas();
-  const { generosMusical, fetchGenerosMusical } = useGenerosMusical();
+  const { mutateAsync: criarDisco, isPending: criando } = useCriarDisco();
+  const { data: artistas = [] } = useListaDeArtistas();
+  const { mutateAsync: criarArtista } = useCriarArtista();
+  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
   const [successMessage, setSuccessMessage] = useState('');
-
-  useEffect(() => {
-    fetchGenerosMusical();
-  }, [fetchGenerosMusical]);
 
   const {
     register,
@@ -52,14 +54,14 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
   } = useForm<AddDiscoFormData>({
     defaultValues: {
       artistaNome: '',
-      generoId: '',
+      generoMusicalId: '',
       album: '',
       nacionalidade: 'Brasil',
-      premsagem: '',
+      prensagem: '',
       encarte: 'Ok',
       gravadora: '',
       anoLancamento: new Date().getFullYear(),
-      anoPremsagem: new Date().getFullYear(),
+      anoPrensagem: new Date().getFullYear(),
       condicaoCapa: '',
       condicaoDisco: '',
       valorMercado: 0,
@@ -75,27 +77,37 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
 
   const onSubmit = async (data: AddDiscoFormData) => {
     try {
-      const novoArtista = await createArtista({
-        nome: data.artistaNome,
-        generoId: '',
-      });
-      if (!novoArtista) throw new Error('Falha ao criar artista');
+      const nomeArtista = data.artistaNome.trim();
+      const artistaExistente = artistas.find(
+        (artista) => artista.nomeArtista?.toLowerCase() === nomeArtista.toLowerCase()
+      );
 
-      await createDisco({
-        artistaId: novoArtista.id,
-        generoId: data.generoId || undefined,
+      let artistaId: number;
+      if (artistaExistente?.artistaId !== undefined) {
+        artistaId = artistaExistente.artistaId;
+      } else {
+        const novoArtista = await criarArtista({ nomeArtista });
+        if (novoArtista.artistaId === undefined) throw new Error('Falha ao criar artista');
+        artistaId = novoArtista.artistaId;
+      }
+
+      await criarDisco({
+        artista: { artistaId, nomeArtista },
         album: data.album,
         nacionalidade: data.nacionalidade,
-        premsagem: data.premsagem,
+        prensagem: data.prensagem,
         encarte: data.encarte,
         gravadora: data.gravadora,
         anoLancamento: Number(data.anoLancamento),
-        anoPremsagem: Number(data.anoPremsagem),
+        anoPrensagem: Number(data.anoPrensagem),
         condicaoCapa: data.condicaoCapa,
         condicaoDisco: data.condicaoDisco,
         valorMercado: Number(data.valorMercado),
         custoDisco: Number(data.custoDisco),
         status: data.status,
+        generosMusicais: data.generoMusicalId
+          ? [{ generoMusicalId: Number(data.generoMusicalId) }]
+          : [],
       });
 
       setSuccessMessage('Disco adicionado com sucesso!');
@@ -146,14 +158,6 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
           </div>
         )}
 
-        {error && (
-          <div className="mb-6 flex items-center gap-3 rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-900/50 dark:bg-error-900/20">
-            <svg className="h-5 w-5 text-error-600 dark:text-error-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <span className="text-sm font-medium text-error-900 dark:text-error-200">Erro: {error}</span>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Artista e Álbum */}
@@ -165,7 +169,9 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
                 <input
                   type="text"
                   id="artistaNome"
+                  list="artistas-disponiveis"
                   placeholder="Ex: The Beatles"
+                  autoComplete="off"
                   {...register('artistaNome', { required: 'Artista é obrigatório' })}
                   className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                     errors.artistaNome
@@ -173,22 +179,30 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
                       : 'border-gray-300 bg-white focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600'
                   }`}
                 />
+                <datalist id="artistas-disponiveis">
+                  {artistas.map((artista) => (
+                    <option key={artista.artistaId} value={artista.nomeArtista ?? ''} />
+                  ))}
+                </datalist>
                 {errors.artistaNome && (
                   <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.artistaNome.message}</span>
                 )}
               </div>
 
               <div>
-                <Label htmlFor="generoId">Gênero Musical</Label>
+                <Label htmlFor="generoMusicalId">Gênero Musical</Label>
                 <select
-                  id="generoId"
-                  {...register('generoId')}
+                  id="generoMusicalId"
+                  {...register('generoMusicalId')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 >
                   <option value="">-- Selecione --</option>
-                  {generosMusical.map((genero) => (
-                    <option key={genero.id} value={genero.id}>
-                      {genero.nome}
+                  {generosMusicais.map((genero) => (
+                    <option
+                      key={genero.generoMusicalId}
+                      value={genero.generoMusicalId ?? ''}
+                    >
+                      {genero.nomeGenero}
                     </option>
                   ))}
                 </select>
@@ -230,12 +244,12 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
               </div>
 
               <div>
-                <Label htmlFor="premsagem">Prensagem</Label>
+                <Label htmlFor="prensagem">Prensagem</Label>
                 <input
                   type="text"
-                  id="premsagem"
+                  id="prensagem"
                   placeholder="Ex: Vinyl, CD..."
-                  {...register('premsagem')}
+                  {...register('prensagem')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 />
               </div>
@@ -386,8 +400,8 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
 
           {/* Botões */}
           <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={loading} size="lg" variant="primary" fullWidth>
-              {loading ? 'Salvando...' : 'Salvar Disco'}
+            <Button type="submit" disabled={criando} size="lg" variant="primary" fullWidth>
+              {criando ? 'Salvando...' : 'Salvar Disco'}
             </Button>
             <Button type="reset" size="lg" variant="secondary" fullWidth>
               Limpar

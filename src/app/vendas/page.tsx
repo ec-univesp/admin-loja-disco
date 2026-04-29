@@ -3,12 +3,17 @@ import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
-import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/shared/store/useStore';
-import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoModal';
-import NovoCadastroModal from '@/features/vendas/components/NovoCadastroModal';
+import { useVendas, useItensVenda } from '@/shared/store/useStore';
+import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
+import {
+  useListaDeClientes,
+  useExcluirCliente,
+} from '@/app/vendas/model/cliente.model';
+import ClienteEnderecoModal from '@/app/vendas/components/ClienteEnderecoModal';
+import NovoCadastroModal from '@/app/vendas/components/NovoCadastroModal';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import { exportarTabelaCSV, exportarTabelaExcel } from '@/shared/services/exportExcel';
+import { exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
 
 const iconPlus = (
@@ -29,6 +34,12 @@ const statusColor: Record<string, string> = {
 const formatNumeroVenda = (posicaoNaLista: number) =>
   `VND-${String(posicaoNaLista + 1).padStart(4, '0')}`;
 
+const formatarDataBR = (dataIso: string) => {
+  if (!dataIso || dataIso.length < 10) return dataIso || '—';
+  const [ano, mes, dia] = dataIso.slice(0, 10).split('-');
+  return `${dia}/${mes}/${ano}`;
+};
+
 const STATUS_CONCLUIDOS = ['Concluída', 'Entregue'] as const;
 
 export default function VendasPage() {
@@ -40,10 +51,11 @@ export default function VendasPage() {
 }
 
 function VendasContent() {
-  const { vendasComDetalhes, fetchVendas, deleteVenda } = useVendas();
-  const { clientes, fetchClientes, deleteCliente } = useClientes();
+  const { vendasComDetalhes, fetchVendas, deleteVenda, updateVenda } = useVendas();
+  const { data: clientes = [] } = useListaDeClientes();
+  const { mutateAsync: excluirCliente } = useExcluirCliente();
   const { itensVenda, fetchItensVenda } = useItensVenda();
-  const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
+  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
 
   const searchParams = useSearchParams();
   const abrirNaVenda = searchParams.get('novo') === '1';
@@ -73,17 +85,20 @@ function VendasContent() {
 
   const handleConfirmarApagarCliente = async () => {
     if (!clienteParaApagar) return;
-    await deleteCliente(clienteParaApagar.id);
+    await excluirCliente(Number(clienteParaApagar.id));
     setClienteParaApagar(null);
     deleteClienteModal.closeModal();
   };
 
+  const handleToggleEntregue = async (id: string, statusAtual: string) => {
+    const novoStatus = statusAtual === 'Entregue' ? 'Pendente' : 'Entregue';
+    await updateVenda(id, { statusPedido: novoStatus });
+  };
+
   useEffect(() => {
     fetchVendas();
-    fetchClientes();
     fetchItensVenda();
-    fetchCanaisVenda();
-  }, [fetchVendas, fetchClientes, fetchItensVenda, fetchCanaisVenda]);
+  }, [fetchVendas, fetchItensVenda]);
 
   const linhas = useMemo(() => {
     const vendasOrdenadas = [...vendasComDetalhes].sort((vendaA, vendaB) =>
@@ -99,7 +114,10 @@ function VendasContent() {
       itens: itensVenda.filter((item) => item.vendaId === venda.id).length,
       total: venda.valorTotal,
       pagamento: venda.pagamento,
-      canalVenda: canaisVenda.find((c) => c.id === venda.canalVendaId)?.nome ?? '—',
+      canalVenda:
+        canaisVenda.find(
+          (canal) => String(canal.canalVendaId) === venda.canalVendaId
+        )?.nomeCanalVenda ?? '—',
       status: venda.statusPedido || 'Pendente',
     }));
   }, [vendasComDetalhes, itensVenda, canaisVenda]);
@@ -123,21 +141,13 @@ function VendasContent() {
     linhasFiltradas.map(({ numero, cliente, data, itens, total, pagamento, canalVenda, status }) => ({
       'Nº Venda': numero,
       Cliente: cliente,
-      Data: data,
+      Data: formatarDataBR(data),
       Itens: itens,
       'Total (R$)': total.toFixed(2),
       Pagamento: pagamento,
       'Canal de Venda': canalVenda,
       Status: status,
     }));
-
-  const handleExportCSV = () => {
-    const stamp = new Date().toISOString().slice(0, 10);
-    exportarTabelaCSV(
-      linhasParaExportar() as Array<Record<string, unknown>>,
-      `vendas-${stamp}.csv`
-    );
-  };
 
   const handleExportExcel = () => {
     const stamp = new Date().toISOString().slice(0, 10);
@@ -192,13 +202,6 @@ function VendasContent() {
             </Button>
             <button
               type="button"
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
-            >
-              Exportar CSV
-            </button>
-            <button
-              type="button"
               onClick={handleExportExcel}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
             >
@@ -219,18 +222,18 @@ function VendasContent() {
             <div className="flex flex-wrap gap-2">
               {clientes.map((cliente) => (
                 <div
-                  key={cliente.id}
+                  key={cliente.clienteId}
                   className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
                 >
                   <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
-                    {cliente.nome}
+                    {cliente.nomeCliente}
                   </span>
                   <button
                     type="button"
-                    aria-label={`Editar cliente ${cliente.nome}`}
-                    title={`Editar cliente ${cliente.nome}`}
+                    aria-label={`Editar cliente ${cliente.nomeCliente}`}
+                    title={`Editar cliente ${cliente.nomeCliente}`}
                     onClick={() => {
-                      setEditClienteId(cliente.id);
+                      setEditClienteId(String(cliente.clienteId));
                       setShowClienteModal(true);
                     }}
                     className="bg-brand-500 hover:bg-brand-600 inline-flex h-7 w-7 items-center justify-center rounded-md text-white shadow-sm transition-colors"
@@ -239,10 +242,14 @@ function VendasContent() {
                   </button>
                   <button
                     type="button"
-                    aria-label={`Excluir cliente ${cliente.nome}`}
-                    title={`Excluir cliente ${cliente.nome}`}
+                    aria-label={`Excluir cliente ${cliente.nomeCliente}`}
+                    title={`Excluir cliente ${cliente.nomeCliente}`}
                     onClick={() => {
-                      setClienteParaApagar({ id: cliente.id, nome: cliente.nome });
+                      if (cliente.clienteId === undefined) return;
+                      setClienteParaApagar({
+                        id: String(cliente.clienteId),
+                        nome: cliente.nomeCliente ?? '',
+                      });
                       deleteClienteModal.openModal();
                     }}
                     className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
@@ -305,7 +312,9 @@ function VendasContent() {
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
                       {venda.cliente}
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{venda.data}</td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {formatarDataBR(venda.data)}
+                    </td>
                     <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
                       {venda.itens}
                     </td>
@@ -339,6 +348,22 @@ function VendasContent() {
                         >
                           <Pencil size={15} strokeWidth={2.25} />
                         </button>
+                        <label
+                          title={
+                            venda.status === 'Entregue'
+                              ? 'Marcar como não entregue'
+                              : 'Marcar como entregue'
+                          }
+                          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gray-200 bg-white shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={venda.status === 'Entregue'}
+                            onChange={() => handleToggleEntregue(venda.id, venda.status)}
+                            aria-label={`Marcar venda ${venda.numero} como entregue`}
+                            className="h-4 w-4 cursor-pointer accent-green-600"
+                          />
+                        </label>
                         <button
                           type="button"
                           aria-label={`Deletar venda ${venda.numero}`}
@@ -364,7 +389,7 @@ function VendasContent() {
       <ClienteEnderecoModal
         isOpen={showClienteModal}
         onClose={() => setShowClienteModal(false)}
-        clienteId={editClienteId}
+        clienteId={editClienteId !== undefined ? Number(editClienteId) : undefined}
       />
       <NovoCadastroModal
         isOpen={showNovoCadastroModal}

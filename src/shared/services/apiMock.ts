@@ -103,10 +103,10 @@ export const initializeStorage = () => {
     localStorage.setItem(
       STORAGE_KEYS.CANAIS_VENDA,
       JSON.stringify([
-        { id: '1', nome: 'Loja Física', taxaPadrao: 0 },
-        { id: '2', nome: 'Loja Online', taxaPadrao: 0 },
-        { id: '3', nome: 'Mercado Livre', taxaPadrao: 12 },
-        { id: '4', nome: 'Shopee', taxaPadrao: 14 },
+        { id: '1', nome: 'Loja Física' },
+        { id: '2', nome: 'Loja Online' },
+        { id: '3', nome: 'Mercado Livre' },
+        { id: '4', nome: 'Shopee' },
       ])
     );
   }
