@@ -1,8 +1,11 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
-import { useState, useMemo, useEffect } from 'react';
-import { useDiscos } from '@/shared/store/useStore';
+import { useState, useMemo } from 'react';
+import {
+  useListaDeDiscos,
+  useExcluirDisco,
+} from '@/app/estoque/model/disco.model';
 import {
   useListaDeGenerosMusicais,
   useCriarGeneroMusical,
@@ -22,18 +25,17 @@ import { Pencil, Trash2 } from 'lucide-react';
 type AddOption = 'menu' | 'genero' | 'artista' | 'disco';
 
 interface ProdutoDisplay {
-  id: string;
-  artistaId: string;
+  id: number;
   codigo: string;
   titulo: string;
   artista: string;
   genero: string;
   nacionalidade: string;
-  premsagem: string;
+  prensagem: string;
   encarte: string;
   gravadora: string;
   anoLancamento: number;
-  anoPremsagem: number;
+  anoPrensagem: number;
   condicaoCapa: string;
   condicaoDisco: string;
   valorMercado: number;
@@ -47,7 +49,8 @@ const gerarCodigo = (index: number): string => {
 };
 
 export default function EstoquePage() {
-  const { discosComArtista, loading, deleteDisco } = useDiscos();
+  const { data: discos = [], isLoading: loading } = useListaDeDiscos();
+  const { mutateAsync: excluirDisco } = useExcluirDisco();
   const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
   const { mutateAsync: criarGeneroMusical } = useCriarGeneroMusical();
   const { mutateAsync: excluirGeneroMusical } = useExcluirGeneroMusical();
@@ -57,7 +60,7 @@ export default function EstoquePage() {
   const [busca, setBusca] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
   const [novoArtista, setNovoArtista] = useState('');
-  const [editDiscoId, setEditDiscoId] = useState<string | null>(null);
+  const [editDiscoId, setEditDiscoId] = useState<number | null>(null);
   const addModal = useModal();
   const [addOption, setAddOption] = useState<AddOption>('menu');
 
@@ -67,7 +70,7 @@ export default function EstoquePage() {
   };
 
   const deleteDiscoModal = useModal();
-  const [discoParaApagar, setDiscoParaApagar] = useState<{ id: string; titulo: string } | null>(null);
+  const [discoParaApagar, setDiscoParaApagar] = useState<{ id: number; titulo: string } | null>(null);
 
   const deleteGeneroModal = useModal();
   const [generoParaApagar, setGeneroParaApagar] = useState<{
@@ -90,7 +93,7 @@ export default function EstoquePage() {
 
   const handleConfirmarApagarDisco = async () => {
     if (!discoParaApagar) return;
-    await deleteDisco(discoParaApagar.id); // TODO: API
+    await excluirDisco(discoParaApagar.id);
     setDiscoParaApagar(null);
     deleteDiscoModal.closeModal();
   };
@@ -118,27 +121,26 @@ export default function EstoquePage() {
 
   const produtos = useMemo<ProdutoDisplay[]>(
     () =>
-      discosComArtista.map((disco, index) => ({
-        id: disco.id,
-        artistaId: disco.artistaId,
+      discos.map((disco, index) => ({
+        id: disco.discoId ?? 0,
         codigo: gerarCodigo(index),
-        titulo: disco.album,
-        artista: disco.artistaNome,
-        genero: disco.generoNome,
-        nacionalidade: disco.nacionalidade,
-        premsagem: disco.premsagem,
-        encarte: disco.encarte,
-        gravadora: disco.gravadora,
-        anoLancamento: disco.anoLancamento,
-        anoPremsagem: disco.anoPremsagem,
-        condicaoCapa: disco.condicaoCapa,
-        condicaoDisco: disco.condicaoDisco,
-        valorMercado: disco.valorMercado,
-        custoDisco: disco.custoDisco,
-        preco: disco.valorMercado,
-        status: disco.status || 'Disponível',
+        titulo: disco.album ?? '',
+        artista: disco.artista?.nomeArtista ?? 'Desconhecido',
+        genero: disco.generosMusicais?.[0]?.nomeGenero ?? '',
+        nacionalidade: disco.nacionalidade ?? '',
+        prensagem: disco.prensagem ?? '',
+        encarte: disco.encarte ?? '',
+        gravadora: disco.gravadora ?? '',
+        anoLancamento: disco.anoLancamento ?? 0,
+        anoPrensagem: disco.anoPrensagem ?? 0,
+        condicaoCapa: disco.condicaoCapa ?? '',
+        condicaoDisco: disco.condicaoDisco ?? '',
+        valorMercado: disco.valorMercado ?? 0,
+        custoDisco: disco.custoDisco ?? 0,
+        preco: disco.valorMercado ?? 0,
+        status: disco.status ?? 'Disponível',
       })),
-    [discosComArtista]
+    [discos]
   );
 
   const produtosFiltrados = produtos.filter((p) => {
@@ -255,7 +257,7 @@ export default function EstoquePage() {
                         {produto.nacionalidade || '—'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {produto.premsagem || '—'}
+                        {produto.prensagem || '—'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
                         {produto.encarte || '—'}
@@ -267,7 +269,7 @@ export default function EstoquePage() {
                         {produto.anoLancamento || '—'}
                       </td>
                       <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
-                        {produto.anoPremsagem || '—'}
+                        {produto.anoPrensagem || '—'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
                         {produto.condicaoCapa || '—'}
@@ -287,7 +289,7 @@ export default function EstoquePage() {
                             type="button"
                             aria-label={`Editar disco ${produto.titulo}`}
                             title={`Editar disco ${produto.titulo}`}
-                            onClick={() => setEditDiscoId(produto.id)}
+                            onClick={() => setEditDiscoId(produto.id > 0 ? produto.id : null)}
                             className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
                           >
                             <Pencil size={15} strokeWidth={2.25} />
@@ -297,7 +299,7 @@ export default function EstoquePage() {
                             aria-label={`Apagar disco ${produto.titulo}`}
                             title={`Apagar disco ${produto.titulo}`}
                             onClick={() => {
-                              setDiscoParaApagar({ id: produto.id, titulo: produto.titulo });
+                              setDiscoParaApagar({ id: produto.id > 0 ? produto.id : 0, titulo: produto.titulo });
                               deleteDiscoModal.openModal();
                             }}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"

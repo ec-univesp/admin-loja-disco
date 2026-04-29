@@ -5,30 +5,27 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
-import { useDiscos } from '@/shared/store/useStore';
+import { useDiscoPorId, useAtualizarDisco } from '@/app/estoque/model/disco.model';
 import { useListaDeGenerosMusicais } from '@/app/estoque/model/genero-musical.model';
-import {
-  useListaDeArtistas,
-  useAtualizarArtista,
-} from '@/app/estoque/model/artista.model';
-import type { Disco } from '@/shared/types/models';
+import { useListaDeArtistas, useAtualizarArtista } from '@/app/estoque/model/artista.model';
 
 interface EditDiscoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  discoId: string | null;
+  discoId: number | null;
 }
 
 interface FormState {
   album: string;
+  artistaId: number | undefined;
   artistaNome: string;
-  generoId: string;
+  generoMusicalId: string;
   nacionalidade: string;
-  premsagem: string;
+  prensagem: string;
   encarte: string;
   gravadora: string;
   anoLancamento: number;
-  anoPremsagem: number;
+  anoPrensagem: number;
   condicaoCapa: string;
   condicaoDisco: string;
   valorMercado: number;
@@ -38,14 +35,15 @@ interface FormState {
 
 const initialForm: FormState = {
   album: '',
+  artistaId: undefined,
   artistaNome: '',
-  generoId: '',
+  generoMusicalId: '',
   nacionalidade: '',
-  premsagem: '',
+  prensagem: '',
   encarte: 'Ok',
   gravadora: '',
   anoLancamento: 0,
-  anoPremsagem: 0,
+  anoPrensagem: 0,
   condicaoCapa: '',
   condicaoDisco: '',
   valorMercado: 0,
@@ -54,37 +52,35 @@ const initialForm: FormState = {
 };
 
 export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoModalProps) {
-  const { discosComArtista, updateDisco } = useDiscos();
+  const { data: disco } = useDiscoPorId(isOpen && discoId !== null ? discoId : undefined);
   const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
   const { data: artistas = [] } = useListaDeArtistas();
+  const { mutateAsync: atualizarDisco } = useAtualizarDisco();
   const { mutateAsync: atualizarArtista } = useAtualizarArtista();
 
   const [form, setForm] = useState<FormState>(initialForm);
-  const [artistaId, setArtistaId] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!isOpen || !discoId) return;
-    const disco = discosComArtista.find((d) => d.id === discoId);
-    if (!disco) return;
-    setArtistaId(disco.artistaId);
+    if (!isOpen || !disco) return;
     setForm({
-      album: disco.album,
-      artistaNome: disco.artistaNome,
-      generoId: disco.generoId ?? '',
-      nacionalidade: disco.nacionalidade,
-      premsagem: disco.premsagem,
-      encarte: disco.encarte,
-      gravadora: disco.gravadora,
-      anoLancamento: disco.anoLancamento,
-      anoPremsagem: disco.anoPremsagem,
-      condicaoCapa: disco.condicaoCapa,
-      condicaoDisco: disco.condicaoDisco,
-      valorMercado: disco.valorMercado,
-      custoDisco: disco.custoDisco,
-      status: disco.status,
+      album: disco.album ?? '',
+      artistaId: disco.artista?.artistaId,
+      artistaNome: disco.artista?.nomeArtista ?? '',
+      generoMusicalId: String(disco.generosMusicais?.[0]?.generoMusicalId ?? ''),
+      nacionalidade: disco.nacionalidade ?? '',
+      prensagem: disco.prensagem ?? '',
+      encarte: disco.encarte ?? 'Ok',
+      gravadora: disco.gravadora ?? '',
+      anoLancamento: disco.anoLancamento ?? 0,
+      anoPrensagem: disco.anoPrensagem ?? 0,
+      condicaoCapa: disco.condicaoCapa ?? '',
+      condicaoDisco: disco.condicaoDisco ?? '',
+      valorMercado: disco.valorMercado ?? 0,
+      custoDisco: disco.custoDisco ?? 0,
+      status: disco.status ?? 'Disponível',
     });
-  }, [isOpen, discoId, discosComArtista]);
+  }, [isOpen, disco]);
 
   const handleChange =
     (field: keyof FormState) =>
@@ -92,7 +88,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
       const val = e.target.value;
       setForm((prev) => ({
         ...prev,
-        [field]: ['anoLancamento', 'anoPremsagem'].includes(field) ? Number(val) : val,
+        [field]: ['anoLancamento', 'anoPrensagem'].includes(field) ? Number(val) : val,
       }));
     };
 
@@ -100,34 +96,32 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
     if (!discoId) return;
     setSaving(true);
     try {
-      // Atualiza nome do artista se mudou
-      const artista = artistas.find(
-        (item) => String(item.artistaId) === artistaId
-      );
-      if (artista && artista.nomeArtista !== form.artistaNome) {
-        await atualizarArtista({
-          artistaId: artista.artistaId,
-          nomeArtista: form.artistaNome,
-        });
+      if (form.artistaId !== undefined) {
+        const artistaAtual = artistas.find((a) => a.artistaId === form.artistaId);
+        if (artistaAtual && artistaAtual.nomeArtista !== form.artistaNome) {
+          await atualizarArtista({ artistaId: form.artistaId, nomeArtista: form.artistaNome });
+        }
       }
 
-      const updates: Partial<Disco> = {
+      await atualizarDisco({
+        discoId,
+        artista: { artistaId: form.artistaId, nomeArtista: form.artistaNome },
         album: form.album,
-        generoId: form.generoId || undefined,
         nacionalidade: form.nacionalidade,
-        premsagem: form.premsagem,
+        prensagem: form.prensagem,
         encarte: form.encarte,
         gravadora: form.gravadora,
         anoLancamento: form.anoLancamento,
-        anoPremsagem: form.anoPremsagem,
+        anoPrensagem: form.anoPrensagem,
         condicaoCapa: form.condicaoCapa,
         condicaoDisco: form.condicaoDisco,
         valorMercado: form.valorMercado,
         custoDisco: form.custoDisco,
         status: form.status,
-      };
-
-      await updateDisco(discoId, updates);
+        generosMusicais: form.generoMusicalId
+          ? [{ generoMusicalId: Number(form.generoMusicalId) }]
+          : [],
+      });
       onClose();
     } finally {
       setSaving(false);
@@ -145,7 +139,6 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
         </h4>
 
         <div className="space-y-5">
-          {/* Informações Básicas */}
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
               Informações Básicas
@@ -156,32 +149,35 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 <input
                   id="edit-artista"
                   type="text"
+                  list="artistas-edit-disponiveis"
                   value={form.artistaNome}
                   onChange={handleChange('artistaNome')}
                   className={inputClass}
                 />
+                <datalist id="artistas-edit-disponiveis">
+                  {artistas.map((a) => (
+                    <option key={a.artistaId} value={a.nomeArtista ?? ''} />
+                  ))}
+                </datalist>
               </div>
               <div>
-                <Label htmlFor="edit-genero">Genero Musical</Label>
+                <Label htmlFor="edit-genero">Gênero Musical</Label>
                 <select
                   id="edit-genero"
-                  value={form.generoId}
-                  onChange={handleChange('generoId')}
+                  value={form.generoMusicalId}
+                  onChange={handleChange('generoMusicalId')}
                   className={inputClass}
                 >
                   <option value="">-- Selecione --</option>
                   {generosMusicais.map((genero) => (
-                    <option
-                      key={genero.generoMusicalId}
-                      value={genero.generoMusicalId ?? ''}
-                    >
+                    <option key={genero.generoMusicalId} value={genero.generoMusicalId ?? ''}>
                       {genero.nomeGenero}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
-                <Label htmlFor="edit-album">Album</Label>
+                <Label htmlFor="edit-album">Álbum</Label>
                 <input
                   id="edit-album"
                   type="text"
@@ -193,10 +189,9 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
             </div>
           </div>
 
-          {/* Informações Técnicas */}
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Informacoes Tecnicas
+              Informações Técnicas
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
@@ -210,12 +205,12 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-premsagem">Prensagem</Label>
+                <Label htmlFor="edit-prensagem">Prensagem</Label>
                 <input
-                  id="edit-premsagem"
+                  id="edit-prensagem"
                   type="text"
-                  value={form.premsagem}
-                  onChange={handleChange('premsagem')}
+                  value={form.prensagem}
+                  onChange={handleChange('prensagem')}
                   className={inputClass}
                 />
               </div>
@@ -243,7 +238,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-anoLancamento">Ano Lancamento</Label>
+                <Label htmlFor="edit-anoLancamento">Ano Lançamento</Label>
                 <input
                   id="edit-anoLancamento"
                   type="number"
@@ -253,26 +248,25 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-anoPremsagem">Ano Prensagem</Label>
+                <Label htmlFor="edit-anoPrensagem">Ano Prensagem</Label>
                 <input
-                  id="edit-anoPremsagem"
+                  id="edit-anoPrensagem"
                   type="number"
-                  value={form.anoPremsagem || ''}
-                  onChange={handleChange('anoPremsagem')}
+                  value={form.anoPrensagem || ''}
+                  onChange={handleChange('anoPrensagem')}
                   className={inputClass}
                 />
               </div>
             </div>
           </div>
 
-          {/* Condição */}
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Condicao
+              Condição
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
-                <Label htmlFor="edit-condicaoCapa">Condicao da Capa</Label>
+                <Label htmlFor="edit-condicaoCapa">Condição da Capa</Label>
                 <input
                   id="edit-condicaoCapa"
                   type="text"
@@ -282,7 +276,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-condicaoDisco">Condicao do Disco</Label>
+                <Label htmlFor="edit-condicaoDisco">Condição do Disco</Label>
                 <input
                   id="edit-condicaoDisco"
                   type="text"
@@ -294,7 +288,6 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
             </div>
           </div>
 
-          {/* Valores */}
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
               Valores
@@ -319,7 +312,6 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
             </div>
           </div>
 
-          {/* Status */}
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <div>
               <Label htmlFor="edit-status">Status</Label>
@@ -335,13 +327,12 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
             </div>
           </div>
 
-          {/* Botões */}
           <div className="flex justify-end gap-3 pt-2">
             <Button size="sm" variant="outline" onClick={onClose} disabled={saving}>
               Cancelar
             </Button>
             <Button size="sm" variant="primary" onClick={handleSave} isLoading={saving}>
-              Salvar alteracoes
+              Salvar alterações
             </Button>
           </div>
         </div>
