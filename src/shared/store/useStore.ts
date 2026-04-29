@@ -2,29 +2,6 @@ import { useMemo } from 'react';
 import { useAppStore } from '@/shared/store/appStore';
 
 /**
- * Hook para usar dados de Artista
- */
-export const useArtistas = () => {
-  const artistas = useAppStore((state) => state.artistas);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchArtistas = useAppStore((state) => state.fetchArtistas);
-  const createArtista = useAppStore((state) => state.createArtista);
-  const updateArtista = useAppStore((state) => state.updateArtista);
-  const deleteArtista = useAppStore((state) => state.deleteArtista);
-
-  return {
-    artistas,
-    loading,
-    error,
-    fetchArtistas,
-    createArtista,
-    updateArtista,
-    deleteArtista,
-  };
-};
-
-/**
  * Hook para usar dados de Disco
  */
 export const useDiscos = () => {
