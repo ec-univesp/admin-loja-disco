@@ -515,10 +515,10 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
       <ClienteEnderecoModal
         isOpen={showClienteModal}
         onClose={() => setShowClienteModal(false)}
-        clienteId={editClienteId}
+        clienteId={editClienteId !== undefined ? Number(editClienteId) : undefined}
         onSaved={(cId, eId) => {
-          setValue('clienteId', cId);
-          if (eId) setValue('enderecoId', eId);
+          setValue('clienteId', String(cId));
+          if (eId !== null) setValue('enderecoId', String(eId));
         }}
       />
 

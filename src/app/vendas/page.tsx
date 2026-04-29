@@ -389,7 +389,7 @@ function VendasContent() {
       <ClienteEnderecoModal
         isOpen={showClienteModal}
         onClose={() => setShowClienteModal(false)}
-        clienteId={editClienteId}
+        clienteId={editClienteId !== undefined ? Number(editClienteId) : undefined}
       />
       <NovoCadastroModal
         isOpen={showNovoCadastroModal}

@@ -4,24 +4,24 @@ import React, { useEffect, useState } from 'react';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import {
-  useClientes,
-  useEnderecos,
-  useClientesEnderecos,
-} from '@/shared/store/useStore';
+  useListaDeClientes,
+  useCriarCliente,
+  useAtualizarCliente,
+} from '@/app/vendas/model/cliente.model';
 
 interface ClienteEnderecoFormProps {
   onClose: () => void;
   /** Se passado, abre em modo edição */
-  clienteId?: string;
+  clienteId?: number;
   /** Callback chamado quando salva, com clienteId e enderecoId resultantes */
-  onSaved?: (clienteId: string, enderecoId: string) => void;
+  onSaved?: (clienteId: number, enderecoId: number | null) => void;
   /** Controla se o título do form é exibido (some quando o modal pai já tem cabeçalho) */
   showTitle?: boolean;
 }
 
 interface FormState {
-  nome: string;
-  generoSexo: 'M' | 'F' | 'Outro' | '';
+  nomeCliente: string;
+  sexo: 'M' | 'F' | 'Outro' | '';
   idade: number;
   logradouro: string;
   numero: string;
@@ -31,8 +31,8 @@ interface FormState {
 }
 
 const initialState: FormState = {
-  nome: '',
-  generoSexo: '',
+  nomeCliente: '',
+  sexo: '',
   idade: 0,
   logradouro: '',
   numero: '',
@@ -47,46 +47,38 @@ export default function ClienteEnderecoForm({
   onSaved,
   showTitle = true,
 }: ClienteEnderecoFormProps) {
-  const { clientes, createCliente, updateCliente } = useClientes();
-  const { enderecos, createEndereco, updateEndereco } = useEnderecos();
-  const { clientesEnderecos, fetchClientesEnderecos, vincularClienteEndereco } =
-    useClientesEnderecos();
+  const { data: clientes = [] } = useListaDeClientes();
+  const { mutateAsync: criarCliente, isPending: criando } = useCriarCliente();
+  const { mutateAsync: atualizarCliente, isPending: atualizando } = useAtualizarCliente();
 
   const [form, setForm] = useState<FormState>(initialState);
-  const [enderecoIdEdicao, setEnderecoIdEdicao] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [enderecoIdEdicao, setEnderecoIdEdicao] = useState<number | null>(null);
   const [cepLoading, setCepLoading] = useState(false);
   const [cepError, setCepError] = useState<string | null>(null);
 
-  const isEdicao = Boolean(clienteId);
+  const submitting = criando || atualizando;
+  const isEdicao = clienteId !== undefined;
 
   useEffect(() => {
-    fetchClientesEnderecos();
-  }, [fetchClientesEnderecos]);
-
-  useEffect(() => {
-    if (!clienteId) {
+    if (clienteId === undefined) {
       setForm(initialState);
       setEnderecoIdEdicao(null);
       return;
     }
-    const cliente = clientes.find((clienteAtual) => clienteAtual.id === clienteId);
-    const vinculoEndereco = clientesEnderecos.find((vinculo) => vinculo.clienteId === clienteId);
-    const endereco = vinculoEndereco
-      ? enderecos.find((enderecoAtual) => enderecoAtual.id === vinculoEndereco.enderecoId)
-      : undefined;
+    const cliente = clientes.find((item) => item.clienteId === clienteId);
+    const enderecoPrincipal = cliente?.enderecos?.[0];
     setForm({
-      nome: cliente?.nome ?? '',
-      generoSexo: cliente?.generoSexo ?? '',
+      nomeCliente: cliente?.nomeCliente ?? '',
+      sexo: (cliente?.sexo as FormState['sexo']) ?? '',
       idade: cliente?.idade ?? 0,
-      logradouro: endereco?.logradouro ?? '',
-      numero: endereco?.numero ?? '',
-      cidade: endereco?.cidade ?? '',
-      estado: endereco?.estado ?? '',
-      cep: endereco?.cep ?? '',
+      logradouro: enderecoPrincipal?.logradouro ?? '',
+      numero: enderecoPrincipal?.numero !== undefined ? String(enderecoPrincipal.numero) : '',
+      cidade: enderecoPrincipal?.cidade ?? '',
+      estado: enderecoPrincipal?.estado ?? '',
+      cep: enderecoPrincipal?.cep ?? '',
     });
-    setEnderecoIdEdicao(endereco?.id ?? null);
-  }, [clienteId, clientes, enderecos, clientesEnderecos]);
+    setEnderecoIdEdicao(enderecoPrincipal?.enderecoId ?? null);
+  }, [clienteId, clientes]);
 
   const handleChange =
     (campo: keyof FormState) =>
@@ -153,73 +145,41 @@ export default function ClienteEnderecoForm({
   const temEndereco = Boolean(form.logradouro || form.cidade || form.cep);
 
   const handleSalvar = async () => {
-    if (!form.nome.trim()) {
+    if (!form.nomeCliente.trim()) {
       alert('Nome do cliente é obrigatório');
       return;
     }
-    setSubmitting(true);
-    try {
-      let resolvedClienteId = clienteId ?? '';
-      let resolvedEnderecoId = enderecoIdEdicao ?? '';
 
-      if (isEdicao && clienteId) {
-        await updateCliente(clienteId, {
-          nome: form.nome,
-          generoSexo: form.generoSexo,
-          idade: form.idade,
-        });
-
-        if (enderecoIdEdicao) {
-          await updateEndereco(enderecoIdEdicao, {
-            logradouro: form.logradouro,
-            numero: form.numero,
-            cidade: form.cidade,
-            estado: form.estado,
-            cep: form.cep,
-          });
-        } else if (temEndereco) {
-          const novoEnd = await createEndereco({
-            logradouro: form.logradouro,
-            numero: form.numero,
-            cidade: form.cidade,
-            estado: form.estado,
-            cep: form.cep,
-          });
-          if (novoEnd) {
-            await vincularClienteEndereco(clienteId, novoEnd.id);
-            resolvedEnderecoId = novoEnd.id;
-          }
+    const enderecoPayload = temEndereco
+      ? {
+          enderecoId: enderecoIdEdicao ?? undefined,
+          logradouro: form.logradouro,
+          numero: form.numero ? Number(form.numero) : undefined,
+          cidade: form.cidade,
+          estado: form.estado,
+          cep: form.cep,
         }
-      } else {
-        const novoCliente = await createCliente({
-          nome: form.nome,
-          generoSexo: form.generoSexo,
-          idade: form.idade,
-        });
-        if (!novoCliente) throw new Error('Falha ao criar cliente');
-        resolvedClienteId = novoCliente.id;
+      : null;
 
-        if (temEndereco) {
-          const novoEndereco = await createEndereco({
-            logradouro: form.logradouro,
-            numero: form.numero,
-            cidade: form.cidade,
-            estado: form.estado,
-            cep: form.cep,
-          });
-          if (novoEndereco) {
-            await vincularClienteEndereco(novoCliente.id, novoEndereco.id);
-            resolvedEnderecoId = novoEndereco.id;
-          }
-        }
-      }
+    const payload = {
+      clienteId,
+      nomeCliente: form.nomeCliente,
+      sexo: form.sexo || undefined,
+      idade: form.idade,
+      enderecos: enderecoPayload ? [enderecoPayload] : [],
+    };
 
-      onSaved?.(resolvedClienteId, resolvedEnderecoId);
-      onClose();
-      setForm(initialState);
-    } finally {
-      setSubmitting(false);
-    }
+    const clienteSalvo = isEdicao
+      ? await atualizarCliente(payload)
+      : await criarCliente(payload);
+
+    const idClienteResolvido = clienteSalvo.clienteId ?? clienteId;
+    if (idClienteResolvido === undefined) return;
+
+    const idEnderecoResolvido = clienteSalvo.enderecos?.[0]?.enderecoId ?? null;
+    onSaved?.(idClienteResolvido, idEnderecoResolvido);
+    onClose();
+    setForm(initialState);
   };
 
   return (
@@ -240,8 +200,8 @@ export default function ClienteEnderecoForm({
             <input
               id="cli-nome"
               type="text"
-              value={form.nome}
-              onChange={handleChange('nome')}
+              value={form.nomeCliente}
+              onChange={handleChange('nomeCliente')}
               className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             />
           </div>
@@ -249,8 +209,8 @@ export default function ClienteEnderecoForm({
             <Label htmlFor="cli-genero">Gênero / Sexo</Label>
             <select
               id="cli-genero"
-              value={form.generoSexo}
-              onChange={handleChange('generoSexo')}
+              value={form.sexo}
+              onChange={handleChange('sexo')}
               className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             >
               <option value="">--</option>
