@@ -6,17 +6,15 @@ import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 import { useSalesModel } from '@/app/sales/model/salesModel';
-import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
-import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
 import { useAppStore } from '@/shared/store/appStore';
+import { useReportsModel } from '@/app/revenue/model/reportsModel';
 import {
   exportFullBackup,
   exportFinancialReport,
   exportFinancialReportCSV,
 } from '@/shared/services/exportExcel';
-import { getMockMonthly, mockDimensionProportions, scaleDimension } from '@/app/revenue/mocks';
-import type { Dimension } from '@/app/revenue/mocks';
+type Dimension = 'canal' | 'genero' | 'artista' | 'estado' | 'pagamento';
 
 const MONTH_LABELS = [
   'Jan',
@@ -54,18 +52,21 @@ function groupBy(
 
 export default function RevenuePage() {
   const { list: salesQuery } = useSalesModel();
-  const { list: purchasesQuery } = usePurchasesModel();
-  const { list: recordsQuery } = useRecordsModel();
   const { list: genresQuery } = useGenresModel();
   const fullState = useAppStore();
   const sales = salesQuery.data ?? [];
-  const purchases = purchasesQuery.data ?? [];
   const genres = genresQuery.data ?? [];
-  const allRecords = recordsQuery.data ?? [];
 
   const [yearFilter, setYearFilter] = useState<number>(CURRENT_YEAR);
   const [monthFilter, setMonthFilter] = useState<number>(0);
   const [dimension, setDimension] = useState<Dimension>('genero');
+
+  const reportFilters = useMemo(
+    () => (monthFilter === 0 ? { ano: yearFilter } : { ano: yearFilter, mes: monthFilter }),
+    [yearFilter, monthFilter]
+  );
+
+  const { summary, byChannel, detailed } = useReportsModel(reportFilters);
 
   const filteredSales = useMemo(
     () =>
@@ -79,116 +80,74 @@ export default function RevenuePage() {
     [sales, yearFilter, monthFilter]
   );
 
-  const filteredPurchases = useMemo(
+  const monthlyRevenueData = useMemo(
     () =>
-      purchases.filter((c) => {
-        const d = new Date(c.dataCompra ?? '');
-        return (
-          d.getFullYear() === yearFilter &&
-          (monthFilter === 0 || d.getMonth() + 1 === monthFilter)
-        );
-      }),
-    [purchases, yearFilter, monthFilter]
+      (summary.data ?? []).map((r) => ({
+        month: MONTH_LABELS[(r.mes ?? 1) - 1] ?? String(r.mes),
+        revenue: r.receita ?? 0,
+        expenses: r.totalDespesa ?? 0,
+        profit: r.lucro ?? 0,
+      })),
+    [summary.data]
   );
 
-  const saleItems = useMemo(
-    () => filteredSales.flatMap((v) => v.itens ?? []),
-    [filteredSales]
-  );
-
-  const monthlyRevenueData = useMemo(() => {
-    const map = new Map<string, { revenue: number; expenses: number }>();
-    const toKey = (iso: string) => {
-      const d = new Date(iso);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    };
-    const accumulate = (k: string, delta: { revenue?: number; expenses?: number }) => {
-      const t = map.get(k) ?? { revenue: 0, expenses: 0 };
-      t.revenue += delta.revenue ?? 0;
-      t.expenses += delta.expenses ?? 0;
-      map.set(k, t);
-    };
-    filteredSales.forEach((v) =>
-      accumulate(toKey(v.dataVenda ?? ''), { revenue: v.valorTotal ?? 0, expenses: v.custosAdicionais ?? 0 })
-    );
-    filteredPurchases.forEach((c) => accumulate(toKey(c.dataCompra ?? ''), { expenses: c.valorTotal ?? 0 }));
-    return Array.from(map.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, t]) => {
-        const [, m] = k.split('-');
-        return {
-          month: MONTH_LABELS[Number(m) - 1] ?? k,
-          revenue: t.revenue,
-          expenses: t.expenses,
-          profit: t.revenue - t.expenses,
-        };
-      });
-  }, [filteredSales, filteredPurchases]);
-
-  const monthlyRevenueMock = useMemo(
-    () => getMockMonthly(yearFilter, monthFilter),
-    [yearFilter, monthFilter]
-  );
-
-  const isRevenueMock = monthlyRevenueData.length === 0;
-  const monthlyRevenue = isRevenueMock ? monthlyRevenueMock : monthlyRevenueData;
+  const monthlyRevenue = monthlyRevenueData;
 
   const totalRevenue = monthlyRevenue.reduce((s, m) => s + m.revenue, 0);
   const totalExpenses = monthlyRevenue.reduce((s, m) => s + m.expenses, 0);
   const netProfit = totalRevenue - totalExpenses;
 
-  const channelRevenueData = useMemo(() => {
-    const map = new Map<string, number>();
-    filteredSales.forEach((v) => {
-      const nome = v.canalVenda?.nomeCanalVenda ?? 'Sem canal';
-      map.set(nome, (map.get(nome) ?? 0) + (v.valorTotal ?? 0));
-    });
-    return groupBy(Array.from(map.entries()));
-  }, [filteredSales]);
+  const channelRevenueData = useMemo(
+    () =>
+      byChannel.data
+        ? groupBy(
+            byChannel.data.map(
+              (c) => [c.nomeCanal ?? 'Sem canal', c.receita ?? 0] as [string, number]
+            )
+          )
+        : [],
+    [byChannel.data]
+  );
 
-  const channelRevenue = channelRevenueData.length
-    ? channelRevenueData
-    : scaleDimension(mockDimensionProportions.canal_fixo, totalRevenue);
-  const isChannelMock = channelRevenueData.length === 0;
+  const channelRevenue = channelRevenueData;
+  const isChannelEmpty = !byChannel.isFetching && channelRevenueData.length === 0;
 
   const dimensionData = useMemo(() => {
+    const items = detailed.data ?? [];
     const map = new Map<string, number>();
 
     if (dimension === 'canal') {
-      filteredSales.forEach((v) => {
-        const nome = v.canalVenda?.nomeCanalVenda ?? 'Sem canal';
-        map.set(nome, (map.get(nome) ?? 0) + (v.valorTotal ?? 0));
+      items.forEach((item) => {
+        const nome = item.nomeCanal ?? 'Sem canal';
+        map.set(nome, (map.get(nome) ?? 0) + (item.receitaDisco ?? 0));
       });
     } else if (dimension === 'pagamento') {
-      filteredSales.forEach((v) => {
-        const forma = v.pagamento ?? 'Não informado';
-        map.set(forma, (map.get(forma) ?? 0) + (v.valorTotal ?? 0));
+      items.forEach((item) => {
+        const forma = item.formaPagamento ?? 'Não informado';
+        map.set(forma, (map.get(forma) ?? 0) + (item.receitaDisco ?? 0));
       });
     } else if (dimension === 'estado') {
-      filteredSales.forEach((v) => {
-        const est = v.endereco?.estado ?? 'Sem estado';
-        map.set(est, (map.get(est) ?? 0) + (v.valorTotal ?? 0));
+      items.forEach((item) => {
+        const est = item.estado ?? 'Sem estado';
+        map.set(est, (map.get(est) ?? 0) + (item.receitaDisco ?? 0));
       });
     } else if (dimension === 'genero') {
-      saleItems.forEach((item) => {
-        const record = allRecords.find((r) => r.discoId === item.discoId);
-        const nome = record?.generosMusicais?.[0]?.nomeGenero ?? 'Sem gênero';
-        map.set(nome, (map.get(nome) ?? 0) + (item.precoVenda ?? 0));
+      items.forEach((item) => {
+        const nome = item.nomeGenero ?? 'Sem gênero';
+        map.set(nome, (map.get(nome) ?? 0) + (item.receitaDisco ?? 0));
       });
     } else if (dimension === 'artista') {
-      saleItems.forEach((item) => {
+      items.forEach((item) => {
         const nome = item.nomeArtista ?? 'Desconhecido';
-        map.set(nome, (map.get(nome) ?? 0) + (item.precoVenda ?? 0));
+        map.set(nome, (map.get(nome) ?? 0) + (item.receitaDisco ?? 0));
       });
     }
 
     return groupBy(Array.from(map.entries()));
-  }, [dimension, filteredSales, saleItems, allRecords]);
+  }, [dimension, detailed.data]);
 
-  const dimensionRevenue = dimensionData.length
-    ? dimensionData
-    : scaleDimension(mockDimensionProportions[dimension], totalRevenue);
-  const isDimensionMock = dimensionData.length === 0;
+  const dimensionRevenue = dimensionData;
+  const isDimensionEmpty = !detailed.isFetching && dimensionData.length === 0;
 
   const salesDetails = filteredSales.map((v) => ({
     id: String(v.vendaId ?? ''),
@@ -277,32 +236,28 @@ export default function RevenuePage() {
           value={`R$ ${totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           sub="Soma das vendas no período"
           color="text-gray-800 dark:text-white"
-          isMock={isRevenueMock}
         />
         <KpiCard
           title="Despesas"
           value={`R$ ${totalExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-          sub="Compras + custos adicionais"
+          sub="Compras + frete + custos adicionais"
           color="text-red-500"
-          isMock={isRevenueMock}
         />
         <KpiCard
           title="Lucro Líquido"
           value={`R$ ${netProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           sub={`Margem: ${totalRevenue ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0.0'}%`}
           color="text-green-600"
-          isMock={isRevenueMock}
         />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/3">
           <div className="mb-1 flex items-center justify-between">
             <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
               Canal de Venda
             </h3>
             <div className="flex items-center gap-2">
-              {isChannelMock && <MockBadge />}
               <span className="text-xs text-gray-400">
                 Total:{' '}
                 <span className="font-semibold text-gray-600 dark:text-gray-300">
@@ -317,15 +272,12 @@ export default function RevenuePage() {
               ? `ano ${yearFilter}`
               : `${MONTH_LABELS[monthFilter - 1]}/${yearFilter}`}
           </p>
-          <BarChart data={channelRevenue} color="#465FFF" />
+          {isChannelEmpty ? <EmptyPeriod /> : <BarChart data={channelRevenue} color="#465FFF" />}
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-          <div className="mb-4 flex items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
-              Resultado Mensal
-            </h3>
-            {isRevenueMock && <MockBadge />}
-          </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/3">
+          <h3 className="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">
+            Resultado Mensal
+          </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -340,7 +292,7 @@ export default function RevenuePage() {
                 {monthlyRevenue.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-6 text-center text-gray-400">
-                      Sem dados no período.
+                      Dados não registrados no mês selecionado.
                     </td>
                   </tr>
                 ) : (
@@ -361,14 +313,14 @@ export default function RevenuePage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/3">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
                 Análise de Receita
               </h3>
-              {isDimensionMock && <MockBadge />}
+
             </div>
             <p className="mt-0.5 text-xs text-gray-400">
               {monthFilter === 0
@@ -397,7 +349,11 @@ export default function RevenuePage() {
           ))}
         </div>
 
-        <BarChart data={dimensionRevenue} color={DIMENSION_COLORS[dimension]} />
+        {isDimensionEmpty ? (
+          <EmptyPeriod />
+        ) : (
+          <BarChart data={dimensionRevenue} color={DIMENSION_COLORS[dimension]} />
+        )}
       </div>
     </div>
   );
@@ -411,11 +367,11 @@ const DIMENSION_COLORS: Record<Dimension, string> = {
   pagamento: '#F43F5E',
 };
 
-function MockBadge() {
+function EmptyPeriod() {
   return (
-    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
-      dados de exemplo
-    </span>
+    <div className="flex h-32 items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+      Dados não registrados no mês selecionado.
+    </div>
   );
 }
 
@@ -424,20 +380,15 @@ function KpiCard({
   value,
   sub,
   color,
-  isMock = false,
 }: {
   title: string;
   value: string;
   sub: string;
   color: string;
-  isMock?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{title}</p>
-        {isMock && <MockBadge />}
-      </div>
+    <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3">
+      <p className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{title}</p>
       <p className={`mt-1 text-2xl font-bold ${color}`}>{value}</p>
       <p className="mt-1 text-xs text-gray-400">{sub}</p>
     </div>
