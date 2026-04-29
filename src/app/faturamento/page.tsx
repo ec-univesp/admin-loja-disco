@@ -10,11 +10,11 @@ import {
   useCompras,
   useItensVenda,
   useDiscos,
-  useEnderecos,
 } from '@/shared/store/useStore';
 import { useListaDeGenerosMusicais } from '@/features/estoque/model/genero-musical.model';
 import { useListaDeArtistas } from '@/features/estoque/model/artista.model';
 import { useListaDeCanaisVenda } from '@/features/vendas/model/canal-venda.model';
+import { useListaDeEnderecos } from '@/features/vendas/model/endereco.model';
 import { useAppStore } from '@/shared/store/appStore';
 import {
   exportarBackupCompleto,
@@ -67,7 +67,7 @@ export default function FaturamentoPage() {
   const { data: canaisVenda = [] } = useListaDeCanaisVenda();
   const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
   const { data: artistas = [] } = useListaDeArtistas();
-  const { enderecos, fetchEnderecos } = useEnderecos();
+  const { data: enderecos = [] } = useListaDeEnderecos();
   const fullState = useAppStore();
 
   const [anoFiltro, setAnoFiltro] = useState<number>(ANO_ATUAL);
@@ -86,13 +86,11 @@ export default function FaturamentoPage() {
     fetchCompras();
     fetchItensVenda();
     fetchDiscos();
-    fetchEnderecos();
   }, [
     fetchVendas,
     fetchCompras,
     fetchItensVenda,
     fetchDiscos,
-    fetchEnderecos,
   ]);
 
   const vendasBase = useMemo(
@@ -126,7 +124,7 @@ export default function FaturamentoPage() {
         if (fCanal && v.canalVendaId !== fCanal) return false;
         if (fPagamento && v.pagamento !== fPagamento) return false;
         if (fEstado) {
-          const est = enderecos.find((e) => e.id === v.enderecoId)?.estado ?? '';
+          const est = enderecos.find((endereco) => String(endereco.enderecoId) === v.enderecoId)?.estado ?? '';
           if (est !== fEstado) return false;
         }
         return true;
@@ -227,7 +225,7 @@ export default function FaturamentoPage() {
       });
     } else if (dimensao === 'estado') {
       vendasAnalise.forEach((v) => {
-        const est = enderecos.find((e) => e.id === v.enderecoId)?.estado ?? 'Sem estado';
+        const est = enderecos.find((endereco) => String(endereco.enderecoId) === v.enderecoId)?.estado ?? 'Sem estado';
         map.set(est, (map.get(est) ?? 0) + v.valorTotal);
       });
     } else if (dimensao === 'genero') {
@@ -273,7 +271,7 @@ export default function FaturamentoPage() {
   void receitaAnalise;
 
   const estadosDisponiveis = useMemo(
-    () => [...new Set(enderecos.map((e) => e.estado).filter(Boolean))].sort(),
+    () => [...new Set(enderecos.map((endereco) => endereco.estado).filter(Boolean))].sort(),
     [enderecos]
   );
   const pagamentosDisponiveis = useMemo(
