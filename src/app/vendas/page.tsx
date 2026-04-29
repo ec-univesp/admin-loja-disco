@@ -3,8 +3,12 @@ import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
-import { useVendas, useClientes, useItensVenda } from '@/shared/store/useStore';
+import { useVendas, useItensVenda } from '@/shared/store/useStore';
 import { useListaDeCanaisVenda } from '@/features/vendas/model/canal-venda.model';
+import {
+  useListaDeClientes,
+  useExcluirCliente,
+} from '@/features/vendas/model/cliente.model';
 import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoModal';
 import NovoCadastroModal from '@/features/vendas/components/NovoCadastroModal';
 import { Modal } from '@/shared/components/ui/modal';
@@ -48,7 +52,8 @@ export default function VendasPage() {
 
 function VendasContent() {
   const { vendasComDetalhes, fetchVendas, deleteVenda, updateVenda } = useVendas();
-  const { clientes, fetchClientes, deleteCliente } = useClientes();
+  const { data: clientes = [] } = useListaDeClientes();
+  const { mutateAsync: excluirCliente } = useExcluirCliente();
   const { itensVenda, fetchItensVenda } = useItensVenda();
   const { data: canaisVenda = [] } = useListaDeCanaisVenda();
 
@@ -80,7 +85,7 @@ function VendasContent() {
 
   const handleConfirmarApagarCliente = async () => {
     if (!clienteParaApagar) return;
-    await deleteCliente(clienteParaApagar.id);
+    await excluirCliente(Number(clienteParaApagar.id));
     setClienteParaApagar(null);
     deleteClienteModal.closeModal();
   };
@@ -92,9 +97,8 @@ function VendasContent() {
 
   useEffect(() => {
     fetchVendas();
-    fetchClientes();
     fetchItensVenda();
-  }, [fetchVendas, fetchClientes, fetchItensVenda]);
+  }, [fetchVendas, fetchItensVenda]);
 
   const linhas = useMemo(() => {
     const vendasOrdenadas = [...vendasComDetalhes].sort((vendaA, vendaB) =>
@@ -218,18 +222,18 @@ function VendasContent() {
             <div className="flex flex-wrap gap-2">
               {clientes.map((cliente) => (
                 <div
-                  key={cliente.id}
+                  key={cliente.clienteId}
                   className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
                 >
                   <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
-                    {cliente.nome}
+                    {cliente.nomeCliente}
                   </span>
                   <button
                     type="button"
-                    aria-label={`Editar cliente ${cliente.nome}`}
-                    title={`Editar cliente ${cliente.nome}`}
+                    aria-label={`Editar cliente ${cliente.nomeCliente}`}
+                    title={`Editar cliente ${cliente.nomeCliente}`}
                     onClick={() => {
-                      setEditClienteId(cliente.id);
+                      setEditClienteId(String(cliente.clienteId));
                       setShowClienteModal(true);
                     }}
                     className="bg-brand-500 hover:bg-brand-600 inline-flex h-7 w-7 items-center justify-center rounded-md text-white shadow-sm transition-colors"
@@ -238,10 +242,14 @@ function VendasContent() {
                   </button>
                   <button
                     type="button"
-                    aria-label={`Excluir cliente ${cliente.nome}`}
-                    title={`Excluir cliente ${cliente.nome}`}
+                    aria-label={`Excluir cliente ${cliente.nomeCliente}`}
+                    title={`Excluir cliente ${cliente.nomeCliente}`}
                     onClick={() => {
-                      setClienteParaApagar({ id: cliente.id, nome: cliente.nome });
+                      if (cliente.clienteId === undefined) return;
+                      setClienteParaApagar({
+                        id: String(cliente.clienteId),
+                        nome: cliente.nomeCliente ?? '',
+                      });
                       deleteClienteModal.openModal();
                     }}
                     className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
