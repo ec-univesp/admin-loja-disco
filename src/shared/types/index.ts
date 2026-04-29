@@ -1,3 +1,4 @@
+export { RecordStatus, OrderStatus } from './enums';
 export type { MusicGenre } from './musicGenre.types';
 export type { Artist } from './artist.types';
 export type { VinylRecord, RecordGenre } from './record.types';

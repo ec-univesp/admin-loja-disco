@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { Modal } from '@/shared/components/ui/modal';
-import CanalVendaForm from './CanalVendaForm';
-import ClienteEnderecoForm from './ClienteEnderecoForm';
+import SalesChannelForm from './SalesChannelForm';
+import CustomerAddressForm from './CustomerAddressForm';
 import SalesForm from './SalesForm';
 
-type View = 'select' | 'cliente' | 'canal' | 'venda';
+type View = 'select' | 'customer' | 'channel' | 'sale';
 
-interface NovoCadastroModalProps {
+interface NewRegistrationModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialView?: View;
@@ -52,11 +52,11 @@ const iconBack = (
   </svg>
 );
 
-export default function NovoCadastroModal({
+export default function NewRegistrationModal({
   isOpen,
   onClose,
   initialView = 'select',
-}: NovoCadastroModalProps) {
+}: NewRegistrationModalProps) {
   const [view, setView] = useState<View>(initialView);
 
   const handleClose = () => {
@@ -65,20 +65,20 @@ export default function NovoCadastroModal({
   };
 
   const titulo =
-    view === 'cliente'
+    view === 'customer'
       ? 'Cadastrar Novo Cliente'
-      : view === 'canal'
+      : view === 'channel'
         ? 'Cadastrar Canal de Venda'
-        : view === 'venda'
+        : view === 'sale'
           ? 'Registrar Nova Venda'
           : 'O que você quer criar?';
 
   const maxWidth =
-    view === 'venda'
+    view === 'sale'
       ? 'max-w-3xl'
-      : view === 'cliente'
+      : view === 'customer'
         ? 'max-w-[640px]'
-        : view === 'canal'
+        : view === 'channel'
           ? 'max-w-[520px]'
           : 'max-w-[720px]';
 
@@ -107,7 +107,7 @@ export default function NovoCadastroModal({
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <button
                   type="button"
-                  onClick={() => setView('venda')}
+                  onClick={() => setView('sale')}
                   className="hover:border-brand-500 hover:bg-brand-50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20 group flex items-start gap-3 rounded-xl border border-gray-200 p-4 text-left transition-colors dark:border-gray-700"
                 >
                   <span className="bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
@@ -130,7 +130,7 @@ export default function NovoCadastroModal({
 
                 <button
                   type="button"
-                  onClick={() => setView('cliente')}
+                  onClick={() => setView('customer')}
                   className="hover:border-brand-500 hover:bg-brand-50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20 group flex items-start gap-3 rounded-xl border border-gray-200 p-4 text-left transition-colors dark:border-gray-700"
                 >
                   <span className="bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
@@ -153,7 +153,7 @@ export default function NovoCadastroModal({
 
                 <button
                   type="button"
-                  onClick={() => setView('canal')}
+                  onClick={() => setView('channel')}
                   className="hover:border-brand-500 hover:bg-brand-50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20 group flex items-start gap-3 rounded-xl border border-gray-200 p-4 text-left transition-colors dark:border-gray-700"
                 >
                   <span className="bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
@@ -177,11 +177,11 @@ export default function NovoCadastroModal({
             </div>
           )}
 
-          {view === 'cliente' && <ClienteEnderecoForm onClose={handleClose} showTitle={false} />}
+          {view === 'customer' && <CustomerAddressForm onClose={handleClose} showTitle={false} />}
 
-          {view === 'canal' && <CanalVendaForm onClose={handleClose} />}
+          {view === 'channel' && <SalesChannelForm onClose={handleClose} />}
 
-          {view === 'venda' && <SalesForm onSuccess={handleClose} />}
+          {view === 'sale' && <SalesForm onSuccess={handleClose} />}
         </div>
       </div>
     </Modal>

@@ -5,14 +5,15 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
+import { RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
 import { useArtistsModel } from '@/app/inventory/model/artistsModel';
 
-interface EditDiscoModalProps {
+interface EditRecordModalProps {
   isOpen: boolean;
   onClose: () => void;
-  discoId: number | null;
+  recordId: number | null;
 }
 
 interface FormState {
@@ -48,11 +49,11 @@ const initialForm: FormState = {
   condicaoDisco: '',
   valorMercado: 0,
   custoDisco: 0,
-  status: 'Disponível',
+  status: RecordStatus.AVAILABLE,
 };
 
-export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoModalProps) {
-  const activeId = isOpen && discoId !== null ? discoId : undefined;
+export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecordModalProps) {
+  const activeId = isOpen && recordId !== null ? recordId : undefined;
   const { byId, update: updateRecord } = useRecordsModel(activeId);
   const { list: genresList } = useGenresModel();
   const { list: artistsList, update: updateArtist } = useArtistsModel();
@@ -80,7 +81,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
       condicaoDisco: record.condicaoDisco ?? '',
       valorMercado: record.valorMercado ?? 0,
       custoDisco: record.custoDisco ?? 0,
-      status: record.status ?? 'Disponível',
+      status: record.status ?? RecordStatus.AVAILABLE,
     });
   }, [isOpen, record]);
 
@@ -95,7 +96,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
     };
 
   const handleSave = async () => {
-    if (!discoId) return;
+    if (!recordId) return;
     setSaving(true);
     try {
       if (form.artistaId !== undefined) {
@@ -106,7 +107,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
       }
 
       await updateRecord.mutateAsync({
-        discoId,
+        discoId: recordId,
         artista: { artistaId: form.artistaId, nomeArtista: form.artistaNome },
         album: form.album,
         nacionalidade: form.nacionalidade,
@@ -170,7 +171,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                   onChange={handleChange('generoMusicalId')}
                   className={inputClass}
                 >
-                  <option value="">-- Select --</option>
+                  <option value="">-- Selecione --</option>
                   {genres.map((genre) => (
                     <option key={genre.generoMusicalId} value={genre.generoMusicalId ?? ''}>
                       {genre.nomeGenero}
@@ -268,7 +269,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
-                <Label htmlFor="edit-condicaoCapa">Cover Condition</Label>
+                <Label htmlFor="edit-condicaoCapa">Cond. Capa</Label>
                 <input
                   id="edit-condicaoCapa"
                   type="text"
@@ -278,7 +279,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-condicaoDisco">Record Condition</Label>
+                <Label htmlFor="edit-condicaoDisco">Cond. Disco</Label>
                 <input
                   id="edit-condicaoDisco"
                   type="text"
@@ -296,7 +297,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
-                <Label htmlFor="edit-custoDisco">Record Cost</Label>
+                <Label htmlFor="edit-custoDisco">Custo</Label>
                 <CurrencyInput
                   id="edit-custoDisco"
                   value={form.custoDisco}
@@ -323,8 +324,8 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 onChange={handleChange('status')}
                 className={inputClass}
               >
-                <option value="Disponível">Disponível</option>
-                <option value="Vendido">Vendido</option>
+                <option value={RecordStatus.AVAILABLE}>Disponível</option>
+                <option value={RecordStatus.SOLD}>Vendido</option>
               </select>
             </div>
           </div>

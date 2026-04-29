@@ -23,30 +23,38 @@ export function useSalesChannelsModel(id?: number) {
   });
 
   const create = useMutation({
-    mutationFn: (payload: SalesChannelPayload) => salesChannelsService.create(payload),
+    mutationFn: async (payload: SalesChannelPayload) => {
+      const before = new Set((await salesChannelsService.list()).map((c) => c.idCanalVenda));
+      await salesChannelsService.create(payload);
+      const after = await salesChannelsService.list();
+      const found = after.find((c) => !before.has(c.idCanalVenda));
+      return found
+        ? { canalVendaId: found.idCanalVenda, nomeCanalVenda: found.nomeCanalVenda }
+        : payload;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Sales channel added.');
+      notifySuccess('Canal de venda adicionado.');
     },
-    onError: (error) => notifyError('Failed to add sales channel', error),
+    onError: (error) => notifyError('Erro ao adicionar canal de venda', error),
   });
 
   const update = useMutation({
     mutationFn: (payload: SalesChannelPayload) => salesChannelsService.update(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Sales channel updated.');
+      notifySuccess('Canal de venda atualizado.');
     },
-    onError: (error) => notifyError('Failed to update sales channel', error),
+    onError: (error) => notifyError('Erro ao atualizar canal de venda', error),
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => salesChannelsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Sales channel deleted.');
+      notifySuccess('Canal de venda excluído.');
     },
-    onError: (error) => notifyError('Failed to delete sales channel', error),
+    onError: (error) => notifyError('Erro ao excluir canal de venda', error),
   });
 
   return { list, byId, create, update, remove };

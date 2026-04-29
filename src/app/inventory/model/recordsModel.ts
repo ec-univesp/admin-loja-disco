@@ -28,36 +28,36 @@ export function useRecordsModel(id?: number, searchFilters?: RecordSearchParams)
   });
 
   const search = useQuery({
-    queryKey: keys.search(searchFilters ?? { query: '' }),
+    queryKey: keys.search(searchFilters ?? { termo: '' }),
     queryFn: ({ signal }) => recordsService.search(searchFilters as RecordSearchParams, signal),
-    enabled: Boolean(searchFilters?.query),
+    enabled: Boolean(searchFilters?.termo),
   });
 
   const create = useMutation({
     mutationFn: (payload: RecordPayload) => recordsService.create(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Record added.');
+      notifySuccess('Disco adicionado.');
     },
-    onError: (error) => notifyError('Failed to add record', error),
+    onError: (error) => notifyError('Erro ao adicionar disco', error),
   });
 
   const update = useMutation({
     mutationFn: (payload: RecordPayload) => recordsService.update(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Record updated.');
+      notifySuccess('Disco atualizado.');
     },
-    onError: (error) => notifyError('Failed to update record', error),
+    onError: (error) => notifyError('Erro ao atualizar disco', error),
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => recordsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Record deleted.');
+      notifySuccess('Disco excluído.');
     },
-    onError: (error) => notifyError('Failed to delete record', error),
+    onError: (error) => notifyError('Erro ao excluir disco', error),
   });
 
   return { list, byId, search, create, update, remove };

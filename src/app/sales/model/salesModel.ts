@@ -26,27 +26,27 @@ export function useSalesModel(id?: number) {
     mutationFn: (payload: SalePayload) => salesService.create(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Sale recorded.');
+      notifySuccess('Venda registrada.');
     },
-    onError: (error) => notifyError('Failed to record sale', error),
+    onError: (error) => notifyError('Erro ao registrar venda', error),
   });
 
   const update = useMutation({
     mutationFn: (payload: SalePayload) => salesService.update(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Sale updated.');
+      notifySuccess('Venda atualizada.');
     },
-    onError: (error) => notifyError('Failed to update sale', error),
+    onError: (error) => notifyError('Erro ao atualizar venda', error),
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => salesService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Sale deleted.');
+      notifySuccess('Venda excluída.');
     },
-    onError: (error) => notifyError('Failed to delete sale', error),
+    onError: (error) => notifyError('Erro ao excluir venda', error),
   });
 
   return { list, byId, create, update, remove };

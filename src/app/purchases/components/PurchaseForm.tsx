@@ -11,7 +11,7 @@ import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
-import AddDiscoForm from '@/app/inventory/components/AddRecordForm';
+import AddRecordForm from '@/app/inventory/components/AddRecordForm';
 
 interface PurchaseItemForm {
   discoId: string;
@@ -95,7 +95,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
 
     reset();
     setItems([{ discoId: '', custoDisco: 0 }]);
-    setSuccessMsg('Purchase recorded successfully!');
+    setSuccessMsg('Compra registrada com sucesso!');
     setTimeout(() => setSuccessMsg(''), 3000);
     onSuccess?.();
   };
@@ -111,7 +111,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
       <Form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-            Purchase Details
+            Detalhes da Compra
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
@@ -141,9 +141,9 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Records</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Discos</h3>
             <Button size="sm" variant="primary" type="button" onClick={addItem}>
-              + Add Record
+              + Adicionar Disco
             </Button>
           </div>
 
@@ -188,7 +188,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                         onChange={(e) => updateItem(index, 'discoId', e.target.value)}
                         className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                       >
-                        <option value="">-- Select --</option>
+                        <option value="">-- Selecione --</option>
                         {records.map((record) => (
                           <option key={record.discoId} value={record.discoId ?? ''}>
                             {record.artista?.nomeArtista} - {record.album}
@@ -198,7 +198,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                     </div>
 
                     <div>
-                      <Label htmlFor={`custo-${index}`}>Record Cost (R$) *</Label>
+                      <Label htmlFor={`custo-${index}`}>Custo do Disco *</Label>
                       <CurrencyInput
                         id={`custo-${index}`}
                         value={item.custoDisco}
@@ -231,7 +231,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
 
         <div className="border-brand-200 bg-brand-50 dark:border-brand-900 dark:bg-brand-900/20 rounded-lg border p-4">
           <p className="text-brand-700 dark:text-brand-200 text-sm">
-            Total Purchase Value:{' '}
+            Total da Compra:{' '}
             <span className="ml-2 text-lg font-bold">
               R$ {itemsTotal.toFixed(2).replace('.', ',')}
             </span>
@@ -240,7 +240,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
 
         <div className="flex gap-4">
           <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
-            Register Purchase
+            Registrar Compra
           </Button>
           <Button
             type="reset"
@@ -265,7 +265,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
           <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
             Register new record
           </h4>
-          <AddDiscoForm embedded onSuccess={handleRecordAdded} />
+          <AddRecordForm embedded onSuccess={handleRecordAdded} />
         </div>
       </Modal>
     </>

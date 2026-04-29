@@ -3,6 +3,7 @@ import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useMemo, useState } from 'react';
+import { OrderStatus } from '@/shared/types';
 import { useSalesModel } from '@/app/sales/model/salesModel';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
 import CustomerAddressModal from '@/app/sales/components/CustomerAddressModal';
@@ -19,12 +20,19 @@ const iconPlus = (
 );
 
 const statusColor: Record<string, string> = {
-  Concluída: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  Entregue: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  Confirmada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  Enviada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  Pendente: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  Cancelada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  [OrderStatus.DELIVERED]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  [OrderStatus.CONFIRMED]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  [OrderStatus.SHIPPED]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  [OrderStatus.PENDING]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  [OrderStatus.CANCELLED]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+};
+
+const statusLabel: Record<string, string> = {
+  [OrderStatus.PENDING]: 'Pendente',
+  [OrderStatus.CONFIRMED]: 'Confirmada',
+  [OrderStatus.SHIPPED]: 'Enviada',
+  [OrderStatus.DELIVERED]: 'Entregue',
+  [OrderStatus.CANCELLED]: 'Cancelada',
 };
 
 const formatSaleNumber = (index: number) =>
@@ -36,7 +44,7 @@ const formatDateBR = (isoDate: string) => {
   return `${day}/${month}/${year}`;
 };
 
-const COMPLETED_STATUSES = ['Concluída', 'Entregue'];
+const COMPLETED_STATUSES = [OrderStatus.DELIVERED];
 
 export default function SalesPage() {
   return (
@@ -84,7 +92,7 @@ function SalesContent() {
   const handleToggleDelivered = async (saleIndex: number, currentStatus: string) => {
     const sale = sortedSales[saleIndex];
     if (!sale?.vendaId) return;
-    const newStatus = currentStatus === 'Entregue' ? 'Pendente' : 'Entregue';
+    const newStatus = currentStatus === OrderStatus.DELIVERED ? OrderStatus.PENDING : OrderStatus.DELIVERED;
     await updateSale.mutateAsync({
       vendasId: sale.vendaId,
       cliente: sale.cliente,
@@ -122,7 +130,7 @@ function SalesContent() {
         total: sale.valorTotal ?? 0,
         payment: sale.pagamento ?? '—',
         salesChannel: sale.canalVenda?.nomeCanalVenda ?? '—',
-        status: sale.statusPedido ?? 'Pendente',
+        status: sale.statusPedido ?? OrderStatus.PENDING,
         rawIdx: index,
       })),
     [sortedSales]
@@ -138,7 +146,7 @@ function SalesContent() {
   });
 
   const totalRevenue = filteredRows
-    .filter((row) => COMPLETED_STATUSES.includes(row.status))
+    .filter((row) => (COMPLETED_STATUSES as string[]).includes(row.status))
     .reduce((acc, row) => acc + row.total, 0);
 
   const buildExportRows = () =>
@@ -183,11 +191,11 @@ function SalesContent() {
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             >
               <option value="Todos">Todos os Status</option>
-              <option value="Pendente">Pendente</option>
-              <option value="Confirmada">Confirmada</option>
-              <option value="Enviada">Enviada</option>
-              <option value="Entregue">Entregue</option>
-              <option value="Cancelada">Cancelada</option>
+              <option value={OrderStatus.PENDING}>Pendente</option>
+              <option value={OrderStatus.CONFIRMED}>Confirmada</option>
+              <option value={OrderStatus.SHIPPED}>Enviada</option>
+              <option value={OrderStatus.DELIVERED}>Entregue</option>
+              <option value={OrderStatus.CANCELLED}>Cancelada</option>
             </select>
             <input
               type="text"
@@ -294,7 +302,9 @@ function SalesContent() {
                 <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
                   Status
                 </th>
-                <th className="w-20 px-6 py-3" aria-hidden="true" />
+                <th className="w-28 px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -333,13 +343,29 @@ function SalesContent() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[row.status] || statusColor.Pendente}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[row.status] || statusColor[OrderStatus.PENDING]}`}
                       >
-                        {row.status}
+                        {statusLabel[row.status] ?? row.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="inline-flex items-center justify-center gap-2">
+                        <label
+                          title={
+                            row.status === OrderStatus.DELIVERED
+                              ? 'Marcar como não entregue'
+                              : 'Marcar como entregue'
+                          }
+                          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gray-200 bg-white shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={row.status === OrderStatus.DELIVERED}
+                            onChange={() => handleToggleDelivered(row.rawIdx, row.status)}
+                            aria-label={`Marcar venda ${row.number} como entregue`}
+                            className="h-4 w-4 cursor-pointer accent-green-600"
+                          />
+                        </label>
                         <button
                           type="button"
                           onClick={() => {
@@ -352,22 +378,6 @@ function SalesContent() {
                         >
                           <Pencil size={15} strokeWidth={2.25} />
                         </button>
-                        <label
-                          title={
-                            row.status === 'Entregue'
-                              ? 'Marcar como não entregue'
-                              : 'Marcar como entregue'
-                          }
-                          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gray-200 bg-white shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={row.status === 'Entregue'}
-                            onChange={() => handleToggleDelivered(row.rawIdx, row.status)}
-                            aria-label={`Marcar venda ${row.number} como entregue`}
-                            className="h-4 w-4 cursor-pointer accent-green-600"
-                          />
-                        </label>
                         <button
                           type="button"
                           aria-label={`Apagar venda ${row.number}`}
@@ -393,12 +403,12 @@ function SalesContent() {
       <CustomerAddressModal
         isOpen={showCustomerModal}
         onClose={() => setShowCustomerModal(false)}
-        clienteId={editCustomerId}
+        customerId={editCustomerId}
       />
       <NewRegistrationModal
         isOpen={showNewRegistrationModal}
         onClose={() => setShowNewRegistrationModal(false)}
-        initialView={openNewSaleOnLoad ? 'venda' : 'select'}
+        initialView={openNewSaleOnLoad ? 'sale' : 'select'}
       />
 
       <Modal

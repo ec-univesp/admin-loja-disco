@@ -7,25 +7,30 @@ import type {
 
 const BASE = '/relatorios';
 
+export type ReportFilters = {
+  ano?: number;
+  mes?: number;
+};
+
 export const reportsService = {
-  detailedRevenue: (signal?: AbortSignal) =>
+  detailedRevenue: (filters?: ReportFilters, signal?: AbortSignal) =>
     apiClient.get<DetailedRevenueDTO[]>(
       `${BASE}/receita-detalhada`,
-      undefined,
+      filters,
       signal
     ),
 
-  revenueSummary: (signal?: AbortSignal) =>
+  revenueSummary: (filters?: ReportFilters, signal?: AbortSignal) =>
     apiClient.get<RevenueSummaryDTO[]>(
       `${BASE}/receita-despesa`,
-      undefined,
+      filters,
       signal
     ),
 
-  channelRevenue: (signal?: AbortSignal) =>
+  channelRevenue: (filters?: ReportFilters, signal?: AbortSignal) =>
     apiClient.get<ChannelRevenueDTO[]>(
       `${BASE}/receita-canal`,
-      undefined,
+      filters,
       signal
     ),
 };

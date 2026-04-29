@@ -2,13 +2,14 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
 import { useState, useMemo } from 'react';
+import { RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
 import { useArtistsModel } from '@/app/inventory/model/artistsModel';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import EditDiscoModal from '@/app/inventory/components/EditRecordModal';
-import AddDiscoForm from '@/app/inventory/components/AddRecordForm';
+import EditRecordModal from '@/app/inventory/components/EditRecordModal';
+import AddRecordForm from '@/app/inventory/components/AddRecordForm';
 import { Pencil, Trash2 } from 'lucide-react';
 
 type AddOption = 'menu' | 'genre' | 'artist' | 'record';
@@ -126,7 +127,7 @@ export default function InventoryPage() {
         marketValue: record.valorMercado ?? 0,
         recordCost: record.custoDisco ?? 0,
         price: record.valorMercado ?? 0,
-        status: record.status ?? 'Disponível',
+        status: record.status ?? RecordStatus.AVAILABLE,
       })),
     [records]
   );
@@ -546,7 +547,7 @@ export default function InventoryPage() {
                 Adicionar Disco
               </h4>
               <div className="max-h-[70vh] overflow-y-auto pr-1">
-                <AddDiscoForm embedded onSuccess={closeAddModal} />
+                <AddRecordForm embedded onSuccess={closeAddModal} />
               </div>
             </>
           )}
@@ -589,10 +590,10 @@ export default function InventoryPage() {
         </div>
       </Modal>
 
-      <EditDiscoModal
+      <EditRecordModal
         isOpen={editRecordId !== null}
         onClose={() => setEditRecordId(null)}
-        discoId={editRecordId}
+        recordId={editRecordId}
       />
 
       <Modal

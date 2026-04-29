@@ -26,27 +26,27 @@ export function usePurchasesModel(id?: number) {
     mutationFn: (payload: PurchasePayload) => purchasesService.create(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Purchase recorded.');
+      notifySuccess('Compra registrada.');
     },
-    onError: (error) => notifyError('Failed to record purchase', error),
+    onError: (error) => notifyError('Erro ao registrar compra', error),
   });
 
   const update = useMutation({
     mutationFn: (payload: PurchasePayload) => purchasesService.update(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Purchase updated.');
+      notifySuccess('Compra atualizada.');
     },
-    onError: (error) => notifyError('Failed to update purchase', error),
+    onError: (error) => notifyError('Erro ao atualizar compra', error),
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => purchasesService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Purchase deleted.');
+      notifySuccess('Compra excluída.');
     },
-    onError: (error) => notifyError('Failed to delete purchase', error),
+    onError: (error) => notifyError('Erro ao excluir compra', error),
   });
 
   return { list, byId, create, update, remove };

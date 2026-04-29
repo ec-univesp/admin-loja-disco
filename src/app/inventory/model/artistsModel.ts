@@ -23,30 +23,35 @@ export function useArtistsModel(id?: number) {
   });
 
   const create = useMutation({
-    mutationFn: (payload: ArtistPayload) => artistsService.create(payload),
+    mutationFn: async (payload: ArtistPayload) => {
+      const before = new Set((await artistsService.list()).map((a) => a.artistaId));
+      await artistsService.create(payload);
+      const after = await artistsService.list();
+      return after.find((a) => !before.has(a.artistaId)) ?? payload;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Artist added.');
+      notifySuccess('Artista adicionado.');
     },
-    onError: (error) => notifyError('Failed to add artist', error),
+    onError: (error) => notifyError('Erro ao adicionar artista', error),
   });
 
   const update = useMutation({
     mutationFn: (payload: ArtistPayload) => artistsService.update(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Artist updated.');
+      notifySuccess('Artista atualizado.');
     },
-    onError: (error) => notifyError('Failed to update artist', error),
+    onError: (error) => notifyError('Erro ao atualizar artista', error),
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => artistsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Artist deleted.');
+      notifySuccess('Artista excluído.');
     },
-    onError: (error) => notifyError('Failed to delete artist', error),
+    onError: (error) => notifyError('Erro ao excluir artista', error),
   });
 
   return { list, byId, create, update, remove };
