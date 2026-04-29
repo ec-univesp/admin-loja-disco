@@ -2,29 +2,6 @@ import { useMemo } from 'react';
 import { useAppStore } from '@/shared/store/appStore';
 
 /**
- * Hook para usar dados de Gênero Musical
- */
-export const useGenerosMusical = () => {
-  const generosMusical = useAppStore((state) => state.generosMusical);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchGenerosMusical = useAppStore((state) => state.fetchGenerosMusical);
-  const createGeneroMusical = useAppStore((state) => state.createGeneroMusical);
-  const updateGeneroMusical = useAppStore((state) => state.updateGeneroMusical);
-  const deleteGeneroMusical = useAppStore((state) => state.deleteGeneroMusical);
-
-  return {
-    generosMusical,
-    loading,
-    error,
-    fetchGenerosMusical,
-    createGeneroMusical,
-    updateGeneroMusical,
-    deleteGeneroMusical,
-  };
-};
-
-/**
  * Hook para usar dados de Artista
  */
 export const useArtistas = () => {
