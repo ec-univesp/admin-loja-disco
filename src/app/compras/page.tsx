@@ -8,7 +8,7 @@ import { useModal } from '@/shared/hooks/useModal';
 import { Trash2 } from 'lucide-react';
 import { exportarTabelaExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
-import NovaCompraModal from '@/features/compras/components/NovaCompraModal';
+import NovaCompraModal from '@/app/compras/components/NovaCompraModal';
 
 const iconPlus = (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

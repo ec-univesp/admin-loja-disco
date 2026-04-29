@@ -21,7 +21,7 @@ import {
   exportarRelatorioFinanceiro,
   exportarRelatorioFinanceiroCSV,
 } from '@/shared/services/exportExcel';
-import { getMockMensal, mockDimensoesProporcoes, escalarDimensao } from '@/features/faturamento/mocks';
+import { getMockMensal, mockDimensoesProporcoes, escalarDimensao } from '@/app/faturamento/mocks';
 
 const MESES_PT = [
   'Jan',

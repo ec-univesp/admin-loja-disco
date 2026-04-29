@@ -1,9 +1,9 @@
 'use client';
 
-import { MetricasLoja } from '@/features/dashboard/components/MetricasLoja';
+import { MetricasLoja } from '@/app/_dashboard/components/MetricasLoja';
 import React from 'react';
-import VendasMensaisChart from '@/features/dashboard/components/VendasMensaisChart';
-import VendasRecentes from '@/features/dashboard/components/VendasRecentes';
+import VendasMensaisChart from '@/app/_dashboard/components/VendasMensaisChart';
+import VendasRecentes from '@/app/_dashboard/components/VendasRecentes';
 import Button from '@/shared/components/ui/button/Button';
 import { useRouter } from 'next/navigation';
 
