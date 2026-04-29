@@ -347,29 +347,6 @@ export const useCanaisVenda = () => {
 };
 
 /**
- * Hook para usar dados de Fornecedores
- */
-export const useFornecedores = () => {
-  const fornecedores = useAppStore((state) => state.fornecedores);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchFornecedores = useAppStore((state) => state.fetchFornecedores);
-  const createFornecedor = useAppStore((state) => state.createFornecedor);
-  const updateFornecedor = useAppStore((state) => state.updateFornecedor);
-  const deleteFornecedor = useAppStore((state) => state.deleteFornecedor);
-
-  return {
-    fornecedores,
-    loading,
-    error,
-    fetchFornecedores,
-    createFornecedor,
-    updateFornecedor,
-    deleteFornecedor,
-  };
-};
-
-/**
  * Hook geral do App Store
  */
 export const useAppStoreState = () => {
