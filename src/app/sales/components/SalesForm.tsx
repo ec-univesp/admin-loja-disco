@@ -188,7 +188,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Dados do Cliente
+              Customer Details
             </h3>
             <div className="flex gap-2">
               {clienteId && (
@@ -201,7 +201,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     setShowCustomerModal(true);
                   }}
                 >
-                  Editar Endereço
+                  Edit Address
                 </Button>
               )}
               <Button
@@ -213,14 +213,14 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   setShowCustomerModal(true);
                 }}
               >
-                + Novo Cliente
+                + New Customer
               </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <Label htmlFor="clienteId">Selecione um Cliente *</Label>
+              <Label htmlFor="clienteId">Select a Customer *</Label>
               <select
                 id="clienteId"
                 {...register('clienteId', { required: 'Cliente é obrigatório' })}
@@ -240,7 +240,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
             </div>
 
             <div>
-              <Label htmlFor="enderecoId">Endereço de Entrega *</Label>
+              <Label htmlFor="enderecoId">Delivery Address *</Label>
               <select
                 id="enderecoId"
                 {...register('enderecoId', { required: 'Endereço é obrigatório' })}
@@ -248,7 +248,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                 disabled={!clienteId}
               >
                 <option value="">
-                  {clienteId ? '-- Selecione --' : 'Escolha um cliente primeiro'}
+                  {clienteId ? '-- Select --' : 'Choose a customer first'}
                 </option>
                 {customerAddresses.map((address) => (
                   <option key={address.enderecoId} value={address.enderecoId ?? ''}>
@@ -283,7 +283,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Disco {index + 1}
+                      Record {index + 1}
                     </span>
                     {items.length > 1 && (
                       <button
@@ -291,14 +291,14 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                         onClick={() => removeItem(index)}
                         className="text-sm text-red-500 hover:text-red-700"
                       >
-                        Remover
+                        Remove
                       </button>
                     )}
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                      <Label htmlFor={`disco-${index}`}>Selecione um Disco *</Label>
+                      <Label htmlFor={`disco-${index}`}>Select a Record *</Label>
                       <select
                         id={`disco-${index}`}
                         value={item.discoId}
@@ -316,7 +316,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     </div>
 
                     <div>
-                      <Label htmlFor={`preco-${index}`}>Preço de Venda *</Label>
+                      <Label htmlFor={`preco-${index}`}>Sale Price *</Label>
                       <CurrencyInput
                         id={`preco-${index}`}
                         value={item.precoVenda}
@@ -328,7 +328,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   {selectedRecord && (
                     <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm dark:border-blue-900 dark:bg-blue-900/20">
                       <div>
-                        <p className="text-blue-600 dark:text-blue-300">Artista</p>
+                        <p className="text-blue-600 dark:text-blue-300">Artist</p>
                         <p className="font-medium text-blue-900 dark:text-blue-100">
                           {selectedRecord.artista?.nomeArtista}
                         </p>
@@ -355,7 +355,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="dataVenda">Data da Venda *</Label>
+                <Label htmlFor="dataVenda">Sale Date *</Label>
                 <div className="relative">
                   <input
                     type="date"
@@ -373,7 +373,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   />
                   <button
                     type="button"
-                    aria-label="Abrir calendário"
+                    aria-label="Open calendar"
                     onClick={() => {
                       const input = dataVendaRef.current;
                       if (!input) return;
@@ -391,7 +391,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               </div>
 
               <div>
-                <Label htmlFor="frete">Frete</Label>
+                <Label htmlFor="frete">Shipping</Label>
                 <Controller
                   control={control}
                   name="frete"
@@ -404,7 +404,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="pagamento">Forma de Pagamento</Label>
+                <Label htmlFor="pagamento">Payment Method</Label>
                 <select
                   id="pagamento"
                   {...register('pagamento')}
@@ -421,13 +421,13 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
               <div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="canalVendaId">Canal de Venda</Label>
+                  <Label htmlFor="canalVendaId">Sales Channel</Label>
                   <button
                     type="button"
                     className="text-brand-600 dark:text-brand-400 text-xs font-medium hover:underline"
                     onClick={() => setShowChannelModal(true)}
                   >
-                    + Cadastrar canal
+                    + Register channel
                   </button>
                 </div>
                 <select
@@ -447,7 +447,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="custosAdicionais">Custos Adicionais</Label>
+                <Label htmlFor="custosAdicionais">Additional Costs</Label>
                 <Controller
                   control={control}
                   name="custosAdicionais"
@@ -462,7 +462,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               </div>
 
               <div>
-                <Label htmlFor="statusPedido">Status do Pedido</Label>
+                <Label htmlFor="statusPedido">Order Status</Label>
                 <select
                   id="statusPedido"
                   {...register('statusPedido')}
@@ -487,7 +487,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Observações</h3>
+          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Notes</h3>
           <Controller
             name="observacoes"
             control={control}
@@ -515,7 +515,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               setItems([{ discoId: '', precoVenda: 0 }]);
             }}
           >
-            Limpar
+            Clear
           </Button>
         </div>
       </Form>

@@ -138,17 +138,17 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
     <Modal isOpen={isOpen} onClose={onClose} className="m-4 max-w-[720px]">
       <div className="max-h-[80vh] overflow-y-auto p-6">
         <h4 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
-          Editar Disco
+          Edit Record
         </h4>
 
         <div className="space-y-5">
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Informações Básicas
+              Basic Information
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
-                <Label htmlFor="edit-artista">Artista</Label>
+                <Label htmlFor="edit-artista">Artist</Label>
                 <input
                   id="edit-artista"
                   type="text"
@@ -164,7 +164,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 </datalist>
               </div>
               <div>
-                <Label htmlFor="edit-genero">Gênero Musical</Label>
+                <Label htmlFor="edit-genero">Music Genre</Label>
                 <select
                   id="edit-genero"
                   value={form.generoMusicalId}
@@ -180,7 +180,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 </select>
               </div>
               <div>
-                <Label htmlFor="edit-album">Álbum</Label>
+                <Label htmlFor="edit-album">Album</Label>
                 <input
                   id="edit-album"
                   type="text"
@@ -194,11 +194,11 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Informações Técnicas
+              Technical Information
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
-                <Label htmlFor="edit-nacionalidade">Nacionalidade</Label>
+                <Label htmlFor="edit-nacionalidade">Nationality</Label>
                 <input
                   id="edit-nacionalidade"
                   type="text"
@@ -208,7 +208,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 />
               </div>
               <div>
-                <Label htmlFor="edit-prensagem">Prensagem</Label>
+                <Label htmlFor="edit-prensagem">Pressing</Label>
                 <input
                   id="edit-prensagem"
                   type="text"
@@ -218,7 +218,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 />
               </div>
               <div>
-                <Label htmlFor="edit-encarte">Encarte</Label>
+                <Label htmlFor="edit-encarte">Insert</Label>
                 <select
                   id="edit-encarte"
                   value={form.encarte}
@@ -231,7 +231,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 </select>
               </div>
               <div>
-                <Label htmlFor="edit-gravadora">Gravadora</Label>
+                <Label htmlFor="edit-gravadora">Label</Label>
                 <input
                   id="edit-gravadora"
                   type="text"
@@ -241,7 +241,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 />
               </div>
               <div>
-                <Label htmlFor="edit-anoLancamento">Ano Lançamento</Label>
+                <Label htmlFor="edit-anoLancamento">Release Year</Label>
                 <input
                   id="edit-anoLancamento"
                   type="number"
@@ -251,7 +251,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 />
               </div>
               <div>
-                <Label htmlFor="edit-anoPrensagem">Ano Prensagem</Label>
+                <Label htmlFor="edit-anoPrensagem">Pressing Year</Label>
                 <input
                   id="edit-anoPrensagem"
                   type="number"
@@ -265,7 +265,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Condição
+              Condition
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
@@ -293,7 +293,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Valores
+              Pricing
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
@@ -305,7 +305,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 />
               </div>
               <div>
-                <Label htmlFor="edit-valorMercado">Valor de Mercado</Label>
+                <Label htmlFor="edit-valorMercado">Market Value</Label>
                 <CurrencyInput
                   id="edit-valorMercado"
                   value={form.valorMercado}
@@ -332,10 +332,10 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
 
           <div className="flex justify-end gap-3 pt-2">
             <Button size="sm" variant="outline" onClick={onClose} disabled={saving}>
-              Cancelar
+              Cancel
             </Button>
             <Button size="sm" variant="primary" onClick={handleSave} isLoading={saving}>
-              Salvar alterações
+              Save changes
             </Button>
           </div>
         </div>

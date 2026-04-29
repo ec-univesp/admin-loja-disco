@@ -105,7 +105,7 @@ export default function CustomerAddressForm({
         estado: data.state ?? prev.estado,
       }));
     } catch (err) {
-      setCepError(err instanceof Error ? err.message : 'Erro ao buscar CEP');
+      setCepError(err instanceof Error ? err.message : 'Error fetching ZIP code');
     } finally {
       setCepLoading(false);
     }
@@ -140,7 +140,7 @@ export default function CustomerAddressForm({
 
   const handleSave = async () => {
     if (!form.nomeCliente.trim()) {
-      alert('Nome do cliente é obrigatório');
+      alert('Customer name is required');
       return;
     }
 
@@ -186,11 +186,11 @@ export default function CustomerAddressForm({
 
       <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
         <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Dados do Cliente
+          Customer Details
         </h5>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="md:col-span-2">
-            <Label htmlFor="cli-nome">Nome *</Label>
+            <Label htmlFor="cli-nome">Name *</Label>
             <input
               id="cli-nome"
               type="text"
@@ -208,13 +208,13 @@ export default function CustomerAddressForm({
               className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             >
               <option value="">--</option>
-              <option value="M">Masculino</option>
-              <option value="F">Feminino</option>
-              <option value="Outro">Outro</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="Outro">Other</option>
             </select>
           </div>
           <div>
-            <Label htmlFor="cli-idade">Idade</Label>
+            <Label htmlFor="cli-idade">Age</Label>
             <input
               id="cli-idade"
               type="number"
@@ -227,7 +227,7 @@ export default function CustomerAddressForm({
       </div>
 
       <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-        <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Endereço</h5>
+        <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Address</h5>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div>
             <Label htmlFor="end-cep">CEP</Label>
@@ -252,7 +252,7 @@ export default function CustomerAddressForm({
                 type="button"
                 onClick={handleZipCodeSearch}
                 disabled={cepLoading}
-                aria-label="Buscar CEP"
+                aria-label="Search ZIP code"
                 className="hover:text-brand-600 dark:hover:text-brand-500 ml-1 flex h-8 w-8 shrink-0 items-center justify-center text-gray-500 disabled:cursor-not-allowed disabled:opacity-60 dark:text-gray-300"
               >
                 {cepLoading ? (

@@ -26,6 +26,7 @@ const statusLabel: Record<string, string> = {
   [OrderStatus.CANCELLED]: 'Cancelada',
 };
 
+
 export default function DeliveriesPage() {
   const { salesWithDetails, fetchSales } = useSalesStore();
   const { fetchSaleItems } = useSaleItemsStore();

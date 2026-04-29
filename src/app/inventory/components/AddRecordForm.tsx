@@ -110,7 +110,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
           : [],
       });
 
-      setSuccessMessage('Disco adicionado com sucesso!');
+      setSuccessMessage('Record added successfully!');
       reset();
 
       if (onSuccess) {
@@ -160,17 +160,17 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Informações Básicas</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Basic Information</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <Label htmlFor="artistaNome">Artista *</Label>
+                <Label htmlFor="artistaNome">Artist *</Label>
                 <input
                   type="text"
                   id="artistaNome"
                   list="artistas-disponiveis"
                   placeholder="ex: The Beatles"
                   autoComplete="off"
-                  {...register('artistaNome', { required: 'Artista é obrigatório' })}
+                  {...register('artistaNome', { required: 'Artist is required' })}
                   className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                     errors.artistaNome
                       ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
@@ -188,7 +188,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               </div>
 
               <div>
-                <Label htmlFor="generoMusicalId">Gênero Musical</Label>
+                <Label htmlFor="generoMusicalId">Music Genre</Label>
                 <select
                   id="generoMusicalId"
                   {...register('generoMusicalId')}
@@ -207,12 +207,12 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               </div>
 
               <div>
-                <Label htmlFor="album">Álbum *</Label>
+                <Label htmlFor="album">Album *</Label>
                 <input
                   type="text"
                   id="album"
-                  placeholder="Nome do álbum"
-                  {...register('album', { required: 'Álbum é obrigatório' })}
+                  placeholder="Album name"
+                  {...register('album', { required: 'Album is required' })}
                   className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                     errors.album
                       ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
@@ -227,10 +227,10 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Informações Técnicas</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Technical Information</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <Label htmlFor="nacionalidade">Nacionalidade</Label>
+                <Label htmlFor="nacionalidade">Nationality</Label>
                 <input
                   type="text"
                   id="nacionalidade"
@@ -241,7 +241,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               </div>
 
               <div>
-                <Label htmlFor="prensagem">Prensagem</Label>
+                <Label htmlFor="prensagem">Pressing</Label>
                 <input
                   type="text"
                   id="prensagem"
@@ -252,7 +252,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               </div>
 
               <div>
-                <Label htmlFor="encarte">Encarte</Label>
+                <Label htmlFor="encarte">Insert</Label>
                 <select
                   id="encarte"
                   {...register('encarte')}
@@ -267,7 +267,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="gravadora">Gravadora</Label>
+                <Label htmlFor="gravadora">Label</Label>
                 <input
                   type="text"
                   id="gravadora"
@@ -278,7 +278,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               </div>
 
               <div>
-                <Label htmlFor="anoLancamento">Ano de Lançamento</Label>
+                <Label htmlFor="anoLancamento">Release Year</Label>
                 <input
                   type="number"
                   id="anoLancamento"
@@ -293,7 +293,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
             <h3 className="font-semibold text-gray-900 dark:text-white">Condição</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="condicaoCapa">Condição da Capa</Label>
+                <Label htmlFor="condicaoCapa">Cover Condition</Label>
                 <input
                   type="text"
                   id="condicaoCapa"
@@ -304,7 +304,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               </div>
 
               <div>
-                <Label htmlFor="condicaoDisco">Condição do Disco</Label>
+                <Label htmlFor="condicaoDisco">Record Condition</Label>
                 <input
                   type="text"
                   id="condicaoDisco"
@@ -317,16 +317,16 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Valores</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Pricing</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="custoDisco">Custo do Disco *</Label>
+                <Label htmlFor="custoDisco">Record Cost *</Label>
                 <Controller
                   control={control}
                   name="custoDisco"
                   rules={{
-                    required: 'Custo é obrigatório',
-                    min: { value: 0, message: 'Custo não pode ser negativo' },
+                    required: 'Cost is required',
+                    min: { value: 0, message: 'Cost cannot be negative' },
                   }}
                   render={({ field }) => (
                     <CurrencyInput
@@ -343,13 +343,13 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               </div>
 
               <div>
-                <Label htmlFor="valorMercado">Valor de Mercado *</Label>
+                <Label htmlFor="valorMercado">Market Value *</Label>
                 <Controller
                   control={control}
                   name="valorMercado"
                   rules={{
-                    required: 'Valor de mercado é obrigatório',
-                    min: { value: 0, message: 'Valor não pode ser negativo' },
+                    required: 'Market value is required',
+                    min: { value: 0, message: 'Value cannot be negative' },
                   }}
                   render={({ field }) => (
                     <CurrencyInput
@@ -382,7 +382,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Preço de Venda</p>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Sale Price</p>
                     <p className="text-lg font-bold text-brand-700 dark:text-brand-400">
                       {formatBRL(valorMercado)}
                     </p>
@@ -397,7 +397,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               {isSubmitting ? 'Salvando...' : 'Salvar Disco'}
             </Button>
             <Button type="reset" size="lg" variant="secondary" fullWidth>
-              Limpar
+              Clear
             </Button>
           </div>
         </form>
