@@ -54,8 +54,8 @@ export default function RevenuePage() {
   const { list: salesQuery } = useSalesModel();
   const { list: genresQuery } = useGenresModel();
   const fullState = useAppStore();
-  const sales = salesQuery.data ?? [];
-  const genres = genresQuery.data ?? [];
+  const sales = useMemo(() => salesQuery.data ?? [], [salesQuery.data]);
+  const genres = useMemo(() => genresQuery.data ?? [], [genresQuery.data]);
 
   const [yearFilter, setYearFilter] = useState<number>(CURRENT_YEAR);
   const [monthFilter, setMonthFilter] = useState<number>(0);

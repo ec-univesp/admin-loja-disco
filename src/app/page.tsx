@@ -27,13 +27,13 @@ export default function AdminLojaDisco() {
       <div className="col-span-12">
         <div className="flex gap-4">
           <Button variant="primary" onClick={handleNewSale}>
-            + New Sale
+            + Nova Venda
           </Button>
           <Button variant="primary" onClick={handleNewPurchase}>
-            + New Purchase
+            + Nova Compra
           </Button>
           <Button variant="primary" onClick={handleAddProduct}>
-            + Add Record
+            + Adicionar Disco
           </Button>
         </div>
       </div>
