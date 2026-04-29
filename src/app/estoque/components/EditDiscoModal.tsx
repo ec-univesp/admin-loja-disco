@@ -5,9 +5,9 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
-import { useDiscoPorId, useAtualizarDisco } from '@/app/estoque/model/disco.model';
-import { useListaDeGenerosMusicais } from '@/app/estoque/model/genero-musical.model';
-import { useListaDeArtistas, useAtualizarArtista } from '@/app/estoque/model/artista.model';
+import { useDiscosModel } from '@/app/estoque/model/discosModel';
+import { useGenerosMusicaisModel } from '@/app/estoque/model/generoMusicalModel';
+import { useArtistasModel } from '@/app/estoque/model/artistaModel';
 
 interface EditDiscoModalProps {
   isOpen: boolean;
@@ -52,11 +52,13 @@ const initialForm: FormState = {
 };
 
 export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoModalProps) {
-  const { data: disco } = useDiscoPorId(isOpen && discoId !== null ? discoId : undefined);
-  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
-  const { data: artistas = [] } = useListaDeArtistas();
-  const { mutateAsync: atualizarDisco } = useAtualizarDisco();
-  const { mutateAsync: atualizarArtista } = useAtualizarArtista();
+  const discoIdAtivo = isOpen && discoId !== null ? discoId : undefined;
+  const { porId, atualizar: atualizarDisco } = useDiscosModel(discoIdAtivo);
+  const { lista: listaGeneros } = useGenerosMusicaisModel();
+  const { lista: listaArtistas, atualizar: atualizarArtista } = useArtistasModel();
+  const disco = porId.data;
+  const generosMusicais = listaGeneros.data ?? [];
+  const artistas = listaArtistas.data ?? [];
 
   const [form, setForm] = useState<FormState>(initialForm);
   const [saving, setSaving] = useState(false);
@@ -99,11 +101,11 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
       if (form.artistaId !== undefined) {
         const artistaAtual = artistas.find((a) => a.artistaId === form.artistaId);
         if (artistaAtual && artistaAtual.nomeArtista !== form.artistaNome) {
-          await atualizarArtista({ artistaId: form.artistaId, nomeArtista: form.artistaNome });
+          await atualizarArtista.mutateAsync({ artistaId: form.artistaId, nomeArtista: form.artistaNome });
         }
       }
 
-      await atualizarDisco({
+      await atualizarDisco.mutateAsync({
         discoId,
         artista: { artistaId: form.artistaId, nomeArtista: form.artistaNome },
         album: form.album,

@@ -2,20 +2,9 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
 import { useState, useMemo } from 'react';
-import {
-  useListaDeDiscos,
-  useExcluirDisco,
-} from '@/app/estoque/model/disco.model';
-import {
-  useListaDeGenerosMusicais,
-  useCriarGeneroMusical,
-  useExcluirGeneroMusical,
-} from '@/app/estoque/model/genero-musical.model';
-import {
-  useListaDeArtistas,
-  useCriarArtista,
-  useExcluirArtista,
-} from '@/app/estoque/model/artista.model';
+import { useDiscosModel } from '@/app/estoque/model/discosModel';
+import { useGenerosMusicaisModel } from '@/app/estoque/model/generoMusicalModel';
+import { useArtistasModel } from '@/app/estoque/model/artistaModel';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import EditDiscoModal from '@/app/estoque/components/EditDiscoModal';
@@ -49,14 +38,13 @@ const gerarCodigo = (index: number): string => {
 };
 
 export default function EstoquePage() {
-  const { data: discos = [], isLoading: loading } = useListaDeDiscos();
-  const { mutateAsync: excluirDisco } = useExcluirDisco();
-  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
-  const { mutateAsync: criarGeneroMusical } = useCriarGeneroMusical();
-  const { mutateAsync: excluirGeneroMusical } = useExcluirGeneroMusical();
-  const { data: artistas = [] } = useListaDeArtistas();
-  const { mutateAsync: criarArtista } = useCriarArtista();
-  const { mutateAsync: excluirArtista } = useExcluirArtista();
+  const { lista: listaDiscos, excluir: excluirDisco } = useDiscosModel();
+  const { lista: listaGeneros, criar: criarGeneroMusical, excluir: excluirGeneroMusical } = useGenerosMusicaisModel();
+  const { lista: listaArtistas, criar: criarArtista, excluir: excluirArtista } = useArtistasModel();
+  const discos = listaDiscos.data ?? [];
+  const loading = listaDiscos.isLoading;
+  const generosMusicais = listaGeneros.data ?? [];
+  const artistas = listaArtistas.data ?? [];
   const [busca, setBusca] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
   const [novoArtista, setNovoArtista] = useState('');
@@ -87,20 +75,20 @@ export default function EstoquePage() {
   const handleAddGenero = async () => {
     const nomeGenero = novoGenero.trim();
     if (!nomeGenero) return;
-    await criarGeneroMusical({ nomeGenero });
+    await criarGeneroMusical.mutateAsync({ nomeGenero });
     setNovoGenero('');
   };
 
   const handleConfirmarApagarDisco = async () => {
     if (!discoParaApagar) return;
-    await excluirDisco(discoParaApagar.id);
+    await excluirDisco.mutateAsync(discoParaApagar.id);
     setDiscoParaApagar(null);
     deleteDiscoModal.closeModal();
   };
 
   const handleConfirmarApagarGenero = async () => {
     if (!generoParaApagar) return;
-    await excluirGeneroMusical(generoParaApagar.generoMusicalId);
+    await excluirGeneroMusical.mutateAsync(generoParaApagar.generoMusicalId);
     setGeneroParaApagar(null);
     deleteGeneroModal.closeModal();
   };
@@ -108,13 +96,13 @@ export default function EstoquePage() {
   const handleAddArtista = async () => {
     const nomeArtista = novoArtista.trim();
     if (!nomeArtista) return;
-    await criarArtista({ nomeArtista });
+    await criarArtista.mutateAsync({ nomeArtista });
     setNovoArtista('');
   };
 
   const handleConfirmarApagarArtista = async () => {
     if (!artistaParaApagar) return;
-    await excluirArtista(artistaParaApagar.artistaId);
+    await excluirArtista.mutateAsync(artistaParaApagar.artistaId);
     setArtistaParaApagar(null);
     deleteArtistaModal.closeModal();
   };

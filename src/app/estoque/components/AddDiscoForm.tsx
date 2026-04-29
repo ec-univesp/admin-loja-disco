@@ -3,12 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
-import { useListaDeGenerosMusicais } from '@/app/estoque/model/genero-musical.model';
-import {
-  useListaDeArtistas,
-  useCriarArtista,
-} from '@/app/estoque/model/artista.model';
-import { useCriarDisco } from '@/app/estoque/model/disco.model';
+import { useGenerosMusicaisModel } from '@/app/estoque/model/generoMusicalModel';
+import { useArtistasModel } from '@/app/estoque/model/artistaModel';
+import { useDiscosModel } from '@/app/estoque/model/discosModel';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
@@ -38,10 +35,12 @@ interface AddDiscoFormProps {
 
 export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFormProps = {}) {
   const router = useRouter();
-  const { mutateAsync: criarDisco, isPending: criando } = useCriarDisco();
-  const { data: artistas = [] } = useListaDeArtistas();
-  const { mutateAsync: criarArtista } = useCriarArtista();
-  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
+  const { criar: criarDisco } = useDiscosModel();
+  const { lista: listaArtistas, criar: criarArtista } = useArtistasModel();
+  const { lista: listaGeneros } = useGenerosMusicaisModel();
+  const criando = criarDisco.isPending;
+  const artistas = listaArtistas.data ?? [];
+  const generosMusicais = listaGeneros.data ?? [];
   const [successMessage, setSuccessMessage] = useState('');
 
   const {
@@ -86,12 +85,12 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
       if (artistaExistente?.artistaId !== undefined) {
         artistaId = artistaExistente.artistaId;
       } else {
-        const novoArtista = await criarArtista({ nomeArtista });
+        const novoArtista = await criarArtista.mutateAsync({ nomeArtista });
         if (novoArtista.artistaId === undefined) throw new Error('Falha ao criar artista');
         artistaId = novoArtista.artistaId;
       }
 
-      await criarDisco({
+      await criarDisco.mutateAsync({
         artista: { artistaId, nomeArtista },
         album: data.album,
         nacionalidade: data.nacionalidade,
