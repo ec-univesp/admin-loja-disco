@@ -10,7 +10,7 @@ import Button from '@/shared/components/ui/button/Button';
 import { useCompras, useDiscos, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import AddDiscoForm from '@/features/estoque/components/AddDiscoForm';
+import AddDiscoForm from '@/app/estoque/components/AddDiscoForm';
 
 interface ItemCompraForm {
   discoId: string;

@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { useDiscos } from '@/shared/store/useStore';
-import { useListaDeGenerosMusicais } from '@/features/estoque/model/genero-musical.model';
+import { useListaDeGenerosMusicais } from '@/app/estoque/model/genero-musical.model';
 import {
   useListaDeArtistas,
   useCriarArtista,
-} from '@/features/estoque/model/artista.model';
+} from '@/app/estoque/model/artista.model';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';

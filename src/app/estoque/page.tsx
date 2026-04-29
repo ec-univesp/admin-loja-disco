@@ -7,16 +7,16 @@ import {
   useListaDeGenerosMusicais,
   useCriarGeneroMusical,
   useExcluirGeneroMusical,
-} from '@/features/estoque/model/genero-musical.model';
+} from '@/app/estoque/model/genero-musical.model';
 import {
   useListaDeArtistas,
   useCriarArtista,
   useExcluirArtista,
-} from '@/features/estoque/model/artista.model';
+} from '@/app/estoque/model/artista.model';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import EditDiscoModal from '@/features/estoque/components/EditDiscoModal';
-import AddDiscoForm from '@/features/estoque/components/AddDiscoForm';
+import EditDiscoModal from '@/app/estoque/components/EditDiscoModal';
+import AddDiscoForm from '@/app/estoque/components/AddDiscoForm';
 import { Pencil, Trash2 } from 'lucide-react';
 
 type AddOption = 'menu' | 'genero' | 'artista' | 'disco';
