@@ -1,12 +1,12 @@
 export * from './types';
 export { ApiError, apiClient } from './client';
 
-export { artistasService } from './artistas.service';
-export { generosMusicaisService } from './generos-musicais.service';
-export { enderecosService } from './enderecos.service';
-export { clientesService } from './clientes.service';
-export { canaisVendaService } from './canais-venda.service';
-export { discosService, type BuscarDiscoQuery } from './discos.service';
-export { comprasService } from './compras.service';
-export { vendasService } from './vendas.service';
-export { relatoriosService } from './relatorios.service';
+export { artistsService } from './artists.service';
+export { genresService } from './music-genres.service';
+export { addressesService } from './addresses.service';
+export { customersService } from './customers.service';
+export { salesChannelsService } from './sales-channels.service';
+export { recordsService, type RecordSearchParams } from './records.service';
+export { purchasesService } from './purchases.service';
+export { salesService } from './sales.service';
+export { reportsService } from './reports.service';

@@ -1,9 +1,9 @@
 'use client';
 
-import { MetricasLoja } from '@/app/_dashboard/components/MetricasLoja';
+import { StoreMetrics } from '@/app/_dashboard/components/StoreMetrics';
 import React from 'react';
-import VendasMensaisChart from '@/app/_dashboard/components/VendasMensaisChart';
-import VendasRecentes from '@/app/_dashboard/components/VendasRecentes';
+import MonthlySalesChart from '@/app/_dashboard/components/MonthlySalesChart';
+import RecentSales from '@/app/_dashboard/components/RecentSales';
 import Button from '@/shared/components/ui/button/Button';
 import { useRouter } from 'next/navigation';
 
@@ -11,15 +11,15 @@ export default function AdminLojaDisco() {
   const router = useRouter();
 
   const handleNewSale = () => {
-    router.push('/vendas?novo=1');
+    router.push('/sales?novo=1');
   };
 
   const handleNewPurchase = () => {
-    router.push('/compras?novo=1');
+    router.push('/purchases?novo=1');
   };
 
   const handleAddProduct = () => {
-    router.push('/estoque/add-produto');
+    router.push('/inventory/add-record');
   };
 
   return (
@@ -27,25 +27,25 @@ export default function AdminLojaDisco() {
       <div className="col-span-12">
         <div className="flex gap-4">
           <Button variant="primary" onClick={handleNewSale}>
-            + Nova Venda
+            + New Sale
           </Button>
           <Button variant="primary" onClick={handleNewPurchase}>
-            + Nova Compra
+            + New Purchase
           </Button>
           <Button variant="primary" onClick={handleAddProduct}>
-            + Add Produto
+            + Add Record
           </Button>
         </div>
       </div>
 
       <div className="col-span-12 space-y-6">
-        <MetricasLoja />
+        <StoreMetrics />
 
-        <VendasMensaisChart />
+        <MonthlySalesChart />
       </div>
 
       <div className="col-span-12">
-        <VendasRecentes />
+        <RecentSales />
       </div>
     </div>
   );

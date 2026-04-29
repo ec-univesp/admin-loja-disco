@@ -1,222 +1,199 @@
 import { useMemo } from 'react';
 import { useAppStore } from '@/shared/store/appStore';
 
-/**
- * Hook para usar dados de Disco
- */
-export const useDiscos = () => {
-  const discos = useAppStore((state) => state.discos);
-  const artistas = useAppStore((state) => state.artistas);
-  const generosMusical = useAppStore((state) => state.generosMusical);
+export const useRecordsStore = () => {
+  const records = useAppStore((state) => state.records);
+  const artists = useAppStore((state) => state.artists);
+  const musicGenres = useAppStore((state) => state.musicGenres);
   const loading = useAppStore((state) => state.loading);
   const error = useAppStore((state) => state.error);
-  const fetchDiscos = useAppStore((state) => state.fetchDiscos);
-  const createDisco = useAppStore((state) => state.createDisco);
-  const updateDisco = useAppStore((state) => state.updateDisco);
-  const deleteDisco = useAppStore((state) => state.deleteDisco);
+  const fetchRecords = useAppStore((state) => state.fetchRecords);
+  const createRecord = useAppStore((state) => state.createRecord);
+  const updateRecord = useAppStore((state) => state.updateRecord);
+  const deleteRecord = useAppStore((state) => state.deleteRecord);
 
-  // Mapeia discos com informações de artista e gênero
-  const discosComArtista = useMemo(
+  const recordsWithArtist = useMemo(
     () =>
-      discos.map((disco) => {
-        const artista = artistas.find((a) => a.id === disco.artistaId);
-        const genero = disco.generoId
-          ? generosMusical.find((g) => g.id === disco.generoId)
+      records.map((record) => {
+        const artist = artists.find((a) => a.id === record.artistId);
+        const genre = record.genreId
+          ? musicGenres.find((g) => g.id === record.genreId)
           : undefined;
         return {
-          ...disco,
-          artistaNome: artista?.nome || 'Desconhecido',
-          generoNome: genero?.nome || '',
+          ...record,
+          artistName: artist?.name || 'Unknown',
+          genreName: genre?.name || '',
         };
       }),
-    [discos, artistas, generosMusical]
+    [records, artists, musicGenres]
   );
 
   return {
-    discos,
-    discosComArtista,
+    records,
+    recordsWithArtist,
     loading,
     error,
-    fetchDiscos,
-    createDisco,
-    updateDisco,
-    deleteDisco,
+    fetchRecords,
+    createRecord,
+    updateRecord,
+    deleteRecord,
   };
 };
 
-/**
- * Hook para usar dados de Venda
- */
-export const useVendas = () => {
-  const vendas = useAppStore((state) => state.vendas);
-  const clientes = useAppStore((state) => state.clientes);
-  const enderecos = useAppStore((state) => state.enderecos);
-  const itensVenda = useAppStore((state) => state.itensVenda);
-  const discos = useAppStore((state) => state.discos);
+export const useSalesStore = () => {
+  const sales = useAppStore((state) => state.sales);
+  const customers = useAppStore((state) => state.customers);
+  const addresses = useAppStore((state) => state.addresses);
+  const saleItems = useAppStore((state) => state.saleItems);
+  const records = useAppStore((state) => state.records);
   const loading = useAppStore((state) => state.loading);
   const error = useAppStore((state) => state.error);
-  const fetchVendas = useAppStore((state) => state.fetchVendas);
-  const createVenda = useAppStore((state) => state.createVenda);
-  const updateVenda = useAppStore((state) => state.updateVenda);
-  const deleteVenda = useAppStore((state) => state.deleteVenda);
+  const fetchSales = useAppStore((state) => state.fetchSales);
+  const createSale = useAppStore((state) => state.createSale);
+  const updateSale = useAppStore((state) => state.updateSale);
+  const deleteSale = useAppStore((state) => state.deleteSale);
 
-  // Mapeia vendas com informações de cliente, endereço e produtos
-  const vendasComDetalhes = useMemo(
+  const salesWithDetails = useMemo(
     () =>
-      vendas.map((venda) => {
-        const cliente = clientes.find((c) => c.id === venda.clienteId);
-        const endereco = enderecos.find((e) => e.id === venda.enderecoId);
-        const produtos = itensVenda
-          .filter((i) => i.vendaId === venda.id)
-          .map((i) => discos.find((d) => d.id === i.discoId)?.album)
+      sales.map((sale) => {
+        const customer = customers.find((c) => c.id === sale.customerId);
+        const address = addresses.find((e) => e.id === sale.addressId);
+        const products = saleItems
+          .filter((i) => i.saleId === sale.id)
+          .map((i) => records.find((d) => d.id === i.recordId)?.album)
           .filter((album): album is string => !!album);
-        const enderecoCompleto = endereco
-          ? `${endereco.logradouro}, ${endereco.numero} - ${endereco.cidade}/${endereco.estado}`
+        const fullAddress = address
+          ? `${address.street}, ${address.number} - ${address.city}/${address.state}`
           : 'Endereço não informado';
         return {
-          ...venda,
-          clienteNome: cliente?.nome || 'Desconhecido',
-          enderecoCidade: endereco?.cidade || 'Cidade desconhecida',
-          enderecoCompleto,
-          produtos,
-          produtosResumo:
-            produtos.length === 0
+          ...sale,
+          customerName: customer?.name || 'Desconhecido',
+          addressCity: address?.city || 'Cidade desconhecida',
+          fullAddress,
+          products,
+          productsSummary:
+            products.length === 0
               ? '—'
-              : produtos.length === 1
-                ? produtos[0]
-                : `${produtos[0]} +${produtos.length - 1}`,
+              : products.length === 1
+                ? products[0]
+                : `${products[0]} +${products.length - 1}`,
         };
       }),
-    [vendas, clientes, enderecos, itensVenda, discos]
+    [sales, customers, addresses, saleItems, records]
   );
 
   return {
-    vendas,
-    vendasComDetalhes,
+    sales,
+    salesWithDetails,
     loading,
     error,
-    fetchVendas,
-    createVenda,
-    updateVenda,
-    deleteVenda,
+    fetchSales,
+    createSale,
+    updateSale,
+    deleteSale,
   };
 };
 
-/**
- * Hook para usar dados de Itens da Venda
- */
-export const useItensVenda = () => {
-  const itensVenda = useAppStore((state) => state.itensVenda);
-  const discos = useAppStore((state) => state.discos);
+export const useSaleItemsStore = () => {
+  const saleItems = useAppStore((state) => state.saleItems);
+  const records = useAppStore((state) => state.records);
   const loading = useAppStore((state) => state.loading);
   const error = useAppStore((state) => state.error);
-  const fetchItensVenda = useAppStore((state) => state.fetchItensVenda);
-  const createItemVenda = useAppStore((state) => state.createItemVenda);
-  const deleteItemVenda = useAppStore((state) => state.deleteItemVenda);
+  const fetchSaleItems = useAppStore((state) => state.fetchSaleItems);
+  const createSaleItem = useAppStore((state) => state.createSaleItem);
+  const deleteSaleItem = useAppStore((state) => state.deleteSaleItem);
 
-  // Mapeia itens com informações de disco e venda
-  const itensVendaComDetalhes = useMemo(
+  const saleItemsWithDetails = useMemo(
     () =>
-      itensVenda.map((item) => {
-        const disco = discos.find((d) => d.id === item.discoId);
+      saleItems.map((item) => {
+        const record = records.find((d) => d.id === item.recordId);
         return {
           ...item,
-          discoAlbum: disco?.album || 'Desconhecido',
-          discoValorMercado: disco?.valorMercado || 0,
+          recordAlbum: record?.album || 'Unknown',
+          recordMarketValue: record?.marketValue || 0,
         };
       }),
-    [itensVenda, discos]
+    [saleItems, records]
   );
 
   return {
-    itensVenda,
-    itensVendaComDetalhes,
+    saleItems,
+    saleItemsWithDetails,
     loading,
     error,
-    fetchItensVenda,
-    createItemVenda,
-    deleteItemVenda,
+    fetchSaleItems,
+    createSaleItem,
+    deleteSaleItem,
   };
 };
 
-/**
- * Hook para usar dados de Compra
- */
-export const useCompras = () => {
-  const compras = useAppStore((state) => state.compras);
-  const clientes = useAppStore((state) => state.clientes);
+export const usePurchasesStore = () => {
+  const purchases = useAppStore((state) => state.purchases);
+  const customers = useAppStore((state) => state.customers);
   const loading = useAppStore((state) => state.loading);
   const error = useAppStore((state) => state.error);
-  const fetchCompras = useAppStore((state) => state.fetchCompras);
-  const createCompra = useAppStore((state) => state.createCompra);
-  const updateCompra = useAppStore((state) => state.updateCompra);
-  const deleteCompra = useAppStore((state) => state.deleteCompra);
+  const fetchPurchases = useAppStore((state) => state.fetchPurchases);
+  const createPurchase = useAppStore((state) => state.createPurchase);
+  const updatePurchase = useAppStore((state) => state.updatePurchase);
+  const deletePurchase = useAppStore((state) => state.deletePurchase);
 
-  // Mapeia compras com informações de cliente
-  const comprasComDetalhes = useMemo(
+  const purchasesWithDetails = useMemo(
     () =>
-      compras.map((compra) => {
-        const cliente = clientes.find((c) => c.id === compra.clienteId);
+      purchases.map((purchase) => {
+        const customer = customers.find((c) => c.id === purchase.customerId);
         return {
-          ...compra,
-          clienteNome: cliente?.nome || 'Desconhecido',
+          ...purchase,
+          customerName: customer?.name || 'Unknown',
         };
       }),
-    [compras, clientes]
+    [purchases, customers]
   );
 
   return {
-    compras,
-    comprasComDetalhes,
+    purchases,
+    purchasesWithDetails,
     loading,
     error,
-    fetchCompras,
-    createCompra,
-    updateCompra,
-    deleteCompra,
+    fetchPurchases,
+    createPurchase,
+    updatePurchase,
+    deletePurchase,
   };
 };
 
-/**
- * Hook para usar dados de Itens da Compra
- */
-export const useItensCompra = () => {
-  const itensCompra = useAppStore((state) => state.itensCompra);
-  const discos = useAppStore((state) => state.discos);
+export const usePurchaseItemsStore = () => {
+  const purchaseItems = useAppStore((state) => state.purchaseItems);
+  const records = useAppStore((state) => state.records);
   const loading = useAppStore((state) => state.loading);
   const error = useAppStore((state) => state.error);
-  const fetchItensCompra = useAppStore((state) => state.fetchItensCompra);
-  const createItemCompra = useAppStore((state) => state.createItemCompra);
-  const deleteItemCompra = useAppStore((state) => state.deleteItemCompra);
+  const fetchPurchaseItems = useAppStore((state) => state.fetchPurchaseItems);
+  const createPurchaseItem = useAppStore((state) => state.createPurchaseItem);
+  const deletePurchaseItem = useAppStore((state) => state.deletePurchaseItem);
 
-  // Mapeia itens com informações de disco
-  const itensCompraComDetalhes = useMemo(
+  const purchaseItemsWithDetails = useMemo(
     () =>
-      itensCompra.map((item) => {
-        const disco = discos.find((d) => d.id === item.discoId);
+      purchaseItems.map((item) => {
+        const record = records.find((d) => d.id === item.recordId);
         return {
           ...item,
-          discoAlbum: disco?.album || 'Desconhecido',
-          discoCustoDisco: disco?.custoDisco || 0,
+          recordAlbum: record?.album || 'Unknown',
+          recordCost: record?.recordCost || 0,
         };
       }),
-    [itensCompra, discos]
+    [purchaseItems, records]
   );
 
   return {
-    itensCompra,
-    itensCompraComDetalhes,
+    purchaseItems,
+    purchaseItemsWithDetails,
     loading,
     error,
-    fetchItensCompra,
-    createItemCompra,
-    deleteItemCompra,
+    fetchPurchaseItems,
+    createPurchaseItem,
+    deletePurchaseItem,
   };
 };
 
-/**
- * Hook geral do App Store
- */
 export const useAppStoreState = () => {
   return useAppStore();
 };

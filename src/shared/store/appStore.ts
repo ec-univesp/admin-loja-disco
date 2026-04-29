@@ -3,18 +3,18 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type {
-  GeneroMusical,
-  Artista,
-  Disco,
-  Cliente,
-  Endereco,
-  Compra,
-  ItemCompra,
-  Venda,
-  ItemVenda,
-  CanalVenda,
+  MusicGenre,
+  Artist,
+  VinylRecord,
+  Customer,
+  Address,
+  Purchase,
+  PurchaseItem,
+  Sale,
+  SaleItem,
+  SalesChannel,
   AppState,
-} from '@/shared/types/models';
+} from '@/shared/types/index';
 import {
   apiGenerosMusical,
   apiArtistas,
@@ -30,88 +30,88 @@ import {
 } from '@/shared/services/apiMock';
 
 interface AppStore extends AppState {
-  // Ações para Generos Musicais
-  fetchGenerosMusical: () => Promise<void>;
-  createGeneroMusical: (genero: Omit<GeneroMusical, 'id'>) => Promise<void>;
-  updateGeneroMusical: (id: string, updates: Partial<GeneroMusical>) => Promise<void>;
-  deleteGeneroMusical: (id: string) => Promise<void>;
+  // Music Genres actions
+  fetchMusicGenres: () => Promise<void>;
+  createMusicGenre: (genre: Omit<MusicGenre, 'id'>) => Promise<void>;
+  updateMusicGenre: (id: string, updates: Partial<MusicGenre>) => Promise<void>;
+  deleteMusicGenre: (id: string) => Promise<void>;
 
-  // Ações para Artistas
-  fetchArtistas: () => Promise<void>;
-  createArtista: (artista: Omit<Artista, 'id'>) => Promise<Artista | undefined>;
-  updateArtista: (id: string, updates: Partial<Artista>) => Promise<void>;
-  deleteArtista: (id: string) => Promise<void>;
+  // Artists actions
+  fetchArtists: () => Promise<void>;
+  createArtist: (artist: Omit<Artist, 'id'>) => Promise<Artist | undefined>;
+  updateArtist: (id: string, updates: Partial<Artist>) => Promise<void>;
+  deleteArtist: (id: string) => Promise<void>;
 
-  // Ações para Discos
-  fetchDiscos: () => Promise<void>;
-  createDisco: (disco: Omit<Disco, 'id'>) => Promise<void>;
-  updateDisco: (id: string, updates: Partial<Disco>) => Promise<void>;
-  deleteDisco: (id: string) => Promise<void>;
+  // Records actions
+  fetchRecords: () => Promise<void>;
+  createRecord: (record: Omit<VinylRecord, 'id'>) => Promise<void>;
+  updateRecord: (id: string, updates: Partial<VinylRecord>) => Promise<void>;
+  deleteRecord: (id: string) => Promise<void>;
 
-  // Ações para Clientes
-  fetchClientes: () => Promise<void>;
-  createCliente: (cliente: Omit<Cliente, 'id'>) => Promise<Cliente | undefined>;
-  updateCliente: (id: string, updates: Partial<Cliente>) => Promise<void>;
-  deleteCliente: (id: string) => Promise<void>;
+  // Customers actions
+  fetchCustomers: () => Promise<void>;
+  createCustomer: (customer: Omit<Customer, 'id'>) => Promise<Customer | undefined>;
+  updateCustomer: (id: string, updates: Partial<Customer>) => Promise<void>;
+  deleteCustomer: (id: string) => Promise<void>;
 
-  // Ações para Endereços
-  fetchEnderecos: () => Promise<void>;
-  createEndereco: (endereco: Omit<Endereco, 'id'>) => Promise<Endereco | undefined>;
-  updateEndereco: (id: string, updates: Partial<Endereco>) => Promise<void>;
-  deleteEndereco: (id: string) => Promise<void>;
+  // Addresses actions
+  fetchAddresses: () => Promise<void>;
+  createAddress: (address: Omit<Address, 'id'>) => Promise<Address | undefined>;
+  updateAddress: (id: string, updates: Partial<Address>) => Promise<void>;
+  deleteAddress: (id: string) => Promise<void>;
 
-  // Ações para Vendas
-  fetchVendas: () => Promise<void>;
-  createVenda: (venda: Omit<Venda, 'id'>) => Promise<Venda | undefined>;
-  updateVenda: (id: string, updates: Partial<Venda>) => Promise<void>;
-  deleteVenda: (id: string) => Promise<void>;
+  // Sales actions
+  fetchSales: () => Promise<void>;
+  createSale: (sale: Omit<Sale, 'id'>) => Promise<Sale | undefined>;
+  updateSale: (id: string, updates: Partial<Sale>) => Promise<void>;
+  deleteSale: (id: string) => Promise<void>;
 
-  // Ações para Itens de Venda
-  fetchItensVenda: () => Promise<void>;
-  createItemVenda: (itemVenda: Omit<ItemVenda, 'id'>) => Promise<void>;
-  deleteItemVenda: (id: string) => Promise<void>;
+  // Sale items actions
+  fetchSaleItems: () => Promise<void>;
+  createSaleItem: (saleItem: Omit<SaleItem, 'id'>) => Promise<void>;
+  deleteSaleItem: (id: string) => Promise<void>;
 
-  // Ações para Compras
-  fetchCompras: () => Promise<void>;
-  createCompra: (compra: Omit<Compra, 'id'>) => Promise<Compra | undefined>;
-  updateCompra: (id: string, updates: Partial<Compra>) => Promise<void>;
-  deleteCompra: (id: string) => Promise<void>;
+  // Purchases actions
+  fetchPurchases: () => Promise<void>;
+  createPurchase: (purchase: Omit<Purchase, 'id'>) => Promise<Purchase | undefined>;
+  updatePurchase: (id: string, updates: Partial<Purchase>) => Promise<void>;
+  deletePurchase: (id: string) => Promise<void>;
 
-  // Ações para Itens de Compra
-  fetchItensCompra: () => Promise<void>;
-  createItemCompra: (itemCompra: Omit<ItemCompra, 'id'>) => Promise<void>;
-  deleteItemCompra: (id: string) => Promise<void>;
+  // Purchase items actions
+  fetchPurchaseItems: () => Promise<void>;
+  createPurchaseItem: (purchaseItem: Omit<PurchaseItem, 'id'>) => Promise<void>;
+  deletePurchaseItem: (id: string) => Promise<void>;
 
-  // Ações para Cliente-Endereço (relação)
-  fetchClientesEnderecos: () => Promise<void>;
-  vincularClienteEndereco: (clienteId: string, enderecoId: string) => Promise<void>;
-  desvincularClienteEndereco: (clienteId: string, enderecoId: string) => Promise<void>;
+  // Customer-Address relation actions
+  fetchCustomerAddresses: () => Promise<void>;
+  linkCustomerAddress: (customerId: string, addressId: string) => Promise<void>;
+  unlinkCustomerAddress: (customerId: string, addressId: string) => Promise<void>;
 
-  // Ações para Canais de Venda
-  fetchCanaisVenda: () => Promise<void>;
-  createCanalVenda: (canal: Omit<CanalVenda, 'id'>) => Promise<CanalVenda | undefined>;
-  updateCanalVenda: (id: string, updates: Partial<CanalVenda>) => Promise<void>;
-  deleteCanalVenda: (id: string) => Promise<void>;
+  // Sales channels actions
+  fetchSalesChannels: () => Promise<void>;
+  createSalesChannel: (channel: Omit<SalesChannel, 'id'>) => Promise<SalesChannel | undefined>;
+  updateSalesChannel: (id: string, updates: Partial<SalesChannel>) => Promise<void>;
+  deleteSalesChannel: (id: string) => Promise<void>;
 
-  // Ações gerais
+  // General actions
   setError: (error: string | null) => void;
   clearError: () => void;
   resetState: () => void;
 }
 
 const initialState: AppState = {
-  generosMusical: [],
-  artistas: [],
-  discos: [],
-  generosDisco: [],
-  clientes: [],
-  enderecos: [],
-  clientesEnderecos: [],
-  compras: [],
-  itensCompra: [],
-  vendas: [],
-  itensVenda: [],
-  canaisVenda: [],
+  musicGenres: [],
+  artists: [],
+  records: [],
+  recordGenres: [],
+  customers: [],
+  addresses: [],
+  customerAddresses: [],
+  purchases: [],
+  purchaseItems: [],
+  sales: [],
+  saleItems: [],
+  salesChannels: [],
   loading: false,
   error: null,
 };
@@ -122,641 +122,539 @@ export const useAppStore = create<AppStore>()(
       (set) => ({
         ...initialState,
 
-        // ============ GENEROS MUSICAIS ============
-        fetchGenerosMusical: async () => {
+        // ============ MUSIC GENRES ============
+        fetchMusicGenres: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiGenerosMusical.getAll();
-            set({ generosMusical: data, loading: false });
+            set({ musicGenres: data, loading: false });
           } catch {
-            set({
-              error: 'Erro ao buscar gêneros musicais',
-              loading: false,
-            });
+            set({ error: 'Failed to load music genres', loading: false });
           }
         },
 
-        createGeneroMusical: async (genero) => {
+        createMusicGenre: async (genre) => {
           set({ loading: true, error: null });
           try {
-            const newGenero = await apiGenerosMusical.create(genero);
+            const newGenre = await apiGenerosMusical.create(genre);
             set((state) => ({
-              generosMusical: [...state.generosMusical, newGenero],
+              musicGenres: [...state.musicGenres, newGenre],
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao criar gênero musical',
-              loading: false,
-            });
+            set({ error: 'Failed to create music genre', loading: false });
           }
         },
 
-        updateGeneroMusical: async (id, updates) => {
+        updateMusicGenre: async (id, updates) => {
           set({ loading: true, error: null });
           try {
             await apiGenerosMusical.update(id, updates);
             set((state) => ({
-              generosMusical: state.generosMusical.map((g) =>
+              musicGenres: state.musicGenres.map((g) =>
                 g.id === id ? { ...g, ...updates } : g
               ),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao atualizar gênero musical',
-              loading: false,
-            });
+            set({ error: 'Failed to update music genre', loading: false });
           }
         },
 
-        deleteGeneroMusical: async (id) => {
+        deleteMusicGenre: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiGenerosMusical.delete(id);
             set((state) => ({
-              generosMusical: state.generosMusical.filter((g) => g.id !== id),
+              musicGenres: state.musicGenres.filter((g) => g.id !== id),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao deletar gênero musical',
-              loading: false,
-            });
+            set({ error: 'Failed to delete music genre', loading: false });
           }
         },
 
-        // ============ ARTISTAS ============
-        fetchArtistas: async () => {
+        // ============ ARTISTS ============
+        fetchArtists: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiArtistas.getAll();
-            set({ artistas: data, loading: false });
+            set({ artists: data, loading: false });
           } catch {
-            set({
-              error: 'Erro ao buscar artistas',
-              loading: false,
-            });
+            set({ error: 'Failed to load artists', loading: false });
           }
         },
 
-        createArtista: async (artista) => {
+        createArtist: async (artist) => {
           set({ loading: true, error: null });
           try {
-            const newArtista = await apiArtistas.create(artista);
+            const newArtist = await apiArtistas.create(artist);
             set((state) => ({
-              artistas: [...state.artistas, newArtista],
+              artists: [...state.artists, newArtist],
               loading: false,
             }));
-            return newArtista;
+            return newArtist;
           } catch {
-            set({
-              error: 'Erro ao criar artista',
-              loading: false,
-            });
+            set({ error: 'Failed to create artist', loading: false });
           }
         },
 
-        updateArtista: async (id, updates) => {
+        updateArtist: async (id, updates) => {
           set({ loading: true, error: null });
           try {
             await apiArtistas.update(id, updates);
             set((state) => ({
-              artistas: state.artistas.map((a) =>
+              artists: state.artists.map((a) =>
                 a.id === id ? { ...a, ...updates } : a
               ),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao atualizar artista',
-              loading: false,
-            });
+            set({ error: 'Failed to update artist', loading: false });
           }
         },
 
-        deleteArtista: async (id) => {
+        deleteArtist: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiArtistas.delete(id);
             set((state) => ({
-              artistas: state.artistas.filter((a) => a.id !== id),
+              artists: state.artists.filter((a) => a.id !== id),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao deletar artista',
-              loading: false,
-            });
+            set({ error: 'Failed to delete artist', loading: false });
           }
         },
 
-        // ============ DISCOS ============
-        fetchDiscos: async () => {
+        // ============ RECORDS ============
+        fetchRecords: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiDiscos.getAll();
-            set({ discos: data, loading: false });
+            set({ records: data, loading: false });
           } catch {
-            set({
-              error: 'Erro ao buscar discos',
-              loading: false,
-            });
+            set({ error: 'Failed to load records', loading: false });
           }
         },
 
-        createDisco: async (disco) => {
+        createRecord: async (record) => {
           set({ loading: true, error: null });
           try {
-            const newDisco = await apiDiscos.create(disco);
+            const newRecord = await apiDiscos.create(record);
             set((state) => ({
-              discos: [...state.discos, newDisco],
+              records: [...state.records, newRecord],
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao criar disco',
-              loading: false,
-            });
+            set({ error: 'Failed to create record', loading: false });
           }
         },
 
-        updateDisco: async (id, updates) => {
+        updateRecord: async (id, updates) => {
           set({ loading: true, error: null });
           try {
             await apiDiscos.update(id, updates);
             set((state) => ({
-              discos: state.discos.map((d) =>
+              records: state.records.map((d) =>
                 d.id === id ? { ...d, ...updates } : d
               ),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao atualizar disco',
-              loading: false,
-            });
+            set({ error: 'Failed to update record', loading: false });
           }
         },
 
-        deleteDisco: async (id) => {
+        deleteRecord: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiDiscos.delete(id);
             set((state) => ({
-              discos: state.discos.filter((d) => d.id !== id),
+              records: state.records.filter((d) => d.id !== id),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao deletar disco',
-              loading: false,
-            });
+            set({ error: 'Failed to delete record', loading: false });
           }
         },
 
-        // ============ CLIENTES ============
-        fetchClientes: async () => {
+        // ============ CUSTOMERS ============
+        fetchCustomers: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiClientes.getAll();
-            set({ clientes: data, loading: false });
+            set({ customers: data, loading: false });
           } catch {
-            set({
-              error: 'Erro ao buscar clientes',
-              loading: false,
-            });
+            set({ error: 'Failed to load customers', loading: false });
           }
         },
 
-        createCliente: async (cliente) => {
+        createCustomer: async (customer) => {
           set({ loading: true, error: null });
           try {
-            const newCliente = await apiClientes.create(cliente);
+            const newCustomer = await apiClientes.create(customer);
             set((state) => ({
-              clientes: [...state.clientes, newCliente],
+              customers: [...state.customers, newCustomer],
               loading: false,
             }));
-            return newCliente;
+            return newCustomer;
           } catch {
-            set({
-              error: 'Erro ao criar cliente',
-              loading: false,
-            });
+            set({ error: 'Failed to create customer', loading: false });
           }
         },
 
-        updateCliente: async (id, updates) => {
+        updateCustomer: async (id, updates) => {
           set({ loading: true, error: null });
           try {
             await apiClientes.update(id, updates);
             set((state) => ({
-              clientes: state.clientes.map((c) =>
+              customers: state.customers.map((c) =>
                 c.id === id ? { ...c, ...updates } : c
               ),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao atualizar cliente',
-              loading: false,
-            });
+            set({ error: 'Failed to update customer', loading: false });
           }
         },
 
-        deleteCliente: async (id) => {
+        deleteCustomer: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiClientes.delete(id);
             set((state) => ({
-              clientes: state.clientes.filter((c) => c.id !== id),
+              customers: state.customers.filter((c) => c.id !== id),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao deletar cliente',
-              loading: false,
-            });
+            set({ error: 'Failed to delete customer', loading: false });
           }
         },
 
-        // ============ ENDERECOS ============
-        fetchEnderecos: async () => {
+        // ============ ADDRESSES ============
+        fetchAddresses: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiEnderecos.getAll();
-            set({ enderecos: data, loading: false });
+            set({ addresses: data, loading: false });
           } catch {
-            set({
-              error: 'Erro ao buscar endereços',
-              loading: false,
-            });
+            set({ error: 'Failed to load addresses', loading: false });
           }
         },
 
-        createEndereco: async (endereco) => {
+        createAddress: async (address) => {
           set({ loading: true, error: null });
           try {
-            const newEndereco = await apiEnderecos.create(endereco);
+            const newAddress = await apiEnderecos.create(address);
             set((state) => ({
-              enderecos: [...state.enderecos, newEndereco],
+              addresses: [...state.addresses, newAddress],
               loading: false,
             }));
-            return newEndereco;
+            return newAddress;
           } catch {
-            set({
-              error: 'Erro ao criar endereço',
-              loading: false,
-            });
+            set({ error: 'Failed to create address', loading: false });
           }
         },
 
-        updateEndereco: async (id, updates) => {
+        updateAddress: async (id, updates) => {
           set({ loading: true, error: null });
           try {
             await apiEnderecos.update(id, updates);
             set((state) => ({
-              enderecos: state.enderecos.map((e) =>
+              addresses: state.addresses.map((e) =>
                 e.id === id ? { ...e, ...updates } : e
               ),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao atualizar endereço',
-              loading: false,
-            });
+            set({ error: 'Failed to update address', loading: false });
           }
         },
 
-        deleteEndereco: async (id) => {
+        deleteAddress: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiEnderecos.delete(id);
             set((state) => ({
-              enderecos: state.enderecos.filter((e) => e.id !== id),
+              addresses: state.addresses.filter((e) => e.id !== id),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao deletar endereço',
-              loading: false,
-            });
+            set({ error: 'Failed to delete address', loading: false });
           }
         },
 
-        // ============ VENDAS ============
-        fetchVendas: async () => {
+        // ============ SALES ============
+        fetchSales: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiVendas.getAll();
-            set({ vendas: data, loading: false });
+            set({ sales: data, loading: false });
           } catch {
-            set({
-              error: 'Erro ao buscar vendas',
-              loading: false,
-            });
+            set({ error: 'Failed to load sales', loading: false });
           }
         },
 
-        createVenda: async (venda) => {
+        createSale: async (sale) => {
           set({ loading: true, error: null });
           try {
-            const newVenda = await apiVendas.create(venda);
+            const newSale = await apiVendas.create(sale);
             set((state) => ({
-              vendas: [...state.vendas, newVenda],
+              sales: [...state.sales, newSale],
               loading: false,
             }));
-            return newVenda;
+            return newSale;
           } catch {
-            set({
-              error: 'Erro ao criar venda',
-              loading: false,
-            });
+            set({ error: 'Failed to create sale', loading: false });
           }
         },
 
-        updateVenda: async (id, updates) => {
+        updateSale: async (id, updates) => {
           set({ loading: true, error: null });
           try {
             await apiVendas.update(id, updates);
             set((state) => ({
-              vendas: state.vendas.map((v) =>
+              sales: state.sales.map((v) =>
                 v.id === id ? { ...v, ...updates } : v
               ),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao atualizar venda',
-              loading: false,
-            });
+            set({ error: 'Failed to update sale', loading: false });
           }
         },
 
-        deleteVenda: async (id) => {
+        deleteSale: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiVendas.delete(id);
             set((state) => ({
-              vendas: state.vendas.filter((v) => v.id !== id),
+              sales: state.sales.filter((v) => v.id !== id),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao deletar venda',
-              loading: false,
-            });
+            set({ error: 'Failed to delete sale', loading: false });
           }
         },
 
-        // ============ ITENS VENDA ============
-        fetchItensVenda: async () => {
+        // ============ SALE ITEMS ============
+        fetchSaleItems: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiItensVenda.getAll();
-            set({ itensVenda: data, loading: false });
+            set({ saleItems: data, loading: false });
           } catch {
-            set({
-              error: 'Erro ao buscar itens de venda',
-              loading: false,
-            });
+            set({ error: 'Failed to load sale items', loading: false });
           }
         },
 
-        createItemVenda: async (itemVenda) => {
+        createSaleItem: async (saleItem) => {
           set({ loading: true, error: null });
           try {
-            const newItemVenda = await apiItensVenda.create(itemVenda);
+            const newSaleItem = await apiItensVenda.create(saleItem);
             set((state) => ({
-              itensVenda: [...state.itensVenda, newItemVenda],
+              saleItems: [...state.saleItems, newSaleItem],
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao criar item de venda',
-              loading: false,
-            });
+            set({ error: 'Failed to create sale item', loading: false });
           }
         },
 
-        deleteItemVenda: async (id) => {
+        deleteSaleItem: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiItensVenda.delete(id);
             set((state) => ({
-              itensVenda: state.itensVenda.filter((v) => v.id !== id),
+              saleItems: state.saleItems.filter((v) => v.id !== id),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao deletar item de venda',
-              loading: false,
-            });
+            set({ error: 'Failed to delete sale item', loading: false });
           }
         },
 
-        // ============ COMPRAS ============
-        fetchCompras: async () => {
+        // ============ PURCHASES ============
+        fetchPurchases: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiCompras.getAll();
-            set({ compras: data, loading: false });
+            set({ purchases: data, loading: false });
           } catch {
-            set({
-              error: 'Erro ao buscar compras',
-              loading: false,
-            });
+            set({ error: 'Failed to load purchases', loading: false });
           }
         },
 
-        createCompra: async (compra) => {
+        createPurchase: async (purchase) => {
           set({ loading: true, error: null });
           try {
-            const newCompra = await apiCompras.create(compra);
+            const newPurchase = await apiCompras.create(purchase);
             set((state) => ({
-              compras: [...state.compras, newCompra],
+              purchases: [...state.purchases, newPurchase],
               loading: false,
             }));
-            return newCompra;
+            return newPurchase;
           } catch {
-            set({
-              error: 'Erro ao criar compra',
-              loading: false,
-            });
+            set({ error: 'Failed to create purchase', loading: false });
           }
         },
 
-        updateCompra: async (id, updates) => {
+        updatePurchase: async (id, updates) => {
           set({ loading: true, error: null });
           try {
             await apiCompras.update(id, updates);
             set((state) => ({
-              compras: state.compras.map((c) =>
+              purchases: state.purchases.map((c) =>
                 c.id === id ? { ...c, ...updates } : c
               ),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao atualizar compra',
-              loading: false,
-            });
+            set({ error: 'Failed to update purchase', loading: false });
           }
         },
 
-        deleteCompra: async (id) => {
+        deletePurchase: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiCompras.delete(id);
             set((state) => ({
-              compras: state.compras.filter((c) => c.id !== id),
+              purchases: state.purchases.filter((c) => c.id !== id),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao deletar compra',
-              loading: false,
-            });
+            set({ error: 'Failed to delete purchase', loading: false });
           }
         },
 
-        // ============ ITENS COMPRA ============
-        fetchItensCompra: async () => {
+        // ============ PURCHASE ITEMS ============
+        fetchPurchaseItems: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiItensCompra.getAll();
-            set({ itensCompra: data, loading: false });
+            set({ purchaseItems: data, loading: false });
           } catch {
-            set({
-              error: 'Erro ao buscar itens de compra',
-              loading: false,
-            });
+            set({ error: 'Failed to load purchase items', loading: false });
           }
         },
 
-        createItemCompra: async (itemCompra) => {
+        createPurchaseItem: async (purchaseItem) => {
           set({ loading: true, error: null });
           try {
-            const newItemCompra = await apiItensCompra.create(itemCompra);
+            const newPurchaseItem = await apiItensCompra.create(purchaseItem);
             set((state) => ({
-              itensCompra: [...state.itensCompra, newItemCompra],
+              purchaseItems: [...state.purchaseItems, newPurchaseItem],
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao criar item de compra',
-              loading: false,
-            });
+            set({ error: 'Failed to create purchase item', loading: false });
           }
         },
 
-        deleteItemCompra: async (id) => {
+        deletePurchaseItem: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiItensCompra.delete(id);
             set((state) => ({
-              itensCompra: state.itensCompra.filter((c) => c.id !== id),
+              purchaseItems: state.purchaseItems.filter((c) => c.id !== id),
               loading: false,
             }));
           } catch {
-            set({
-              error: 'Erro ao deletar item de compra',
-              loading: false,
-            });
+            set({ error: 'Failed to delete purchase item', loading: false });
           }
         },
 
-        // ============ CLIENTES ENDERECOS ============
-        fetchClientesEnderecos: async () => {
+        // ============ CUSTOMER ADDRESSES ============
+        fetchCustomerAddresses: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiClientesEnderecos.getAll();
-            set({ clientesEnderecos: data, loading: false });
+            set({ customerAddresses: data, loading: false });
           } catch {
-            set({ error: 'Erro ao buscar relação cliente-endereço', loading: false });
+            set({ error: 'Failed to load customer addresses', loading: false });
           }
         },
 
-        vincularClienteEndereco: async (clienteId, enderecoId) => {
+        linkCustomerAddress: async (customerId, addressId) => {
           try {
-            await apiClientesEnderecos.create({ clienteId, enderecoId });
+            await apiClientesEnderecos.create({ customerId, addressId });
             set((state) => ({
-              clientesEnderecos: [...state.clientesEnderecos, { clienteId, enderecoId }],
+              customerAddresses: [...state.customerAddresses, { customerId, addressId }],
             }));
           } catch {
-            set({ error: 'Erro ao vincular endereço ao cliente' });
+            set({ error: 'Failed to link address to customer' });
           }
         },
 
-        desvincularClienteEndereco: async (clienteId, enderecoId) => {
+        unlinkCustomerAddress: async (customerId, addressId) => {
           try {
-            await apiClientesEnderecos.delete(clienteId, enderecoId);
+            await apiClientesEnderecos.delete(customerId, addressId);
             set((state) => ({
-              clientesEnderecos: state.clientesEnderecos.filter(
-                (vinculo) =>
-                  !(vinculo.clienteId === clienteId && vinculo.enderecoId === enderecoId)
+              customerAddresses: state.customerAddresses.filter(
+                (link) =>
+                  !(link.customerId === customerId && link.addressId === addressId)
               ),
             }));
           } catch {
-            set({ error: 'Erro ao desvincular endereço do cliente' });
+            set({ error: 'Failed to unlink address from customer' });
           }
         },
 
-        // ============ CANAIS VENDA ============
-        fetchCanaisVenda: async () => {
+        // ============ SALES CHANNELS ============
+        fetchSalesChannels: async () => {
           set({ loading: true, error: null });
           try {
             const data = await apiCanaisVenda.getAll();
-            set({ canaisVenda: data, loading: false });
+            set({ salesChannels: data, loading: false });
           } catch {
-            set({ error: 'Erro ao buscar canais de venda', loading: false });
+            set({ error: 'Failed to load sales channels', loading: false });
           }
         },
 
-        createCanalVenda: async (canal) => {
+        createSalesChannel: async (channel) => {
           set({ loading: true, error: null });
           try {
-            const newCanal = await apiCanaisVenda.create(canal);
+            const newChannel = await apiCanaisVenda.create(channel);
             set((state) => ({
-              canaisVenda: [...state.canaisVenda, newCanal],
+              salesChannels: [...state.salesChannels, newChannel],
               loading: false,
             }));
-            return newCanal;
+            return newChannel;
           } catch {
-            set({ error: 'Erro ao criar canal de venda', loading: false });
+            set({ error: 'Failed to create sales channel', loading: false });
           }
         },
 
-        updateCanalVenda: async (id, updates) => {
+        updateSalesChannel: async (id, updates) => {
           set({ loading: true, error: null });
           try {
             await apiCanaisVenda.update(id, updates);
             set((state) => ({
-              canaisVenda: state.canaisVenda.map((canal) =>
-                canal.id === id ? { ...canal, ...updates } : canal
+              salesChannels: state.salesChannels.map((channel) =>
+                channel.id === id ? { ...channel, ...updates } : channel
               ),
               loading: false,
             }));
           } catch {
-            set({ error: 'Erro ao atualizar canal de venda', loading: false });
+            set({ error: 'Failed to update sales channel', loading: false });
           }
         },
 
-        deleteCanalVenda: async (id) => {
+        deleteSalesChannel: async (id) => {
           set({ loading: true, error: null });
           try {
             await apiCanaisVenda.delete(id);
             set((state) => ({
-              canaisVenda: state.canaisVenda.filter((canal) => canal.id !== id),
+              salesChannels: state.salesChannels.filter((channel) => channel.id !== id),
               loading: false,
             }));
           } catch {
-            set({ error: 'Erro ao deletar canal de venda', loading: false });
+            set({ error: 'Failed to delete sales channel', loading: false });
           }
         },
 
-        // ============ AÇÕES GERAIS ============
+        // ============ GENERAL ACTIONS ============
         setError: (error) => set({ error }),
         clearError: () => set({ error: null }),
         resetState: () => set(initialState),
