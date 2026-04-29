@@ -126,7 +126,7 @@ export default function InventoryPage() {
         marketValue: record.valorMercado ?? 0,
         recordCost: record.custoDisco ?? 0,
         price: record.valorMercado ?? 0,
-        status: record.status ?? 'Disponível',
+        status: record.status ?? 'DISPONIVEL',
       })),
     [records]
   );

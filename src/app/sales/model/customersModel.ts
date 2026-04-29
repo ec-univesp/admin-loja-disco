@@ -23,7 +23,12 @@ export function useCustomersModel(id?: number) {
   });
 
   const create = useMutation({
-    mutationFn: (payload: CustomerPayload) => customersService.create(payload),
+    mutationFn: async (payload: CustomerPayload) => {
+      const before = new Set((await customersService.list()).map((c) => c.clienteId));
+      await customersService.create(payload);
+      const after = await customersService.list();
+      return after.find((c) => !before.has(c.clienteId)) ?? payload;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
       notifySuccess('Customer added.');

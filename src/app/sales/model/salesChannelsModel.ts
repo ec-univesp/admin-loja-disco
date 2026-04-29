@@ -23,7 +23,15 @@ export function useSalesChannelsModel(id?: number) {
   });
 
   const create = useMutation({
-    mutationFn: (payload: SalesChannelPayload) => salesChannelsService.create(payload),
+    mutationFn: async (payload: SalesChannelPayload) => {
+      const before = new Set((await salesChannelsService.list()).map((c) => c.idCanalVenda));
+      await salesChannelsService.create(payload);
+      const after = await salesChannelsService.list();
+      const found = after.find((c) => !before.has(c.idCanalVenda));
+      return found
+        ? { canalVendaId: found.idCanalVenda, nomeCanalVenda: found.nomeCanalVenda }
+        : payload;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
       notifySuccess('Sales channel added.');

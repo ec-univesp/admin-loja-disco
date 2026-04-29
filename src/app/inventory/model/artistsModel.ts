@@ -23,7 +23,12 @@ export function useArtistsModel(id?: number) {
   });
 
   const create = useMutation({
-    mutationFn: (payload: ArtistPayload) => artistsService.create(payload),
+    mutationFn: async (payload: ArtistPayload) => {
+      const before = new Set((await artistsService.list()).map((a) => a.artistaId));
+      await artistsService.create(payload);
+      const after = await artistsService.list();
+      return after.find((a) => !before.has(a.artistaId)) ?? payload;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
       notifySuccess('Artist added.');

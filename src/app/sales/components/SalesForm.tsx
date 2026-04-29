@@ -55,7 +55,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const dataVendaRef = useRef<HTMLInputElement | null>(null);
 
   const availableRecords = useMemo(
-    () => records.filter((d) => d.status === 'Disponível' || !d.status),
+    () => records.filter((d) => d.status === 'DISPONIVEL' || !d.status),
     [records]
   );
 
@@ -75,7 +75,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
       pagamento: 'PIX',
       canalVendaId: '',
       custosAdicionais: 0,
-      statusPedido: 'Pendente',
+      statusPedido: 'PENDENTE',
       observacoes: '',
     },
   });
@@ -160,7 +160,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
           return updateRecord.mutateAsync({
             ...record,
             discoId: record.discoId,
-            status: 'Vendido',
+            status: 'VENDIDO',
           });
         })
       );
@@ -467,11 +467,11 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   {...register('statusPedido')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 >
-                  <option value="Pendente">Pendente</option>
-                  <option value="Confirmada">Confirmada</option>
-                  <option value="Enviada">Enviada</option>
-                  <option value="Entregue">Entregue</option>
-                  <option value="Cancelada">Cancelada</option>
+                  <option value="PENDENTE">Pendente</option>
+                  <option value="CONFIRMADA">Confirmada</option>
+                  <option value="ENVIADA">Enviada</option>
+                  <option value="ENTREGUE">Entregue</option>
+                  <option value="CANCELADA">Cancelada</option>
                 </select>
               </div>
             </div>

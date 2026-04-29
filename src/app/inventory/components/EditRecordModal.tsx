@@ -48,7 +48,7 @@ const initialForm: FormState = {
   condicaoDisco: '',
   valorMercado: 0,
   custoDisco: 0,
-  status: 'Disponível',
+  status: 'DISPONIVEL',
 };
 
 export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecordModalProps) {
@@ -323,8 +323,8 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 onChange={handleChange('status')}
                 className={inputClass}
               >
-                <option value="Disponível">Disponível</option>
-                <option value="Vendido">Vendido</option>
+                <option value="DISPONIVEL">Disponível</option>
+                <option value="VENDIDO">Vendido</option>
               </select>
             </div>
           </div>

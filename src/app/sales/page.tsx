@@ -19,12 +19,19 @@ const iconPlus = (
 );
 
 const statusColor: Record<string, string> = {
-  Concluída: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  Entregue: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  Confirmada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  Enviada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  Pendente: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  Cancelada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  ENTREGUE: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  CONFIRMADA: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  ENVIADA: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  PENDENTE: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  CANCELADA: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+};
+
+const statusLabel: Record<string, string> = {
+  PENDENTE: 'Pendente',
+  CONFIRMADA: 'Confirmada',
+  ENVIADA: 'Enviada',
+  ENTREGUE: 'Entregue',
+  CANCELADA: 'Cancelada',
 };
 
 const formatSaleNumber = (index: number) =>
@@ -36,7 +43,7 @@ const formatDateBR = (isoDate: string) => {
   return `${day}/${month}/${year}`;
 };
 
-const COMPLETED_STATUSES = ['Concluída', 'Entregue'];
+const COMPLETED_STATUSES = ['ENTREGUE'];
 
 export default function SalesPage() {
   return (
@@ -84,7 +91,7 @@ function SalesContent() {
   const handleToggleDelivered = async (saleIndex: number, currentStatus: string) => {
     const sale = sortedSales[saleIndex];
     if (!sale?.vendaId) return;
-    const newStatus = currentStatus === 'Entregue' ? 'Pendente' : 'Entregue';
+    const newStatus = currentStatus === 'ENTREGUE' ? 'PENDENTE' : 'ENTREGUE';
     await updateSale.mutateAsync({
       vendasId: sale.vendaId,
       cliente: sale.cliente,
@@ -122,7 +129,7 @@ function SalesContent() {
         total: sale.valorTotal ?? 0,
         payment: sale.pagamento ?? '—',
         salesChannel: sale.canalVenda?.nomeCanalVenda ?? '—',
-        status: sale.statusPedido ?? 'Pendente',
+        status: sale.statusPedido ?? 'PENDENTE',
         rawIdx: index,
       })),
     [sortedSales]
@@ -183,11 +190,11 @@ function SalesContent() {
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             >
               <option value="Todos">Todos os Status</option>
-              <option value="Pendente">Pendente</option>
-              <option value="Confirmada">Confirmada</option>
-              <option value="Enviada">Enviada</option>
-              <option value="Entregue">Entregue</option>
-              <option value="Cancelada">Cancelada</option>
+              <option value="PENDENTE">Pendente</option>
+              <option value="CONFIRMADA">Confirmada</option>
+              <option value="ENVIADA">Enviada</option>
+              <option value="ENTREGUE">Entregue</option>
+              <option value="CANCELADA">Cancelada</option>
             </select>
             <input
               type="text"
@@ -333,9 +340,9 @@ function SalesContent() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[row.status] || statusColor.Pendente}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[row.status] || statusColor.PENDENTE}`}
                       >
-                        {row.status}
+                        {statusLabel[row.status] ?? row.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -354,7 +361,7 @@ function SalesContent() {
                         </button>
                         <label
                           title={
-                            row.status === 'Entregue'
+                            row.status === 'ENTREGUE'
                               ? 'Marcar como não entregue'
                               : 'Marcar como entregue'
                           }
@@ -362,7 +369,7 @@ function SalesContent() {
                         >
                           <input
                             type="checkbox"
-                            checked={row.status === 'Entregue'}
+                            checked={row.status === 'ENTREGUE'}
                             onChange={() => handleToggleDelivered(row.rawIdx, row.status)}
                             aria-label={`Marcar venda ${row.number} como entregue`}
                             className="h-4 w-4 cursor-pointer accent-green-600"
