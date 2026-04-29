@@ -30,37 +30,30 @@ const navItems: NavItem[] = [
   {
     icon: <BoxCubeIcon />,
     name: 'Estoque',
-    path: "/estoque",
-    /*subItems: [
-      { name: 'Produtos', path: '/estoque' },
-      { name: 'Adicionar Produto', path: '/estoque/add-produto' },
-    ],*/
+    path: '/inventory',
   },
   {
     icon: <DollarLineIcon />,
     name: 'Vendas',
-    path: "/vendas",
-    /*subItems: [{ name: 'Lista de Vendas', path: '/vendas' }],*/
+    path: '/sales',
   },
   {
     icon: <BoxCubeIcon />,
     name: 'Compras',
-     path: "/compras",
-    /*subItems: [{ name: 'Lista de Compras', path: '/compras' }],*/
+    path: '/purchases',
   },
   {
     icon: <DocsIcon />,
     name: 'Relatório Financeiro',
-     path: "/faturamento",
-    /*subItems: [{ name: 'Relatório Financeiro', path: '/faturamento' }],*/
+    path: '/revenue',
   },
   {
     icon: <PaperPlaneIcon />,
     name: 'Entregas',
     subItems: [
-      { name: 'Todas as Entregas', path: '/entregas' },
-      { name: 'Pendentes', path: '/entregas/pendentes' },
-      { name: 'Concluídas', path: '/entregas/concluidas' },
+      { name: 'Todas as Entregas', path: '/deliveries' },
+      { name: 'Pendentes', path: '/deliveries/pending' },
+      { name: 'Concluídas', path: '/deliveries/completed' },
     ],
   },
 ];

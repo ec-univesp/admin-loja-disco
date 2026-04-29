@@ -1,0 +1,484 @@
+'use client';
+import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
+import { useSearchParams } from 'next/navigation';
+import { Pencil, Trash2 } from 'lucide-react';
+import React, { Suspense, useMemo, useState } from 'react';
+import { useSalesModel } from '@/app/vendas/model/salesModel';
+import { useCustomersModel } from '@/app/vendas/model/customersModel';
+import ClienteEnderecoModal from '@/app/vendas/components/ClienteEnderecoModal';
+import NovoCadastroModal from '@/app/vendas/components/NovoCadastroModal';
+import { Modal } from '@/shared/components/ui/modal';
+import { useModal } from '@/shared/hooks/useModal';
+import { exportTableToExcel } from '@/shared/services/exportExcel';
+import Button from '@/shared/components/ui/button/Button';
+
+const iconPlus = (
+  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+  </svg>
+);
+
+const statusColor: Record<string, string> = {
+  Concluída: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Entregue: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Confirmada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  Enviada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  Pendente: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  Cancelada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+};
+
+const formatNumeroVenda = (posicaoNaLista: number) =>
+  `VND-${String(posicaoNaLista + 1).padStart(4, '0')}`;
+
+const formatarDataBR = (dataIso: string) => {
+  if (!dataIso || dataIso.length < 10) return dataIso || '—';
+  const [ano, mes, dia] = dataIso.slice(0, 10).split('-');
+  return `${dia}/${mes}/${ano}`;
+};
+
+const STATUS_CONCLUIDOS = ['Concluída', 'Entregue'] as const;
+
+export default function VendasPage() {
+  return (
+    <Suspense fallback={null}>
+      <VendasContent />
+    </Suspense>
+  );
+}
+
+function VendasContent() {
+  const { list: salesList, remove: removeSale, update: updateSale } = useSalesModel();
+  const { list: customersList, remove: removeCustomer } = useCustomersModel();
+  const sales = salesList.data ?? [];
+  const customers = customersList.data ?? [];
+
+  const searchParams = useSearchParams();
+  const abrirNaVenda = searchParams.get('novo') === '1';
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('Todos');
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [showNewRegistrationModal, setShowNewRegistrationModal] = useState(() => abrirNaVenda);
+  const [editCustomerId, setEditCustomerId] = useState<number | undefined>();
+
+  const deleteVendaModal = useModal();
+  const [saleToDelete, setSaleToDelete] = useState<{
+    id: number;
+    numero: string;
+  } | null>(null);
+
+  const deleteClienteModal = useModal();
+  const [customerToDelete, setCustomerToDelete] = useState<{ id: number; nome: string } | null>(
+    null
+  );
+
+  const handleConfirmDeleteSale = async () => {
+    if (!saleToDelete) return;
+    await removeSale.mutateAsync(saleToDelete.id);
+    setSaleToDelete(null);
+    deleteVendaModal.closeModal();
+  };
+
+  const handleConfirmDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    await removeCustomer.mutateAsync(customerToDelete.id);
+    setCustomerToDelete(null);
+    deleteClienteModal.closeModal();
+  };
+
+  const handleToggleDelivered = async (vendaIdx: number, statusAtual: string) => {
+    const venda = sortedSales[vendaIdx];
+    if (!venda?.vendaId) return;
+    const novoStatus = statusAtual === 'Entregue' ? 'Pendente' : 'Entregue';
+    await updateSale.mutateAsync({
+      vendasId: venda.vendaId,
+      cliente: venda.cliente,
+      dataVenda: venda.dataVenda,
+      endereco: venda.endereco,
+      frete: venda.frete,
+      valorTotal: venda.valorTotal,
+      pagamento: venda.pagamento,
+      canalVenda: venda.canalVenda,
+      custosAdicionais: venda.custosAdicionais,
+      statusPedido: novoStatus,
+      itens: venda.itens?.map((item) => ({
+        discoId: item.discoId,
+        nomeDisco: item.nomeDisco,
+        nomeArtista: item.nomeArtista,
+        precoVenda: item.precoVenda,
+      })),
+    });
+  };
+
+  const sortedSales = useMemo(
+    () => [...sales].sort((a, b) => ((a.dataVenda ?? '') < (b.dataVenda ?? '') ? 1 : -1)),
+    [sales]
+  );
+
+  const rows = useMemo(
+    () =>
+      sortedSales.map((venda, posicao) => ({
+        id: venda.vendaId ?? 0,
+        numero: formatNumeroVenda(posicao),
+        cliente: venda.cliente?.nomeCliente ?? '—',
+        clienteId: venda.cliente?.clienteId,
+        data: venda.dataVenda ?? '',
+        itens: venda.itens?.length ?? 0,
+        total: venda.valorTotal ?? 0,
+        pagamento: venda.pagamento ?? '—',
+        canalVenda: venda.canalVenda?.nomeCanalVenda ?? '—',
+        status: venda.statusPedido ?? 'Pendente',
+        rawIdx: posicao,
+      })),
+    [sortedSales]
+  );
+
+  const normalizedSearch = searchTerm.toLowerCase();
+  const filteredRows = rows.filter((row) => {
+    const matchesSearch =
+      row.numero.toLowerCase().includes(normalizedSearch) ||
+      row.cliente.toLowerCase().includes(normalizedSearch);
+    const matchesStatus = statusFilter === 'Todos' || row.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const totalRevenue = filteredRows
+    .filter((row) =>
+      STATUS_CONCLUIDOS.includes(row.status as (typeof STATUS_CONCLUIDOS)[number])
+    )
+    .reduce((acc, row) => acc + row.total, 0);
+
+  const rowsForExport = () =>
+    filteredRows.map(({ numero, cliente, data, itens, total, pagamento, canalVenda, status }) => ({
+      'Nº Venda': numero,
+      Cliente: cliente,
+      Data: formatarDataBR(data),
+      Itens: itens,
+      'Total (R$)': total.toFixed(2),
+      Pagamento: pagamento,
+      'Canal de Venda': canalVenda,
+      Status: status,
+    }));
+
+  const handleExportToExcel = () => {
+    const stamp = new Date().toISOString().slice(0, 10);
+    exportarTabelaExcel(
+      'Vendas',
+      rowsForExport() as Array<Record<string, unknown>>,
+      `vendas-${stamp}.xlsx`
+    );
+  };
+
+  return (
+    <div>
+      <PageBreadcrumb pageTitle="Vendas" />
+      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+              Lista de Vendas
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {filteredRows.length} venda(s) · Receita:{' '}
+              <span className="font-medium text-green-600">R$ {totalRevenue.toFixed(2)}</span>
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+            >
+              <option value="Todos">Todos os Status</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Confirmada">Confirmada</option>
+              <option value="Enviada">Enviada</option>
+              <option value="Entregue">Entregue</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Buscar venda..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+            />
+            <Button
+              size="md"
+              variant="primary"
+              startIcon={iconPlus}
+              onClick={() => setShowNewRegistrationModal(true)}
+            >
+              Novo
+            </Button>
+            <button
+              type="button"
+              onClick={handleExportToExcel}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Exportar Excel
+            </button>
+          </div>
+        </div>
+
+        {customers.length === 0 ? (
+          <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
+            <p className="text-xs text-gray-400 dark:text-gray-500">Nenhum cliente cadastrado.</p>
+          </div>
+        ) : (
+          <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
+            <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+              Clientes cadastrados:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {customers.map((customer) => (
+                <div
+                  key={customer.clienteId}
+                  className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
+                >
+                  <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
+                    {customer.nomeCliente}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={`Editar cliente ${customer.nomeCliente}`}
+                    title={`Editar cliente ${customer.nomeCliente}`}
+                    onClick={() => {
+                      setEditCustomerId(customer.clienteId);
+                      setShowCustomerModal(true);
+                    }}
+                    className="bg-brand-500 hover:bg-brand-600 inline-flex h-7 w-7 items-center justify-center rounded-md text-white shadow-sm transition-colors"
+                  >
+                    <Pencil size={14} strokeWidth={2.25} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Excluir cliente ${customer.nomeCliente}`}
+                    title={`Excluir cliente ${customer.nomeCliente}`}
+                    onClick={() => {
+                      if (customer.clienteId === undefined) return;
+                      setCustomerToDelete({
+                        id: customer.clienteId,
+                        nome: customer.nomeCliente ?? '',
+                      });
+                      deleteClienteModal.openModal();
+                    }}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
+                  >
+                    <Trash2 size={14} strokeWidth={2.25} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-t border-gray-100 dark:border-gray-800">
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Nº Venda
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Cliente
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Data
+                </th>
+                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                  Itens
+                </th>
+                <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  Total
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Pagamento
+                </th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Canal de Venda
+                </th>
+                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                  Status
+                </th>
+                <th className="w-20 px-6 py-3" aria-hidden="true" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {filteredRows.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-6 py-10 text-center text-gray-400">
+                    Nenhuma venda encontrada.
+                  </td>
+                </tr>
+              ) : (
+                filteredRows.map((sale) => (
+                  <tr
+                    key={sale.id}
+                    className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                  >
+                    <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
+                      {sale.numero}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
+                      {sale.cliente}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {formatarDataBR(sale.data)}
+                    </td>
+                    <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
+                      {sale.itens}
+                    </td>
+                    <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
+                      R$ {sale.total.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {sale.pagamento}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {sale.canalVenda}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[sale.status] || statusColor.Pendente}`}
+                      >
+                        {sale.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="inline-flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditCustomerId(sale.clienteId);
+                            setShowCustomerModal(true);
+                          }}
+                          aria-label="Editar cliente / endereço"
+                          title="Editar cliente / endereço"
+                          className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
+                        >
+                          <Pencil size={15} strokeWidth={2.25} />
+                        </button>
+                        <label
+                          title={
+                            sale.status === 'Entregue'
+                              ? 'Marcar como não entregue'
+                              : 'Marcar como entregue'
+                          }
+                          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gray-200 bg-white shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={sale.status === 'Entregue'}
+                            onChange={() => handleToggleDelivered(sale.rawIdx, sale.status)}
+                            aria-label={`Marcar venda ${sale.numero} como entregue`}
+                            className="h-4 w-4 cursor-pointer accent-green-600"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          aria-label={`Deletar venda ${sale.numero}`}
+                          title={`Deletar venda ${sale.numero}`}
+                          onClick={() => {
+                            setSaleToDelete({ id: sale.id, numero: sale.numero });
+                            deleteVendaModal.openModal();
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
+                        >
+                          <Trash2 size={15} strokeWidth={2.25} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <ClienteEnderecoModal
+        isOpen={showCustomerModal}
+        onClose={() => setShowCustomerModal(false)}
+        clienteId={editCustomerId}
+      />
+      <NovoCadastroModal
+        isOpen={showNewRegistrationModal}
+        onClose={() => setShowNewRegistrationModal(false)}
+        initialView={abrirNaVenda ? 'venda' : 'select'}
+      />
+
+      <Modal
+        isOpen={deleteVendaModal.isOpen}
+        onClose={deleteVendaModal.closeModal}
+        className="m-4 max-w-[440px]"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Apagar venda
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Tem certeza que deseja apagar a venda{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">
+              {saleToDelete?.numero}
+            </span>
+            ? Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={deleteVendaModal.closeModal}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDeleteSale}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Apagar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={deleteClienteModal.isOpen}
+        onClose={deleteClienteModal.closeModal}
+        className="m-4 max-w-[440px]"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Excluir cliente
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Tem certeza que deseja excluir esse cliente{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">
+              {customerToDelete?.nome}
+            </span>
+            ?
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={deleteClienteModal.closeModal}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDeleteCustomer}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Apagar
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+}

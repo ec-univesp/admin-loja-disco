@@ -1,28 +1,28 @@
 import { toast } from 'sonner';
 import { ApiError } from '@/shared/services/api';
 
-export function notificarSucesso(mensagem: string) {
-  toast.success(mensagem);
+export function notifySuccess(message: string) {
+  toast.success(message);
 }
 
-export function notificarErro(contexto: string, erro: unknown) {
-  const detalhe =
-    erro instanceof ApiError
-      ? `${erro.status}: ${formatarCorpoDoErro(erro.body)}`
-      : erro instanceof Error
-        ? erro.message
-        : 'Erro desconhecido';
+export function notifyError(context: string, error: unknown) {
+  const detail =
+    error instanceof ApiError
+      ? `${error.status}: ${formatErrorBody(error.body)}`
+      : error instanceof Error
+        ? error.message
+        : 'Unknown error';
 
-  toast.error(contexto, { description: detalhe });
+  toast.error(context, { description: detail });
 }
 
-function formatarCorpoDoErro(corpo: unknown): string {
-  if (typeof corpo === 'string') return corpo;
-  if (corpo && typeof corpo === 'object') {
-    const possivelMensagem =
-      (corpo as { message?: string; error?: string }).message ??
-      (corpo as { message?: string; error?: string }).error;
-    if (possivelMensagem) return possivelMensagem;
+function formatErrorBody(body: unknown): string {
+  if (typeof body === 'string') return body;
+  if (body && typeof body === 'object') {
+    const msg =
+      (body as { message?: string; error?: string }).message ??
+      (body as { message?: string; error?: string }).error;
+    if (msg) return msg;
   }
-  return 'Verifique os dados e tente novamente.';
+  return 'Check the data and try again.';
 }

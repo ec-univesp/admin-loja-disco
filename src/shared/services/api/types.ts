@@ -1,17 +1,17 @@
-// Tipos gerados a partir do OpenAPI em http://localhost:8080/v3/api-docs
-// Atualize este arquivo quando o backend mudar.
+// Types generated from OpenAPI at http://localhost:8080/v3/api-docs
+// Update this file when the backend changes.
 
-export interface ArtistaEntity {
+export interface ArtistEntity {
   artistaId?: number;
   nomeArtista?: string;
 }
 
-export interface CanalVendaEntity {
+export interface SalesChannelEntity {
   idCanalVenda?: number;
   nomeCanalVenda?: string;
 }
 
-export interface EnderecoEntity {
+export interface AddressEntity {
   enderecoId?: number;
   logradouro?: string;
   numero?: number;
@@ -20,41 +20,41 @@ export interface EnderecoEntity {
   cep?: string;
 }
 
-export interface ClienteEntity {
+export interface CustomerEntity {
   clienteId?: number;
   nomeCliente?: string;
   idade?: number;
   sexo?: string;
-  enderecos?: EnderecoEntity[];
+  enderecos?: AddressEntity[];
 }
 
-export interface GeneroMusicalEntity {
+export interface MusicGenreEntity {
   generoMusicalId?: number;
   nomeGenero?: string;
 }
 
-// ===== Artistas =====
-export interface RequestArtistaDTO {
+// ===== Artists =====
+export interface ArtistPayload {
   artistaId?: number;
   nomeArtista?: string;
 }
-export interface ResponseArtistaDTO {
+export interface ArtistDTO {
   artistaId?: number;
   nomeArtista?: string;
 }
 
-// ===== Generos Musicais =====
-export interface RequestGeneroMusicalDTO {
+// ===== Music Genres =====
+export interface MusicGenrePayload {
   generoMusicalId?: number;
   nomeGenero?: string;
 }
-export interface ResponseGeneroMusicalDTO {
+export interface MusicGenreDTO {
   generoMusicalId?: number;
   nomeGenero?: string;
 }
 
-// ===== Enderecos =====
-export interface RequestEnderecoDTO {
+// ===== Addresses =====
+export interface AddressPayload {
   enderecoId?: number;
   logradouro?: string;
   numero?: number;
@@ -62,7 +62,7 @@ export interface RequestEnderecoDTO {
   estado?: string;
   cep?: string;
 }
-export interface ResponseEnderecoDTO {
+export interface AddressDTO {
   enderecoId?: number;
   logradouro?: string;
   numero?: number;
@@ -71,36 +71,36 @@ export interface ResponseEnderecoDTO {
   cep?: string;
 }
 
-// ===== Clientes =====
-export interface RequestClienteDTO {
+// ===== Customers =====
+export interface CustomerPayload {
   clienteId?: number;
   nomeCliente?: string;
   idade?: number;
   sexo?: string;
-  enderecos?: RequestEnderecoDTO[];
+  enderecos?: AddressPayload[];
 }
-export interface ResponseClienteDTO {
+export interface CustomerDTO {
   clienteId?: number;
   nomeCliente?: string;
   idade?: number;
   sexo?: string;
-  enderecos?: ResponseEnderecoDTO[];
+  enderecos?: AddressDTO[];
 }
 
-// ===== Canais de Venda =====
-export interface RequestCanalVendaDTO {
+// ===== Sales Channels =====
+export interface SalesChannelPayload {
   canalVendaId?: number;
   nomeCanalVenda?: string;
 }
-export interface ResponseCanalVendaDTO {
+export interface SalesChannelDTO {
   canalVendaId?: number;
   nomeCanalVenda?: string;
 }
 
-// ===== Discos =====
-export interface RequestDiscoDTO {
+// ===== Records =====
+export interface RecordPayload {
   discoId?: number;
-  artista?: ArtistaEntity;
+  artista?: ArtistEntity;
   album?: string;
   nacionalidade?: string;
   prensagem?: string;
@@ -113,11 +113,11 @@ export interface RequestDiscoDTO {
   valorMercado?: number;
   custoDisco?: number;
   status?: string;
-  generosMusicais?: RequestGeneroMusicalDTO[];
+  generosMusicais?: MusicGenrePayload[];
 }
-export interface ResponseDiscoDTO {
+export interface RecordDTO {
   discoId?: number;
-  artista?: ArtistaEntity;
+  artista?: ArtistEntity;
   album?: string;
   nacionalidade?: string;
   prensagem?: string;
@@ -130,79 +130,79 @@ export interface ResponseDiscoDTO {
   valorMercado?: number;
   custoDisco?: number;
   status?: string;
-  generosMusicais?: ResponseGeneroMusicalDTO[];
+  generosMusicais?: MusicGenreDTO[];
 }
 
-// ===== Compras =====
-export interface RequestItensCompraDTO {
+// ===== Purchases =====
+export interface PurchaseItemPayload {
   discoId?: number;
   nomeDisco?: string;
   nomeArtista?: string;
   custoDisco?: number;
 }
-export interface ResponseItensCompraDTO {
+export interface PurchaseItemDTO {
   discoId?: number;
   nomeDisco?: string;
   nomeArtista?: string;
   custoDisco?: number;
 }
-export interface RequestCompraDTO {
+export interface PurchasePayload {
   compraId?: number;
   dataCompra?: string;
   fornecedor?: string;
   valorTotal?: number;
-  itens?: RequestItensCompraDTO[];
+  itens?: PurchaseItemPayload[];
 }
-export interface ResponseCompraDTO {
+export interface PurchaseDTO {
   compraId?: number;
   dataCompra?: string;
   fornecedor?: string;
   valorTotal?: number;
-  itens?: ResponseItensCompraDTO[];
+  itens?: PurchaseItemDTO[];
 }
 
-// ===== Vendas =====
-export interface RequestItensVendaDTO {
+// ===== Sales =====
+export interface SaleItemPayload {
   discoId?: number;
   nomeDisco?: string;
   nomeArtista?: string;
   precoVenda?: number;
 }
-export interface ResponseItensVendaDTO {
+export interface SaleItemDTO {
   discoId?: number;
   nomeDisco?: string;
   nomeArtista?: string;
   precoVenda?: number;
 }
-export interface RequestVendaDTO {
+export interface SalePayload {
   vendasId?: number;
-  cliente?: ClienteEntity;
+  cliente?: CustomerEntity;
   dataVenda?: string;
-  endereco?: EnderecoEntity;
+  endereco?: AddressEntity;
   frete?: number;
   valorTotal?: number;
   pagamento?: string;
-  canalVenda?: CanalVendaEntity;
+  canalVenda?: SalesChannelEntity;
   custosAdicionais?: number;
   statusPedido?: string;
-  itens?: RequestItensVendaDTO[];
+  itens?: SaleItemPayload[];
 }
-export interface ResponseVendaDTO {
+export interface SaleDTO {
   vendaId?: number;
-  cliente?: ClienteEntity;
+  cliente?: CustomerEntity;
   dataVenda?: string;
-  endereco?: EnderecoEntity;
+  endereco?: AddressEntity;
   frete?: number;
   valorTotal?: number;
   pagamento?: string;
-  canalVenda?: CanalVendaEntity;
+  canalVenda?: SalesChannelEntity;
   custosAdicionais?: number;
   statusPedido?: string;
-  itens?: ResponseItensVendaDTO[];
+  itens?: SaleItemDTO[];
 }
 
-// ===== Relatorios =====
-export interface ResponseReceitaDetalhadaDTO {
+// ===== Reports =====
+export interface DetailedRevenueDTO {
   ano?: number;
   mes?: number;
   dataVenda?: string;
@@ -213,7 +213,7 @@ export interface ResponseReceitaDetalhadaDTO {
   nomeGenero?: string;
   receitaDisco?: number;
 }
-export interface ResponseReceitaDespesaDTO {
+export interface RevenueSummaryDTO {
   ano?: number;
   mes?: number;
   receita?: number;
@@ -223,7 +223,7 @@ export interface ResponseReceitaDespesaDTO {
   totalDespesa?: number;
   lucro?: number;
 }
-export interface ResponseReceitaCanalDTO {
+export interface ChannelRevenueDTO {
   ano?: number;
   mes?: number;
   nomeCanal?: string;
