@@ -115,12 +115,12 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <Label htmlFor="fornecedor">Supplier *</Label>
+              <Label htmlFor="fornecedor">Fornecedor *</Label>
               <ControlledInput
                 type="text"
                 id="fornecedor"
-                placeholder="Supplier name"
-                {...register('fornecedor', { required: 'Supplier is required' })}
+                placeholder="Nome do fornecedor"
+                {...register('fornecedor', { required: 'Fornecedor é obrigatório' })}
                 error={!!errors.fornecedor}
               />
               {errors.fornecedor && (
@@ -128,11 +128,11 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
               )}
             </div>
             <div>
-              <Label htmlFor="dataCompra">Purchase Date *</Label>
+              <Label htmlFor="dataCompra">Data da Compra *</Label>
               <ControlledInput
                 type="date"
                 id="dataCompra"
-                {...register('dataCompra', { required: 'Date is required' })}
+                {...register('dataCompra', { required: 'Data é obrigatória' })}
                 error={!!errors.dataCompra}
               />
             </div>
@@ -157,7 +157,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Record {index + 1}
+                      Disco {index + 1}
                     </span>
                     <div className="flex items-center gap-3">
                       <button
@@ -165,7 +165,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                         onClick={() => openAddRecordModal(index)}
                         className="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
                       >
-                        + Register new record
+                        + Cadastrar novo disco
                       </button>
                       {items.length > 1 && (
                         <button
@@ -173,7 +173,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                           onClick={() => removeItem(index)}
                           className="text-sm text-red-500 hover:text-red-700"
                         >
-                          Remove
+                          Remover
                         </button>
                       )}
                     </div>
@@ -181,7 +181,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                      <Label htmlFor={`disco-${index}`}>Select a Record *</Label>
+                      <Label htmlFor={`disco-${index}`}>Selecione um Disco *</Label>
                       <select
                         id={`disco-${index}`}
                         value={item.discoId}
@@ -210,13 +210,13 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                   {selectedRecord && (
                     <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm dark:border-blue-900 dark:bg-blue-900/20">
                       <div>
-                        <p className="text-blue-600 dark:text-blue-300">Artist</p>
+                        <p className="text-blue-600 dark:text-blue-300">Artista</p>
                         <p className="font-medium text-blue-900 dark:text-blue-100">
                           {selectedRecord.artista?.nomeArtista}
                         </p>
                       </div>
                       <div>
-                        <p className="text-blue-600 dark:text-blue-300">Album</p>
+                        <p className="text-blue-600 dark:text-blue-300">Álbum</p>
                         <p className="font-medium text-blue-900 dark:text-blue-100">
                           {selectedRecord.album}
                         </p>
@@ -251,7 +251,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
               setItems([{ discoId: '', custoDisco: 0 }]);
             }}
           >
-            Clear
+            Limpar
           </Button>
         </div>
       </Form>
@@ -263,7 +263,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
       >
         <div className="p-6">
           <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Register new record
+            Cadastrar novo disco
           </h4>
           <AddRecordForm embedded onSuccess={handleRecordAdded} />
         </div>
