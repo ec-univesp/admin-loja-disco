@@ -393,7 +393,7 @@ function SalesContent() {
       <CustomerAddressModal
         isOpen={showCustomerModal}
         onClose={() => setShowCustomerModal(false)}
-        clienteId={editCustomerId}
+        customerId={editCustomerId}
       />
       <NewRegistrationModal
         isOpen={showNewRegistrationModal}

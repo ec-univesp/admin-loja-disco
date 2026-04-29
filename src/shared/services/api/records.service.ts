@@ -4,7 +4,7 @@ import type { RecordPayload, RecordDTO } from './types';
 const BASE = '/discos';
 
 export type RecordSearchParams = {
-  query: string;
+  termo: string;
 };
 
 export const recordsService = {

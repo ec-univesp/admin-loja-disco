@@ -5,13 +5,10 @@ import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
 
-interface ClienteEnderecoFormProps {
+interface CustomerAddressFormProps {
   onClose: () => void;
-  /** Se passado, abre em modo edição */
-  clienteId?: number;
-  /** Callback chamado quando salva, com clienteId e enderecoId resultantes */
-  onSaved?: (clienteId: number, enderecoId: number | null) => void;
-  /** Controla se o título do form é exibido (some quando o modal pai já tem cabeçalho) */
+  customerId?: number;
+  onSaved?: (customerId: number, addressId: number | null) => void;
   showTitle?: boolean;
 }
 
@@ -39,10 +36,10 @@ const initialFormState: FormState = {
 
 export default function CustomerAddressForm({
   onClose,
-  clienteId,
+  customerId,
   onSaved,
   showTitle = true,
-}: ClienteEnderecoFormProps) {
+}: CustomerAddressFormProps) {
   const { list, create, update } = useCustomersModel();
   const customers = list.data ?? [];
   const isCreating = create.isPending;
@@ -54,15 +51,15 @@ export default function CustomerAddressForm({
   const [cepError, setCepError] = useState<string | null>(null);
 
   const isSubmitting = isCreating || isUpdating;
-  const isEditing = clienteId !== undefined;
+  const isEditing = customerId !== undefined;
 
   useEffect(() => {
-    if (clienteId === undefined) {
+    if (customerId === undefined) {
       setForm(initialFormState);
       setEditingAddressId(null);
       return;
     }
-    const customer = customers.find((item) => item.clienteId === clienteId);
+    const customer = customers.find((item) => item.clienteId === customerId);
     const primaryAddress = customer?.enderecos?.[0];
     setForm({
       nomeCliente: customer?.nomeCliente ?? '',
@@ -75,7 +72,7 @@ export default function CustomerAddressForm({
       cep: primaryAddress?.cep ?? '',
     });
     setEditingAddressId(primaryAddress?.enderecoId ?? null);
-  }, [clienteId, customers]);
+  }, [customerId, customers]);
 
   const handleChange =
     (field: keyof FormState) =>
@@ -108,7 +105,7 @@ export default function CustomerAddressForm({
         estado: data.state ?? prev.estado,
       }));
     } catch (err) {
-      setCepError(err instanceof Error ? err.message : 'Error fetching ZIP code');
+      setCepError(err instanceof Error ? err.message : 'Erro ao buscar CEP');
     } finally {
       setCepLoading(false);
     }
@@ -135,7 +132,7 @@ export default function CustomerAddressForm({
     if (form.cep.length === 8) {
       void fetchZipCode(form.cep);
     } else {
-      setCepError('Please enter an 8-digit ZIP code');
+      setCepError('Digite o CEP completo (8 dígitos)');
     }
   };
 
@@ -143,7 +140,7 @@ export default function CustomerAddressForm({
 
   const handleSave = async () => {
     if (!form.nomeCliente.trim()) {
-      alert('Customer name is required');
+      alert('Nome do cliente é obrigatório');
       return;
     }
 
@@ -159,7 +156,7 @@ export default function CustomerAddressForm({
       : null;
 
     const payload = {
-      clienteId,
+      clienteId: customerId,
       nomeCliente: form.nomeCliente,
       sexo: form.sexo || undefined,
       idade: form.idade,
@@ -170,7 +167,7 @@ export default function CustomerAddressForm({
       ? await update.mutateAsync(payload)
       : await create.mutateAsync(payload);
 
-    const resolvedClienteId = savedCustomer.clienteId ?? clienteId;
+    const resolvedClienteId = savedCustomer.clienteId ?? customerId;
     if (resolvedClienteId === undefined) return;
 
     const resolvedEnderecoId = savedCustomer.enderecos?.[0]?.enderecoId ?? null;
@@ -183,17 +180,17 @@ export default function CustomerAddressForm({
     <div className="space-y-5">
       {showTitle && (
         <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          {isEditing ? 'Edit Customer / Address' : 'Register New Customer'}
+          {isEditing ? 'Editar Cliente / Endereço' : 'Cadastrar Novo Cliente'}
         </h4>
       )}
 
       <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
         <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Customer Details
+          Dados do Cliente
         </h5>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="md:col-span-2">
-            <Label htmlFor="cli-nome">Name *</Label>
+            <Label htmlFor="cli-nome">Nome *</Label>
             <input
               id="cli-nome"
               type="text"
@@ -203,7 +200,7 @@ export default function CustomerAddressForm({
             />
           </div>
           <div>
-            <Label htmlFor="cli-genero">Gender</Label>
+            <Label htmlFor="cli-genero">Gênero</Label>
             <select
               id="cli-genero"
               value={form.sexo}
@@ -211,13 +208,13 @@ export default function CustomerAddressForm({
               className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             >
               <option value="">--</option>
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-              <option value="Outro">Other</option>
+              <option value="M">Masculino</option>
+              <option value="F">Feminino</option>
+              <option value="Outro">Outro</option>
             </select>
           </div>
           <div>
-            <Label htmlFor="cli-idade">Age</Label>
+            <Label htmlFor="cli-idade">Idade</Label>
             <input
               id="cli-idade"
               type="number"
@@ -230,7 +227,7 @@ export default function CustomerAddressForm({
       </div>
 
       <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-        <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Address</h5>
+        <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Endereço</h5>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div>
             <Label htmlFor="end-cep">CEP</Label>
@@ -240,7 +237,7 @@ export default function CustomerAddressForm({
                 type="text"
                 inputMode="numeric"
                 maxLength={8}
-                placeholder="Numbers only"
+                placeholder="Apenas números"
                 value={form.cep}
                 onChange={handleZipCodeChange}
                 onKeyDown={(e) => {
@@ -255,7 +252,7 @@ export default function CustomerAddressForm({
                 type="button"
                 onClick={handleZipCodeSearch}
                 disabled={cepLoading}
-                aria-label="Search ZIP code"
+                aria-label="Buscar CEP"
                 className="hover:text-brand-600 dark:hover:text-brand-500 ml-1 flex h-8 w-8 shrink-0 items-center justify-center text-gray-500 disabled:cursor-not-allowed disabled:opacity-60 dark:text-gray-300"
               >
                 {cepLoading ? (

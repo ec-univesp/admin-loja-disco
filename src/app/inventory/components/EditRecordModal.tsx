@@ -9,10 +9,10 @@ import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
 import { useArtistsModel } from '@/app/inventory/model/artistsModel';
 
-interface EditDiscoModalProps {
+interface EditRecordModalProps {
   isOpen: boolean;
   onClose: () => void;
-  discoId: number | null;
+  recordId: number | null;
 }
 
 interface FormState {
@@ -51,8 +51,8 @@ const initialForm: FormState = {
   status: 'Disponível',
 };
 
-export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoModalProps) {
-  const activeId = isOpen && discoId !== null ? discoId : undefined;
+export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecordModalProps) {
+  const activeId = isOpen && recordId !== null ? recordId : undefined;
   const { byId, update: updateRecord } = useRecordsModel(activeId);
   const { list: genresList } = useGenresModel();
   const { list: artistsList, update: updateArtist } = useArtistsModel();
@@ -95,7 +95,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
     };
 
   const handleSave = async () => {
-    if (!discoId) return;
+    if (!recordId) return;
     setSaving(true);
     try {
       if (form.artistaId !== undefined) {
@@ -106,7 +106,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
       }
 
       await updateRecord.mutateAsync({
-        discoId,
+        discoId: recordId,
         artista: { artistaId: form.artistaId, nomeArtista: form.artistaNome },
         album: form.album,
         nacionalidade: form.nacionalidade,
@@ -137,17 +137,17 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
     <Modal isOpen={isOpen} onClose={onClose} className="m-4 max-w-[720px]">
       <div className="max-h-[80vh] overflow-y-auto p-6">
         <h4 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
-          Edit Record
+          Editar Disco
         </h4>
 
         <div className="space-y-5">
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Basic Information
+              Informações Básicas
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
-                <Label htmlFor="edit-artista">Artist</Label>
+                <Label htmlFor="edit-artista">Artista</Label>
                 <input
                   id="edit-artista"
                   type="text"
@@ -163,14 +163,14 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 </datalist>
               </div>
               <div>
-                <Label htmlFor="edit-genero">Music Genre</Label>
+                <Label htmlFor="edit-genero">Gênero Musical</Label>
                 <select
                   id="edit-genero"
                   value={form.generoMusicalId}
                   onChange={handleChange('generoMusicalId')}
                   className={inputClass}
                 >
-                  <option value="">-- Select --</option>
+                  <option value="">-- Selecione --</option>
                   {genres.map((genre) => (
                     <option key={genre.generoMusicalId} value={genre.generoMusicalId ?? ''}>
                       {genre.nomeGenero}
@@ -179,7 +179,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 </select>
               </div>
               <div>
-                <Label htmlFor="edit-album">Album</Label>
+                <Label htmlFor="edit-album">Álbum</Label>
                 <input
                   id="edit-album"
                   type="text"
@@ -193,11 +193,11 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Technical Information
+              Informações Técnicas
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
-                <Label htmlFor="edit-nacionalidade">Nationality</Label>
+                <Label htmlFor="edit-nacionalidade">Nacionalidade</Label>
                 <input
                   id="edit-nacionalidade"
                   type="text"
@@ -207,7 +207,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-prensagem">Pressing</Label>
+                <Label htmlFor="edit-prensagem">Prensagem</Label>
                 <input
                   id="edit-prensagem"
                   type="text"
@@ -217,7 +217,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-encarte">Insert</Label>
+                <Label htmlFor="edit-encarte">Encarte</Label>
                 <select
                   id="edit-encarte"
                   value={form.encarte}
@@ -230,7 +230,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 </select>
               </div>
               <div>
-                <Label htmlFor="edit-gravadora">Label</Label>
+                <Label htmlFor="edit-gravadora">Gravadora</Label>
                 <input
                   id="edit-gravadora"
                   type="text"
@@ -240,7 +240,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-anoLancamento">Release Year</Label>
+                <Label htmlFor="edit-anoLancamento">Ano Lançamento</Label>
                 <input
                   id="edit-anoLancamento"
                   type="number"
@@ -250,7 +250,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-anoPrensagem">Pressing Year</Label>
+                <Label htmlFor="edit-anoPrensagem">Ano Prensagem</Label>
                 <input
                   id="edit-anoPrensagem"
                   type="number"
@@ -264,11 +264,11 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Condition
+              Condição
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
-                <Label htmlFor="edit-condicaoCapa">Cover Condition</Label>
+                <Label htmlFor="edit-condicaoCapa">Cond. Capa</Label>
                 <input
                   id="edit-condicaoCapa"
                   type="text"
@@ -278,7 +278,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-condicaoDisco">Record Condition</Label>
+                <Label htmlFor="edit-condicaoDisco">Cond. Disco</Label>
                 <input
                   id="edit-condicaoDisco"
                   type="text"
@@ -292,11 +292,11 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Pricing
+              Valores
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
-                <Label htmlFor="edit-custoDisco">Record Cost</Label>
+                <Label htmlFor="edit-custoDisco">Custo</Label>
                 <CurrencyInput
                   id="edit-custoDisco"
                   value={form.custoDisco}
@@ -304,7 +304,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-valorMercado">Market Value</Label>
+                <Label htmlFor="edit-valorMercado">Valor de Mercado</Label>
                 <CurrencyInput
                   id="edit-valorMercado"
                   value={form.valorMercado}
@@ -331,10 +331,10 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
 
           <div className="flex justify-end gap-3 pt-2">
             <Button size="sm" variant="outline" onClick={onClose} disabled={saving}>
-              Cancel
+              Cancelar
             </Button>
             <Button size="sm" variant="primary" onClick={handleSave} isLoading={saving}>
-              Save changes
+              Salvar alterações
             </Button>
           </div>
         </div>

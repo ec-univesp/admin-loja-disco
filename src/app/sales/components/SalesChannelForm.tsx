@@ -35,9 +35,7 @@ export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFor
       return;
     }
     const created = await create.mutateAsync({ nomeCanalVenda });
-    const createdId = (created as { canalVendaId?: number; idCanalVenda?: number }).canalVendaId
-      ?? (created as { canalVendaId?: number; idCanalVenda?: number }).idCanalVenda;
-    if (createdId !== undefined) onCreated?.(createdId);
+    if (created.canalVendaId !== undefined) onCreated?.(created.canalVendaId);
     setChannelName('');
     onClose();
   };
