@@ -3,8 +3,13 @@ import {
   artistasService,
   type RequestArtistaDTO,
 } from '@/shared/services/api';
-import { chavesDeArtistas } from './keys';
-import { notificarErro, notificarSucesso } from './toastHelpers';
+import { notificarErro, notificarSucesso } from '@/shared/utils/notify';
+
+const chavesDeArtistas = {
+  todas: ['artistas'],
+  lista: () => ['artistas', 'lista'],
+  porId: (id: number) => ['artistas', 'detalhe', id],
+};
 
 export function useListaDeArtistas() {
   return useQuery({
