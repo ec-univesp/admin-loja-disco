@@ -2,6 +2,7 @@
 
 import ExcelJS from 'exceljs';
 import type { AppState } from '@/shared/types/models';
+import type { ResponseGeneroMusicalDTO } from '@/shared/services/api';
 
 async function downloadWorkbook(workbook: ExcelJS.Workbook, filename: string) {
   const buffer = await workbook.xlsx.writeBuffer();
@@ -80,7 +81,10 @@ export async function exportarTabelaExcel(
   await downloadWorkbook(workbook, filename);
 }
 
-export async function exportarBackupCompleto(state: Partial<AppState>) {
+export async function exportarBackupCompleto(
+  state: Partial<AppState>,
+  generosMusicais: ResponseGeneroMusicalDTO[] = []
+) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'Admin Loja de Disco';
   workbook.created = new Date();
@@ -88,7 +92,7 @@ export async function exportarBackupCompleto(state: Partial<AppState>) {
   const paraLinhasExcel = (colecao: unknown) => (colecao ?? []) as Array<Record<string, unknown>>;
 
   const abasParaExportar: Array<[string, Array<Record<string, unknown>>]> = [
-    ['Generos', paraLinhasExcel(state.generosMusical)],
+    ['Generos', paraLinhasExcel(generosMusicais)],
     ['Artistas', paraLinhasExcel(state.artistas)],
     ['Discos', paraLinhasExcel(state.discos)],
     ['Clientes', paraLinhasExcel(state.clientes)],

@@ -306,7 +306,7 @@ export default function FaturamentoPage() {
   const handleExportRelatorioCSV = () =>
     exportarRelatorioFinanceiroCSV({ resumoMensal, vendasDetalhe });
 
-  const handleBackupCompleto = () => exportarBackupCompleto(fullState);
+  const handleBackupCompleto = () => exportarBackupCompleto(fullState, generosMusicais);
 
   return (
     <div>
