@@ -7,7 +7,7 @@ import CanalVendaForm from './CanalVendaForm';
 interface CanalVendaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreated?: (id: string) => void;
+  onCreated?: (id: number) => void;
 }
 
 export default function CanalVendaModal({ isOpen, onClose, onCreated }: CanalVendaModalProps) {

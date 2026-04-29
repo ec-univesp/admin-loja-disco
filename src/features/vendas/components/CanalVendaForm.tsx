@@ -5,41 +5,43 @@ import { Trash2 } from 'lucide-react';
 import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
-import { useCanaisVenda } from '@/shared/store/useStore';
+import {
+  useListaDeCanaisVenda,
+  useCriarCanalVenda,
+  useExcluirCanalVenda,
+} from '@/shared/queries/canais-venda.queries';
 
 interface CanalVendaFormProps {
   onClose: () => void;
-  onCreated?: (id: string) => void;
+  onCreated?: (id: number) => void;
 }
 
 export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormProps) {
-  const { canaisVenda, createCanalVenda, deleteCanalVenda } = useCanaisVenda();
+  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
+  const { mutateAsync: criarCanalVenda, isPending: criando } = useCriarCanalVenda();
+  const { mutateAsync: excluirCanalVenda } = useExcluirCanalVenda();
   const [nome, setNome] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [canalParaApagar, setCanalParaApagar] = useState<{ id: string; nome: string } | null>(
-    null
-  );
+  const [canalParaApagar, setCanalParaApagar] = useState<{
+    canalVendaId: number;
+    nomeCanalVenda: string;
+  } | null>(null);
 
   const handleConfirmarExclusao = async () => {
     if (!canalParaApagar) return;
-    await deleteCanalVenda(canalParaApagar.id);
+    await excluirCanalVenda(canalParaApagar.canalVendaId);
     setCanalParaApagar(null);
   };
 
   const handleSalvar = async () => {
-    if (!nome.trim()) {
+    const nomeCanalVenda = nome.trim();
+    if (!nomeCanalVenda) {
       alert('Nome do canal é obrigatório');
       return;
     }
-    setSubmitting(true);
-    try {
-      const novo = await createCanalVenda({ nome: nome.trim(), taxaPadrao: 0 });
-      if (novo) onCreated?.(novo.id);
-      setNome('');
-      onClose();
-    } finally {
-      setSubmitting(false);
-    }
+    const novo = await criarCanalVenda({ nomeCanalVenda });
+    if (novo.canalVendaId !== undefined) onCreated?.(novo.canalVendaId);
+    setNome('');
+    onClose();
   };
 
   return (
@@ -64,17 +66,23 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
           <div className="flex flex-wrap gap-2">
             {canaisVenda.map((canal) => (
               <div
-                key={canal.id}
+                key={canal.canalVendaId}
                 className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
               >
                 <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
-                  {canal.nome}
+                  {canal.nomeCanalVenda}
                 </span>
                 <button
                   type="button"
-                  aria-label={`Excluir canal ${canal.nome}`}
-                  title={`Excluir canal ${canal.nome}`}
-                  onClick={() => setCanalParaApagar({ id: canal.id, nome: canal.nome })}
+                  aria-label={`Excluir canal ${canal.nomeCanalVenda}`}
+                  title={`Excluir canal ${canal.nomeCanalVenda}`}
+                  onClick={() => {
+                    if (canal.canalVendaId === undefined) return;
+                    setCanalParaApagar({
+                      canalVendaId: canal.canalVendaId,
+                      nomeCanalVenda: canal.nomeCanalVenda ?? '',
+                    });
+                  }}
                   className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                 >
                   <Trash2 size={14} strokeWidth={2.25} />
@@ -86,10 +94,10 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
       )}
 
       <div className="flex justify-end gap-3 pt-2">
-        <Button size="sm" variant="outline" onClick={onClose} disabled={submitting}>
+        <Button size="sm" variant="outline" onClick={onClose} disabled={criando}>
           Cancelar
         </Button>
-        <Button size="sm" variant="primary" onClick={handleSalvar} isLoading={submitting}>
+        <Button size="sm" variant="primary" onClick={handleSalvar} isLoading={criando}>
           Salvar
         </Button>
       </div>
@@ -107,7 +115,7 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
             Tem certeza que deseja excluir esse canal{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {canalParaApagar?.nome}
+              {canalParaApagar?.nomeCanalVenda}
             </span>
             ?
           </p>
