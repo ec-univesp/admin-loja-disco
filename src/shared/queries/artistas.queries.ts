@@ -4,6 +4,7 @@ import {
   type RequestArtistaDTO,
 } from '@/shared/services/api';
 import { chavesDeArtistas } from './keys';
+import { notificarErro, notificarSucesso } from './toastHelpers';
 
 export function useListaDeArtistas() {
   return useQuery({
@@ -26,7 +27,9 @@ export function useCriarArtista() {
     mutationFn: (payload: RequestArtistaDTO) => artistasService.create(payload),
     onSuccess: () => {
       cliente.invalidateQueries({ queryKey: chavesDeArtistas.todas });
+      notificarSucesso('Artista cadastrado.');
     },
+    onError: (erro) => notificarErro('Falha ao cadastrar artista', erro),
   });
 }
 
@@ -36,7 +39,9 @@ export function useAtualizarArtista() {
     mutationFn: (payload: RequestArtistaDTO) => artistasService.update(payload),
     onSuccess: () => {
       cliente.invalidateQueries({ queryKey: chavesDeArtistas.todas });
+      notificarSucesso('Artista atualizado.');
     },
+    onError: (erro) => notificarErro('Falha ao atualizar artista', erro),
   });
 }
 
@@ -46,6 +51,8 @@ export function useExcluirArtista() {
     mutationFn: (id: number) => artistasService.delete(id),
     onSuccess: () => {
       cliente.invalidateQueries({ queryKey: chavesDeArtistas.todas });
+      notificarSucesso('Artista excluido.');
     },
+    onError: (erro) => notificarErro('Falha ao excluir artista', erro),
   });
 }

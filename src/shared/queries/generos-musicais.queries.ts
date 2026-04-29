@@ -4,6 +4,7 @@ import {
   type RequestGeneroMusicalDTO,
 } from '@/shared/services/api';
 import { chavesDeGenerosMusicais } from './keys';
+import { notificarErro, notificarSucesso } from './toastHelpers';
 
 export function useListaDeGenerosMusicais() {
   return useQuery({
@@ -27,7 +28,9 @@ export function useCriarGeneroMusical() {
       generosMusicaisService.create(payload),
     onSuccess: () => {
       cliente.invalidateQueries({ queryKey: chavesDeGenerosMusicais.todas });
+      notificarSucesso('Genero musical cadastrado.');
     },
+    onError: (erro) => notificarErro('Falha ao cadastrar genero musical', erro),
   });
 }
 
@@ -38,7 +41,9 @@ export function useAtualizarGeneroMusical() {
       generosMusicaisService.update(payload),
     onSuccess: () => {
       cliente.invalidateQueries({ queryKey: chavesDeGenerosMusicais.todas });
+      notificarSucesso('Genero musical atualizado.');
     },
+    onError: (erro) => notificarErro('Falha ao atualizar genero musical', erro),
   });
 }
 
@@ -48,6 +53,8 @@ export function useExcluirGeneroMusical() {
     mutationFn: (id: number) => generosMusicaisService.delete(id),
     onSuccess: () => {
       cliente.invalidateQueries({ queryKey: chavesDeGenerosMusicais.todas });
+      notificarSucesso('Genero musical excluido.');
     },
+    onError: (erro) => notificarErro('Falha ao excluir genero musical', erro),
   });
 }
