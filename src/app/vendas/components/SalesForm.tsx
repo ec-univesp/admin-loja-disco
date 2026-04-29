@@ -1,6 +1,6 @@
 'use client';
 
-import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FC, useMemo, useRef, useState } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { Calendar } from 'lucide-react';
 import Form from '@/shared/components/form/Form';
@@ -9,13 +9,10 @@ import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import TextArea from '@/shared/components/form/TextArea';
 import Button from '@/shared/components/ui/button/Button';
 import { formatBRL } from '@/shared/utils/currency';
-import {
-  useVendas,
-  useDiscos,
-  useItensVenda,
-} from '@/shared/store/useStore';
+import { useListaDeDiscos, useAtualizarDisco } from '@/app/estoque/model/disco.model';
 import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
 import { useListaDeClientes } from '@/app/vendas/model/cliente.model';
+import { useCriarVenda } from '@/app/vendas/model/venda.model';
 import ClienteEnderecoModal from './ClienteEnderecoModal';
 import CanalVendaModal from './CanalVendaModal';
 
@@ -40,21 +37,24 @@ interface SalesFormProps {
   onSuccess?: () => void;
 }
 
-const MENSAGEM_SUCESSO_DURACAO_MS = 3000;
-
 const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
-  const { createVenda, loading: vendaLoading } = useVendas();
+  const { mutateAsync: criarVenda, isPending: criando } = useCriarVenda();
+  const { mutateAsync: atualizarDisco } = useAtualizarDisco();
   const { data: clientes = [] } = useListaDeClientes();
-  const { discosComArtista, fetchDiscos, updateDisco } = useDiscos();
-  const { createItemVenda } = useItensVenda();
+  const { data: discos = [] } = useListaDeDiscos();
   const { data: canaisVenda = [] } = useListaDeCanaisVenda();
 
   const [showClienteModal, setShowClienteModal] = useState(false);
-  const [editClienteId, setEditClienteId] = useState<string | undefined>();
+  const [editClienteId, setEditClienteId] = useState<number | undefined>();
   const [showCanalModal, setShowCanalModal] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [itens, setItens] = useState<ItemVendaForm[]>([{ discoId: '', precoVenda: 0 }]);
   const dataVendaRef = useRef<HTMLInputElement | null>(null);
+
+  const discosDisponiveis = useMemo(
+    () => discos.filter((d) => d.status === 'Disponível' || !d.status),
+    [discos]
+  );
 
   const {
     register,
@@ -77,80 +77,96 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
     },
   });
 
-  useEffect(() => {
-    fetchDiscos();
-  }, [fetchDiscos]);
-
   const clienteId = useWatch({ control, name: 'clienteId' });
-  const canalVendaId = useWatch({ control, name: 'canalVendaId' });
   const frete = useWatch({ control, name: 'frete' });
   const custosAdicionais = useWatch({ control, name: 'custosAdicionais' });
 
   const enderecosDoCliente = useMemo(() => {
     if (!clienteId) return [];
-    const cliente = clientes.find(
-      (item) => String(item.clienteId) === clienteId
-    );
+    const cliente = clientes.find((c) => String(c.clienteId) === clienteId);
     return cliente?.enderecos ?? [];
   }, [clienteId, clientes]);
 
-  useEffect(() => {
-    if (enderecosDoCliente.length === 1 && enderecosDoCliente[0].enderecoId !== undefined) {
-      setValue('enderecoId', String(enderecosDoCliente[0].enderecoId));
-    } else if (enderecosDoCliente.length === 0) {
-      setValue('enderecoId', '');
-    }
-  }, [enderecosDoCliente, setValue]);
-
   const somaItens = itens.reduce((acc, item) => acc + Number(item.precoVenda || 0), 0);
-
-  // taxaPadrao foi removida do contrato do backend; custosAdicionais agora e digitado a mao.
-
   const valorTotal = somaItens + Number(frete || 0) + Number(custosAdicionais || 0);
 
   const adicionarItem = () => setItens((prev) => [...prev, { discoId: '', precoVenda: 0 }]);
-
   const removerItem = (index: number) => setItens((prev) => prev.filter((_, i) => i !== index));
-
   const atualizarItem = (index: number, campo: keyof ItemVendaForm, valor: string | number) =>
     setItens((prev) => prev.map((item, i) => (i === index ? { ...item, [campo]: valor } : item)));
 
-  const handleFormSubmit = async (dadosFormulario: SalesFormData) => {
+  const handleFormSubmit = async (dados: SalesFormData) => {
     const itensValidos = itens.filter((item) => item.discoId);
     if (itensValidos.length === 0) return;
 
+    const clienteSelecionado = clientes.find((c) => String(c.clienteId) === dados.clienteId);
+    const enderecoSelecionado = enderecosDoCliente.find(
+      (e) => String(e.enderecoId) === dados.enderecoId
+    );
+    const canalSelecionado = canaisVenda.find(
+      (c) => String(c.idCanalVenda) === dados.canalVendaId
+    );
+
     try {
-      const novaVenda = await createVenda({
-        clienteId: dadosFormulario.clienteId,
-        enderecoId: dadosFormulario.enderecoId,
-        dataVenda: dadosFormulario.dataVenda,
-        frete: Number(dadosFormulario.frete),
+      await criarVenda({
+        cliente: clienteSelecionado
+          ? {
+              clienteId: clienteSelecionado.clienteId,
+              nomeCliente: clienteSelecionado.nomeCliente,
+              idade: clienteSelecionado.idade,
+              sexo: clienteSelecionado.sexo,
+            }
+          : undefined,
+        endereco: enderecoSelecionado
+          ? {
+              enderecoId: enderecoSelecionado.enderecoId,
+              logradouro: enderecoSelecionado.logradouro,
+              numero: enderecoSelecionado.numero,
+              cidade: enderecoSelecionado.cidade,
+              estado: enderecoSelecionado.estado,
+              cep: enderecoSelecionado.cep,
+            }
+          : undefined,
+        dataVenda: dados.dataVenda,
+        frete: Number(dados.frete),
         valorTotal,
-        pagamento: dadosFormulario.pagamento,
-        canalVendaId: dadosFormulario.canalVendaId,
-        custosAdicionais: Number(dadosFormulario.custosAdicionais),
-        statusPedido: dadosFormulario.statusPedido,
+        pagamento: dados.pagamento,
+        canalVenda: canalSelecionado
+          ? {
+              idCanalVenda: canalSelecionado.idCanalVenda,
+              nomeCanalVenda: canalSelecionado.nomeCanalVenda,
+            }
+          : undefined,
+        custosAdicionais: Number(dados.custosAdicionais),
+        statusPedido: dados.statusPedido,
+        itens: itensValidos.map((item) => {
+          const disco = discos.find((d) => String(d.discoId) === item.discoId);
+          return {
+            discoId: Number(item.discoId),
+            nomeDisco: disco?.album ?? '',
+            nomeArtista: disco?.artista?.nomeArtista ?? '',
+            precoVenda: Number(item.precoVenda),
+          };
+        }),
       });
 
-      if (novaVenda) {
-        await Promise.all(
-          itensValidos.map((item) =>
-            createItemVenda({
-              vendaId: novaVenda.id,
-              discoId: item.discoId,
-              precoVenda: Number(item.precoVenda),
-            })
-          )
-        );
-        await Promise.all(
-          itensValidos.map((item) => updateDisco(item.discoId, { status: 'Vendido' }))
-        );
-        reset();
-        setItens([{ discoId: '', precoVenda: 0 }]);
-        setSuccessMsg('Venda registrada com sucesso!');
-        setTimeout(() => setSuccessMsg(''), MENSAGEM_SUCESSO_DURACAO_MS);
-        onSuccess?.();
-      }
+      await Promise.all(
+        itensValidos.map((item) => {
+          const disco = discos.find((d) => String(d.discoId) === item.discoId);
+          if (!disco?.discoId) return Promise.resolve();
+          return atualizarDisco({
+            ...disco,
+            discoId: disco.discoId,
+            status: 'Vendido',
+          });
+        })
+      );
+
+      reset();
+      setItens([{ discoId: '', precoVenda: 0 }]);
+      setSuccessMsg('Venda registrada com sucesso!');
+      setTimeout(() => setSuccessMsg(''), 3000);
+      onSuccess?.();
     } catch (erro) {
       console.error('Erro ao criar venda:', erro);
     }
@@ -177,7 +193,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   variant="outline"
                   type="button"
                   onClick={() => {
-                    setEditClienteId(clienteId);
+                    setEditClienteId(Number(clienteId));
                     setShowClienteModal(true);
                   }}
                 >
@@ -253,7 +269,9 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
           <div className="space-y-4">
             {itens.map((item, index) => {
-              const discoSelecionado = discosComArtista.find((d) => d.id === item.discoId);
+              const discoSelecionado = discosDisponiveis.find(
+                (d) => String(d.discoId) === item.discoId
+              );
               return (
                 <div
                   key={index}
@@ -284,9 +302,10 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                         className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                       >
                         <option value="">-- Selecione --</option>
-                        {discosComArtista.map((disco) => (
-                          <option key={disco.id} value={disco.id}>
-                            {disco.artistaNome} - {disco.album} (R$ {disco.valorMercado.toFixed(2)})
+                        {discosDisponiveis.map((disco) => (
+                          <option key={disco.discoId} value={disco.discoId ?? ''}>
+                            {disco.artista?.nomeArtista} - {disco.album} (R${' '}
+                            {(disco.valorMercado ?? 0).toFixed(2)})
                           </option>
                         ))}
                       </select>
@@ -307,13 +326,13 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                       <div>
                         <p className="text-blue-600 dark:text-blue-300">Artista</p>
                         <p className="font-medium text-blue-900 dark:text-blue-100">
-                          {discoSelecionado.artistaNome}
+                          {discoSelecionado.artista?.nomeArtista}
                         </p>
                       </div>
                       <div>
                         <p className="text-blue-600 dark:text-blue-300">Valor Mercado</p>
                         <p className="font-medium text-blue-900 dark:text-blue-100">
-                          R$ {discoSelecionado.valorMercado.toFixed(2)}
+                          R$ {(discoSelecionado.valorMercado ?? 0).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -337,9 +356,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   <input
                     type="date"
                     id="dataVenda"
-                    {...register('dataVenda', {
-                      required: 'Data é obrigatória',
-                    })}
+                    {...register('dataVenda', { required: 'Data é obrigatória' })}
                     ref={(el) => {
                       register('dataVenda').ref(el);
                       dataVendaRef.current = el;
@@ -356,11 +373,8 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     onClick={() => {
                       const input = dataVendaRef.current;
                       if (!input) return;
-                      if (typeof input.showPicker === 'function') {
-                        input.showPicker();
-                      } else {
-                        input.focus();
-                      }
+                      if (typeof input.showPicker === 'function') input.showPicker();
+                      else input.focus();
                     }}
                     className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-gray-500 transition-colors hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-400"
                   >
@@ -419,7 +433,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                 >
                   <option value="">-- Selecione --</option>
                   {canaisVenda.map((canal) => (
-                    <option key={canal.canalVendaId} value={canal.canalVendaId ?? ''}>
+                    <option key={canal.idCanalVenda} value={canal.idCanalVenda ?? ''}>
                       {canal.nomeCanalVenda}
                     </option>
                   ))}
@@ -441,9 +455,6 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     />
                   )}
                 />
-                <p className="mt-1 text-xs text-gray-500">
-                  Sugerido a partir da taxa do canal selecionado
-                </p>
               </div>
 
               <div>
@@ -488,7 +499,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
         </div>
 
         <div className="flex gap-4">
-          <Button type="submit" variant="primary" fullWidth isLoading={vendaLoading}>
+          <Button type="submit" variant="primary" fullWidth isLoading={criando}>
             Registrar Venda
           </Button>
           <Button
@@ -508,7 +519,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
       <ClienteEnderecoModal
         isOpen={showClienteModal}
         onClose={() => setShowClienteModal(false)}
-        clienteId={editClienteId !== undefined ? Number(editClienteId) : undefined}
+        clienteId={editClienteId}
         onSaved={(cId, eId) => {
           setValue('clienteId', String(cId));
           if (eId !== null) setValue('enderecoId', String(eId));

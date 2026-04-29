@@ -22,13 +22,13 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
   const { mutateAsync: excluirCanalVenda } = useExcluirCanalVenda();
   const [nome, setNome] = useState('');
   const [canalParaApagar, setCanalParaApagar] = useState<{
-    canalVendaId: number;
+    idCanalVenda: number;
     nomeCanalVenda: string;
   } | null>(null);
 
   const handleConfirmarExclusao = async () => {
     if (!canalParaApagar) return;
-    await excluirCanalVenda(canalParaApagar.canalVendaId);
+    await excluirCanalVenda(canalParaApagar.idCanalVenda);
     setCanalParaApagar(null);
   };
 
@@ -39,7 +39,9 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
       return;
     }
     const novo = await criarCanalVenda({ nomeCanalVenda });
-    if (novo.canalVendaId !== undefined) onCreated?.(novo.canalVendaId);
+    const novoId = (novo as { canalVendaId?: number; idCanalVenda?: number }).canalVendaId
+      ?? (novo as { canalVendaId?: number; idCanalVenda?: number }).idCanalVenda;
+    if (novoId !== undefined) onCreated?.(novoId);
     setNome('');
     onClose();
   };
@@ -66,7 +68,7 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
           <div className="flex flex-wrap gap-2">
             {canaisVenda.map((canal) => (
               <div
-                key={canal.canalVendaId}
+                key={canal.idCanalVenda}
                 className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
               >
                 <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
@@ -77,9 +79,9 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
                   aria-label={`Excluir canal ${canal.nomeCanalVenda}`}
                   title={`Excluir canal ${canal.nomeCanalVenda}`}
                   onClick={() => {
-                    if (canal.canalVendaId === undefined) return;
+                    if (canal.idCanalVenda === undefined) return;
                     setCanalParaApagar({
-                      canalVendaId: canal.canalVendaId,
+                      idCanalVenda: canal.idCanalVenda,
                       nomeCanalVenda: canal.nomeCanalVenda ?? '',
                     });
                   }}
@@ -116,6 +118,7 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
             Tem certeza que deseja excluir esse canal{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
               {canalParaApagar?.nomeCanalVenda}
+
             </span>
             ?
           </p>
