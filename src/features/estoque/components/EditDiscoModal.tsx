@@ -5,7 +5,8 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
-import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
+import { useDiscos, useArtistas } from '@/shared/store/useStore';
+import { useListaDeGenerosMusicais } from '@/shared/queries/generos-musicais.queries';
 import type { Disco } from '@/shared/types/models';
 
 interface EditDiscoModalProps {
@@ -50,16 +51,12 @@ const initialForm: FormState = {
 
 export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoModalProps) {
   const { discosComArtista, updateDisco } = useDiscos();
-  const { generosMusical, fetchGenerosMusical } = useGenerosMusical();
+  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
   const { artistas, updateArtista } = useArtistas();
 
   const [form, setForm] = useState<FormState>(initialForm);
   const [artistaId, setArtistaId] = useState('');
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) fetchGenerosMusical();
-  }, [isOpen, fetchGenerosMusical]);
 
   useEffect(() => {
     if (!isOpen || !discoId) return;
@@ -163,9 +160,12 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                   className={inputClass}
                 >
                   <option value="">-- Selecione --</option>
-                  {generosMusical.map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.nome}
+                  {generosMusicais.map((genero) => (
+                    <option
+                      key={genero.generoMusicalId}
+                      value={genero.generoMusicalId ?? ''}
+                    >
+                      {genero.nomeGenero}
                     </option>
                   ))}
                 </select>
