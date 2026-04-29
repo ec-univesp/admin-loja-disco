@@ -195,7 +195,7 @@ export default function FaturamentoPage() {
     vendasBase.forEach((v) => {
       const nome =
         canaisVenda.find(
-          (canal) => String(canal.canalVendaId) === v.canalVendaId
+          (canal) => String(canal.idCanalVenda) === v.canalVendaId
         )?.nomeCanalVenda ?? 'Sem canal';
       map.set(nome, (map.get(nome) ?? 0) + v.valorTotal);
     });
@@ -214,7 +214,7 @@ export default function FaturamentoPage() {
       vendasAnalise.forEach((v) => {
         const nome =
           canaisVenda.find(
-            (canal) => String(canal.canalVendaId) === v.canalVendaId
+            (canal) => String(canal.idCanalVenda) === v.canalVendaId
           )?.nomeCanalVenda ?? 'Sem canal';
         map.set(nome, (map.get(nome) ?? 0) + v.valorTotal);
       });
@@ -287,7 +287,7 @@ export default function FaturamentoPage() {
     cliente: v.clienteId,
     canal:
       canaisVenda.find(
-        (canal) => String(canal.canalVendaId) === v.canalVendaId
+        (canal) => String(canal.idCanalVenda) === v.canalVendaId
       )?.nomeCanalVenda ?? '',
     pagamento: v.pagamento,
     frete: v.frete,

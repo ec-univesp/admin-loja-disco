@@ -116,7 +116,7 @@ function VendasContent() {
       pagamento: venda.pagamento,
       canalVenda:
         canaisVenda.find(
-          (canal) => String(canal.canalVendaId) === venda.canalVendaId
+          (canal) => String(canal.idCanalVenda) === venda.canalVendaId
         )?.nomeCanalVenda ?? '—',
       status: venda.statusPedido || 'Pendente',
     }));
