@@ -26,27 +26,27 @@ export function useGenresModel(id?: number) {
     mutationFn: (payload: MusicGenrePayload) => genresService.create(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Genre added.');
+      notifySuccess('Gênero adicionado.');
     },
-    onError: (error) => notifyError('Failed to add genre', error),
+    onError: (error) => notifyError('Erro ao adicionar gênero', error),
   });
 
   const update = useMutation({
     mutationFn: (payload: MusicGenrePayload) => genresService.update(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Genre updated.');
+      notifySuccess('Gênero atualizado.');
     },
-    onError: (error) => notifyError('Failed to update genre', error),
+    onError: (error) => notifyError('Erro ao atualizar gênero', error),
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => genresService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Genre deleted.');
+      notifySuccess('Gênero excluído.');
     },
-    onError: (error) => notifyError('Failed to delete genre', error),
+    onError: (error) => notifyError('Erro ao excluir gênero', error),
   });
 
   return { list, byId, create, update, remove };

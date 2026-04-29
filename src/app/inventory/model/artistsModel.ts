@@ -31,27 +31,27 @@ export function useArtistsModel(id?: number) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Artist added.');
+      notifySuccess('Artista adicionado.');
     },
-    onError: (error) => notifyError('Failed to add artist', error),
+    onError: (error) => notifyError('Erro ao adicionar artista', error),
   });
 
   const update = useMutation({
     mutationFn: (payload: ArtistPayload) => artistsService.update(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Artist updated.');
+      notifySuccess('Artista atualizado.');
     },
-    onError: (error) => notifyError('Failed to update artist', error),
+    onError: (error) => notifyError('Erro ao atualizar artista', error),
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => artistsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Artist deleted.');
+      notifySuccess('Artista excluído.');
     },
-    onError: (error) => notifyError('Failed to delete artist', error),
+    onError: (error) => notifyError('Erro ao excluir artista', error),
   });
 
   return { list, byId, create, update, remove };

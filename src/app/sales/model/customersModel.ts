@@ -31,27 +31,27 @@ export function useCustomersModel(id?: number) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Customer added.');
+      notifySuccess('Cliente adicionado.');
     },
-    onError: (error) => notifyError('Failed to add customer', error),
+    onError: (error) => notifyError('Erro ao adicionar cliente', error),
   });
 
   const update = useMutation({
     mutationFn: (payload: CustomerPayload) => customersService.update(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Customer updated.');
+      notifySuccess('Cliente atualizado.');
     },
-    onError: (error) => notifyError('Failed to update customer', error),
+    onError: (error) => notifyError('Erro ao atualizar cliente', error),
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => customersService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
-      notifySuccess('Customer deleted.');
+      notifySuccess('Cliente excluído.');
     },
-    onError: (error) => notifyError('Failed to delete customer', error),
+    onError: (error) => notifyError('Erro ao excluir cliente', error),
   });
 
   return { list, byId, create, update, remove };
