@@ -278,29 +278,6 @@ export const useItensCompra = () => {
 };
 
 /**
- * Hook para usar dados de Canais de Venda
- */
-export const useCanaisVenda = () => {
-  const canaisVenda = useAppStore((state) => state.canaisVenda);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchCanaisVenda = useAppStore((state) => state.fetchCanaisVenda);
-  const createCanalVenda = useAppStore((state) => state.createCanalVenda);
-  const updateCanalVenda = useAppStore((state) => state.updateCanalVenda);
-  const deleteCanalVenda = useAppStore((state) => state.deleteCanalVenda);
-
-  return {
-    canaisVenda,
-    loading,
-    error,
-    fetchCanaisVenda,
-    createCanalVenda,
-    updateCanalVenda,
-    deleteCanalVenda,
-  };
-};
-
-/**
  * Hook geral do App Store
  */
 export const useAppStoreState = () => {
