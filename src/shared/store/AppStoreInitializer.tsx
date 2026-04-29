@@ -5,50 +5,50 @@ import { useAppStore } from '@/shared/store/appStore';
 import { initializeStorage } from '@/shared/services/apiMock';
 
 /**
- * Componente que inicializa o store e carrega todos os dados
- * Deve ser colocado no layout root
+ * Initializes the store and loads all data.
+ * Place in the root layout.
  */
 export function AppStoreInitializer() {
-  const fetchGenerosMusical = useAppStore((state) => state.fetchGenerosMusical);
-  const fetchArtistas = useAppStore((state) => state.fetchArtistas);
-  const fetchDiscos = useAppStore((state) => state.fetchDiscos);
-  const fetchClientes = useAppStore((state) => state.fetchClientes);
-  const fetchEnderecos = useAppStore((state) => state.fetchEnderecos);
-  const fetchCompras = useAppStore((state) => state.fetchCompras);
-  const fetchVendas = useAppStore((state) => state.fetchVendas);
-  const fetchItensCompra = useAppStore((state) => state.fetchItensCompra);
-  const fetchItensVenda = useAppStore((state) => state.fetchItensVenda);
+  const fetchMusicGenres = useAppStore((state) => state.fetchMusicGenres);
+  const fetchArtists = useAppStore((state) => state.fetchArtists);
+  const fetchRecords = useAppStore((state) => state.fetchRecords);
+  const fetchCustomers = useAppStore((state) => state.fetchCustomers);
+  const fetchAddresses = useAppStore((state) => state.fetchAddresses);
+  const fetchPurchases = useAppStore((state) => state.fetchPurchases);
+  const fetchSales = useAppStore((state) => state.fetchSales);
+  const fetchPurchaseItems = useAppStore((state) => state.fetchPurchaseItems);
+  const fetchSaleItems = useAppStore((state) => state.fetchSaleItems);
 
   useEffect(() => {
-    // Inicializar localStorage com dados de exemplo
+    // Initialize localStorage with sample data
     initializeStorage();
 
-    // Carregar todos os dados
+    // Load all data
     const loadData = async () => {
       await Promise.all([
-        fetchGenerosMusical(),
-        fetchArtistas(),
-        fetchDiscos(),
-        fetchClientes(),
-        fetchEnderecos(),
-        fetchCompras(),
-        fetchVendas(),
-        fetchItensCompra(),
-        fetchItensVenda(),
+        fetchMusicGenres(),
+        fetchArtists(),
+        fetchRecords(),
+        fetchCustomers(),
+        fetchAddresses(),
+        fetchPurchases(),
+        fetchSales(),
+        fetchPurchaseItems(),
+        fetchSaleItems(),
       ]);
     };
 
     loadData();
   }, [
-    fetchGenerosMusical,
-    fetchArtistas,
-    fetchDiscos,
-    fetchClientes,
-    fetchEnderecos,
-    fetchCompras,
-    fetchVendas,
-    fetchItensCompra,
-    fetchItensVenda,
+    fetchMusicGenres,
+    fetchArtists,
+    fetchRecords,
+    fetchCustomers,
+    fetchAddresses,
+    fetchPurchases,
+    fetchSales,
+    fetchPurchaseItems,
+    fetchSaleItems,
   ]);
 
   return null;
