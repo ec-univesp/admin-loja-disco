@@ -5,11 +5,7 @@ import { Trash2 } from 'lucide-react';
 import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
-import {
-  useListaDeCanaisVenda,
-  useCriarCanalVenda,
-  useExcluirCanalVenda,
-} from '@/app/vendas/model/canal-venda.model';
+import { useCanaisVendaModel } from '@/app/vendas/model/canaisVendaModel';
 
 interface CanalVendaFormProps {
   onClose: () => void;
@@ -17,9 +13,9 @@ interface CanalVendaFormProps {
 }
 
 export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormProps) {
-  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
-  const { mutateAsync: criarCanalVenda, isPending: criando } = useCriarCanalVenda();
-  const { mutateAsync: excluirCanalVenda } = useExcluirCanalVenda();
+  const { lista, criar, excluir } = useCanaisVendaModel();
+  const canaisVenda = lista.data ?? [];
+  const criando = criar.isPending;
   const [nome, setNome] = useState('');
   const [canalParaApagar, setCanalParaApagar] = useState<{
     idCanalVenda: number;
@@ -28,7 +24,7 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
 
   const handleConfirmarExclusao = async () => {
     if (!canalParaApagar) return;
-    await excluirCanalVenda(canalParaApagar.idCanalVenda);
+    await excluir.mutateAsync(canalParaApagar.idCanalVenda);
     setCanalParaApagar(null);
   };
 
@@ -38,7 +34,7 @@ export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormPro
       alert('Nome do canal é obrigatório');
       return;
     }
-    const novo = await criarCanalVenda({ nomeCanalVenda });
+    const novo = await criar.mutateAsync({ nomeCanalVenda });
     const novoId = (novo as { canalVendaId?: number; idCanalVenda?: number }).canalVendaId
       ?? (novo as { canalVendaId?: number; idCanalVenda?: number }).idCanalVenda;
     if (novoId !== undefined) onCreated?.(novoId);

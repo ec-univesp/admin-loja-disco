@@ -9,10 +9,10 @@ import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import TextArea from '@/shared/components/form/TextArea';
 import Button from '@/shared/components/ui/button/Button';
 import { formatBRL } from '@/shared/utils/currency';
-import { useListaDeDiscos, useAtualizarDisco } from '@/app/estoque/model/disco.model';
-import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
-import { useListaDeClientes } from '@/app/vendas/model/cliente.model';
-import { useCriarVenda } from '@/app/vendas/model/venda.model';
+import { useDiscosModel } from '@/app/estoque/model/discosModel';
+import { useCanaisVendaModel } from '@/app/vendas/model/canaisVendaModel';
+import { useClientesModel } from '@/app/vendas/model/clientesModel';
+import { useVendasModel } from '@/app/vendas/model/vendasModel';
 import ClienteEnderecoModal from './ClienteEnderecoModal';
 import CanalVendaModal from './CanalVendaModal';
 
@@ -38,11 +38,14 @@ interface SalesFormProps {
 }
 
 const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
-  const { mutateAsync: criarVenda, isPending: criando } = useCriarVenda();
-  const { mutateAsync: atualizarDisco } = useAtualizarDisco();
-  const { data: clientes = [] } = useListaDeClientes();
-  const { data: discos = [] } = useListaDeDiscos();
-  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
+  const { criar: criarVenda } = useVendasModel();
+  const { atualizar: atualizarDisco, lista: listaDiscos } = useDiscosModel();
+  const { lista: listaClientes } = useClientesModel();
+  const { lista: listaCanaisVenda } = useCanaisVendaModel();
+  const criando = criarVenda.isPending;
+  const discos = listaDiscos.data ?? [];
+  const clientes = listaClientes.data ?? [];
+  const canaisVenda = listaCanaisVenda.data ?? [];
 
   const [showClienteModal, setShowClienteModal] = useState(false);
   const [editClienteId, setEditClienteId] = useState<number | undefined>();
@@ -108,7 +111,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
     );
 
     try {
-      await criarVenda({
+      await criarVenda.mutateAsync({
         cliente: clienteSelecionado
           ? {
               clienteId: clienteSelecionado.clienteId,
@@ -154,7 +157,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
         itensValidos.map((item) => {
           const disco = discos.find((d) => String(d.discoId) === item.discoId);
           if (!disco?.discoId) return Promise.resolve();
-          return atualizarDisco({
+          return atualizarDisco.mutateAsync({
             ...disco,
             discoId: disco.discoId,
             status: 'Vendido',

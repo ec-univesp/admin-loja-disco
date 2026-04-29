@@ -3,11 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
-import {
-  useListaDeClientes,
-  useCriarCliente,
-  useAtualizarCliente,
-} from '@/app/vendas/model/cliente.model';
+import { useClientesModel } from '@/app/vendas/model/clientesModel';
 
 interface ClienteEnderecoFormProps {
   onClose: () => void;
@@ -47,9 +43,10 @@ export default function ClienteEnderecoForm({
   onSaved,
   showTitle = true,
 }: ClienteEnderecoFormProps) {
-  const { data: clientes = [] } = useListaDeClientes();
-  const { mutateAsync: criarCliente, isPending: criando } = useCriarCliente();
-  const { mutateAsync: atualizarCliente, isPending: atualizando } = useAtualizarCliente();
+  const { lista, criar, atualizar } = useClientesModel();
+  const clientes = lista.data ?? [];
+  const criando = criar.isPending;
+  const atualizando = atualizar.isPending;
 
   const [form, setForm] = useState<FormState>(initialState);
   const [enderecoIdEdicao, setEnderecoIdEdicao] = useState<number | null>(null);
@@ -170,8 +167,8 @@ export default function ClienteEnderecoForm({
     };
 
     const clienteSalvo = isEdicao
-      ? await atualizarCliente(payload)
-      : await criarCliente(payload);
+      ? await atualizar.mutateAsync(payload)
+      : await criar.mutateAsync(payload);
 
     const idClienteResolvido = clienteSalvo.clienteId ?? clienteId;
     if (idClienteResolvido === undefined) return;

@@ -2,13 +2,9 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
-import { useVendas, useItensVenda } from '@/shared/store/useStore';
-import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
-import {
-  useListaDeClientes,
-  useExcluirCliente,
-} from '@/app/vendas/model/cliente.model';
+import React, { Suspense, useMemo, useState } from 'react';
+import { useVendasModel } from '@/app/vendas/model/vendasModel';
+import { useClientesModel } from '@/app/vendas/model/clientesModel';
 import ClienteEnderecoModal from '@/app/vendas/components/ClienteEnderecoModal';
 import NovoCadastroModal from '@/app/vendas/components/NovoCadastroModal';
 import { Modal } from '@/shared/components/ui/modal';
@@ -51,11 +47,10 @@ export default function VendasPage() {
 }
 
 function VendasContent() {
-  const { vendasComDetalhes, fetchVendas, deleteVenda, updateVenda } = useVendas();
-  const { data: clientes = [] } = useListaDeClientes();
-  const { mutateAsync: excluirCliente } = useExcluirCliente();
-  const { itensVenda, fetchItensVenda } = useItensVenda();
-  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
+  const { lista: listaVendas, excluir: excluirVenda, atualizar: atualizarVenda } = useVendasModel();
+  const { lista: listaClientes, excluir: excluirCliente } = useClientesModel();
+  const vendas = listaVendas.data ?? [];
+  const clientes = listaClientes.data ?? [];
 
   const searchParams = useSearchParams();
   const abrirNaVenda = searchParams.get('novo') === '1';
@@ -64,63 +59,79 @@ function VendasContent() {
   const [filtroStatus, setFiltroStatus] = useState('Todos');
   const [showClienteModal, setShowClienteModal] = useState(false);
   const [showNovoCadastroModal, setShowNovoCadastroModal] = useState(() => abrirNaVenda);
-  const [editClienteId, setEditClienteId] = useState<string | undefined>();
+  const [editClienteId, setEditClienteId] = useState<number | undefined>();
 
   const deleteVendaModal = useModal();
-  const [vendaParaApagar, setVendaParaApagar] = useState<{ id: string; numero: string } | null>(
-    null
-  );
+  const [vendaParaApagar, setVendaParaApagar] = useState<{
+    id: number;
+    numero: string;
+  } | null>(null);
 
   const deleteClienteModal = useModal();
-  const [clienteParaApagar, setClienteParaApagar] = useState<{ id: string; nome: string } | null>(
+  const [clienteParaApagar, setClienteParaApagar] = useState<{ id: number; nome: string } | null>(
     null
   );
 
   const handleConfirmarApagarVenda = async () => {
     if (!vendaParaApagar) return;
-    await deleteVenda(vendaParaApagar.id);
+    await excluirVenda.mutateAsync(vendaParaApagar.id);
     setVendaParaApagar(null);
     deleteVendaModal.closeModal();
   };
 
   const handleConfirmarApagarCliente = async () => {
     if (!clienteParaApagar) return;
-    await excluirCliente(Number(clienteParaApagar.id));
+    await excluirCliente.mutateAsync(clienteParaApagar.id);
     setClienteParaApagar(null);
     deleteClienteModal.closeModal();
   };
 
-  const handleToggleEntregue = async (id: string, statusAtual: string) => {
+  const handleToggleEntregue = async (vendaIdx: number, statusAtual: string) => {
+    const venda = vendasOrdenadas[vendaIdx];
+    if (!venda?.vendaId) return;
     const novoStatus = statusAtual === 'Entregue' ? 'Pendente' : 'Entregue';
-    await updateVenda(id, { statusPedido: novoStatus });
+    await atualizarVenda.mutateAsync({
+      vendasId: venda.vendaId,
+      cliente: venda.cliente,
+      dataVenda: venda.dataVenda,
+      endereco: venda.endereco,
+      frete: venda.frete,
+      valorTotal: venda.valorTotal,
+      pagamento: venda.pagamento,
+      canalVenda: venda.canalVenda,
+      custosAdicionais: venda.custosAdicionais,
+      statusPedido: novoStatus,
+      itens: venda.itens?.map((item) => ({
+        discoId: item.discoId,
+        nomeDisco: item.nomeDisco,
+        nomeArtista: item.nomeArtista,
+        precoVenda: item.precoVenda,
+      })),
+    });
   };
 
-  useEffect(() => {
-    fetchVendas();
-    fetchItensVenda();
-  }, [fetchVendas, fetchItensVenda]);
+  const vendasOrdenadas = useMemo(
+    () => [...vendas].sort((a, b) => ((a.dataVenda ?? '') < (b.dataVenda ?? '') ? 1 : -1)),
+    [vendas]
+  );
 
-  const linhas = useMemo(() => {
-    const vendasOrdenadas = [...vendasComDetalhes].sort((vendaA, vendaB) =>
-      vendaA.dataVenda < vendaB.dataVenda ? 1 : -1
-    );
-
-    return vendasOrdenadas.map((venda, posicao) => ({
-      id: venda.id,
-      numero: formatNumeroVenda(posicao),
-      cliente: venda.clienteNome,
-      clienteId: venda.clienteId,
-      data: venda.dataVenda,
-      itens: itensVenda.filter((item) => item.vendaId === venda.id).length,
-      total: venda.valorTotal,
-      pagamento: venda.pagamento,
-      canalVenda:
-        canaisVenda.find(
-          (canal) => String(canal.idCanalVenda) === venda.canalVendaId
-        )?.nomeCanalVenda ?? '—',
-      status: venda.statusPedido || 'Pendente',
-    }));
-  }, [vendasComDetalhes, itensVenda, canaisVenda]);
+  const linhas = useMemo(
+    () =>
+      vendasOrdenadas.map((venda, posicao) => ({
+        id: venda.vendaId ?? 0,
+        numero: formatNumeroVenda(posicao),
+        cliente: venda.cliente?.nomeCliente ?? '—',
+        clienteId: venda.cliente?.clienteId,
+        data: venda.dataVenda ?? '',
+        itens: venda.itens?.length ?? 0,
+        total: venda.valorTotal ?? 0,
+        pagamento: venda.pagamento ?? '—',
+        canalVenda: venda.canalVenda?.nomeCanalVenda ?? '—',
+        status: venda.statusPedido ?? 'Pendente',
+        rawIdx: posicao,
+      })),
+    [vendasOrdenadas]
+  );
 
   const buscaNormalizada = busca.toLowerCase();
   const linhasFiltradas = linhas.filter((linha) => {
@@ -233,7 +244,7 @@ function VendasContent() {
                     aria-label={`Editar cliente ${cliente.nomeCliente}`}
                     title={`Editar cliente ${cliente.nomeCliente}`}
                     onClick={() => {
-                      setEditClienteId(String(cliente.clienteId));
+                      setEditClienteId(cliente.clienteId);
                       setShowClienteModal(true);
                     }}
                     className="bg-brand-500 hover:bg-brand-600 inline-flex h-7 w-7 items-center justify-center rounded-md text-white shadow-sm transition-colors"
@@ -247,7 +258,7 @@ function VendasContent() {
                     onClick={() => {
                       if (cliente.clienteId === undefined) return;
                       setClienteParaApagar({
-                        id: String(cliente.clienteId),
+                        id: cliente.clienteId,
                         nome: cliente.nomeCliente ?? '',
                       });
                       deleteClienteModal.openModal();
@@ -359,7 +370,7 @@ function VendasContent() {
                           <input
                             type="checkbox"
                             checked={venda.status === 'Entregue'}
-                            onChange={() => handleToggleEntregue(venda.id, venda.status)}
+                            onChange={() => handleToggleEntregue(venda.rawIdx, venda.status)}
                             aria-label={`Marcar venda ${venda.numero} como entregue`}
                             className="h-4 w-4 cursor-pointer accent-green-600"
                           />
@@ -389,7 +400,7 @@ function VendasContent() {
       <ClienteEnderecoModal
         isOpen={showClienteModal}
         onClose={() => setShowClienteModal(false)}
-        clienteId={editClienteId !== undefined ? Number(editClienteId) : undefined}
+        clienteId={editClienteId}
       />
       <NovoCadastroModal
         isOpen={showNovoCadastroModal}
