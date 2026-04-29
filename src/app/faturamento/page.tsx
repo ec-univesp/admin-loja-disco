@@ -1,20 +1,14 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
-import {
-  useVendas,
-  useCompras,
-  useItensVenda,
-  useDiscos,
-} from '@/shared/store/useStore';
-import { useListaDeGenerosMusicais } from '@/app/estoque/model/genero-musical.model';
-import { useListaDeArtistas } from '@/app/estoque/model/artista.model';
-import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
-import { useListaDeEnderecos } from '@/app/vendas/model/endereco.model';
+import { useVendasModel } from '@/app/vendas/model/vendasModel';
+import { useComprasModel } from '@/app/compras/model/comprasModel';
+import { useDiscosModel } from '@/app/estoque/model/discosModel';
+import { useGenerosMusicaisModel } from '@/app/estoque/model/generoMusicalModel';
 import { useAppStore } from '@/shared/store/appStore';
 import {
   exportarBackupCompleto,
@@ -60,43 +54,24 @@ function agrupar(
 }
 
 export default function FaturamentoPage() {
-  const { vendas, fetchVendas } = useVendas();
-  const { compras, fetchCompras } = useCompras();
-  const { itensVenda, fetchItensVenda } = useItensVenda();
-  const { discos, fetchDiscos } = useDiscos();
-  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
-  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
-  const { data: artistas = [] } = useListaDeArtistas();
-  const { data: enderecos = [] } = useListaDeEnderecos();
+  const { lista: listaVendas } = useVendasModel();
+  const { lista: listaCompras } = useComprasModel();
+  const { lista: listaDiscos } = useDiscosModel();
+  const { lista: listaGeneros } = useGenerosMusicaisModel();
   const fullState = useAppStore();
+  const vendas = listaVendas.data ?? [];
+  const compras = listaCompras.data ?? [];
+  const generosMusicais = listaGeneros.data ?? [];
+  const todosDiscos = listaDiscos.data ?? [];
 
   const [anoFiltro, setAnoFiltro] = useState<number>(ANO_ATUAL);
   const [mesFiltro, setMesFiltro] = useState<number>(0);
-
   const [dimensao, setDimensao] = useState<Dimensao>('genero');
-
-  const fCanal = '';
-  const fGenero = '';
-  const fArtista = '';
-  const fEstado = '';
-  const fPagamento = '';
-
-  useEffect(() => {
-    fetchVendas();
-    fetchCompras();
-    fetchItensVenda();
-    fetchDiscos();
-  }, [
-    fetchVendas,
-    fetchCompras,
-    fetchItensVenda,
-    fetchDiscos,
-  ]);
 
   const vendasBase = useMemo(
     () =>
       vendas.filter((v) => {
-        const d = new Date(v.dataVenda);
+        const d = new Date(v.dataVenda ?? '');
         return d.getFullYear() === anoFiltro && (mesFiltro === 0 || d.getMonth() + 1 === mesFiltro);
       }),
     [vendas, anoFiltro, mesFiltro]
@@ -105,48 +80,15 @@ export default function FaturamentoPage() {
   const comprasBase = useMemo(
     () =>
       compras.filter((c) => {
-        const d = new Date(c.dataCompra);
+        const d = new Date(c.dataCompra ?? '');
         return d.getFullYear() === anoFiltro && (mesFiltro === 0 || d.getMonth() + 1 === mesFiltro);
       }),
     [compras, anoFiltro, mesFiltro]
   );
 
-  const idsBase = useMemo(() => new Set(vendasBase.map((v) => v.id)), [vendasBase]);
-
   const itensBase = useMemo(
-    () => itensVenda.filter((i) => idsBase.has(i.vendaId)),
-    [itensVenda, idsBase]
-  );
-
-  const vendasAnalise = useMemo(
-    () =>
-      vendasBase.filter((v) => {
-        if (fCanal && v.canalVendaId !== fCanal) return false;
-        if (fPagamento && v.pagamento !== fPagamento) return false;
-        if (fEstado) {
-          const est = enderecos.find((endereco) => String(endereco.enderecoId) === v.enderecoId)?.estado ?? '';
-          if (est !== fEstado) return false;
-        }
-        return true;
-      }),
-    [vendasBase, fCanal, fPagamento, fEstado, enderecos]
-  );
-
-  const idsAnalise = useMemo(() => new Set(vendasAnalise.map((v) => v.id)), [vendasAnalise]);
-
-  const itensAnalise = useMemo(
-    () =>
-      itensBase.filter((item) => {
-        if (!idsAnalise.has(item.vendaId)) return false;
-        if (fArtista || fGenero) {
-          const disco = discos.find((d) => d.id === item.discoId);
-          if (!disco) return false;
-          if (fArtista && disco.artistaId !== fArtista) return false;
-          if (fGenero && disco.generoId !== fGenero) return false;
-        }
-        return true;
-      }),
-    [itensBase, idsAnalise, fArtista, fGenero, discos]
+    () => vendasBase.flatMap((v) => v.itens ?? []),
+    [vendasBase]
   );
 
   const resumoMensalReal = useMemo(() => {
@@ -162,9 +104,9 @@ export default function FaturamentoPage() {
       map.set(k, t);
     };
     vendasBase.forEach((v) =>
-      acc(chave(v.dataVenda), { receita: v.valorTotal, despesas: Number(v.custosAdicionais || 0) })
+      acc(chave(v.dataVenda ?? ''), { receita: v.valorTotal ?? 0, despesas: v.custosAdicionais ?? 0 })
     );
-    comprasBase.forEach((c) => acc(chave(c.dataCompra), { despesas: c.valorTotal }));
+    comprasBase.forEach((c) => acc(chave(c.dataCompra ?? ''), { despesas: c.valorTotal ?? 0 }));
     return Array.from(map.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, t]) => {
@@ -193,14 +135,11 @@ export default function FaturamentoPage() {
   const dadosCanalVendaReal = useMemo(() => {
     const map = new Map<string, number>();
     vendasBase.forEach((v) => {
-      const nome =
-        canaisVenda.find(
-          (canal) => String(canal.idCanalVenda) === v.canalVendaId
-        )?.nomeCanalVenda ?? 'Sem canal';
-      map.set(nome, (map.get(nome) ?? 0) + v.valorTotal);
+      const nome = v.canalVenda?.nomeCanalVenda ?? 'Sem canal';
+      map.set(nome, (map.get(nome) ?? 0) + (v.valorTotal ?? 0));
     });
     return agrupar(Array.from(map.entries()));
-  }, [vendasBase, canaisVenda]);
+  }, [vendasBase]);
 
   const dadosCanalVenda = dadosCanalVendaReal.length
     ? dadosCanalVendaReal
@@ -211,89 +150,51 @@ export default function FaturamentoPage() {
     const map = new Map<string, number>();
 
     if (dimensao === 'canal') {
-      vendasAnalise.forEach((v) => {
-        const nome =
-          canaisVenda.find(
-            (canal) => String(canal.idCanalVenda) === v.canalVendaId
-          )?.nomeCanalVenda ?? 'Sem canal';
-        map.set(nome, (map.get(nome) ?? 0) + v.valorTotal);
+      vendasBase.forEach((v) => {
+        const nome = v.canalVenda?.nomeCanalVenda ?? 'Sem canal';
+        map.set(nome, (map.get(nome) ?? 0) + (v.valorTotal ?? 0));
       });
     } else if (dimensao === 'pagamento') {
-      vendasAnalise.forEach((v) => {
-        const forma = v.pagamento || 'Não informado';
-        map.set(forma, (map.get(forma) ?? 0) + v.valorTotal);
+      vendasBase.forEach((v) => {
+        const forma = v.pagamento ?? 'Não informado';
+        map.set(forma, (map.get(forma) ?? 0) + (v.valorTotal ?? 0));
       });
     } else if (dimensao === 'estado') {
-      vendasAnalise.forEach((v) => {
-        const est = enderecos.find((endereco) => String(endereco.enderecoId) === v.enderecoId)?.estado ?? 'Sem estado';
-        map.set(est, (map.get(est) ?? 0) + v.valorTotal);
+      vendasBase.forEach((v) => {
+        const est = v.endereco?.estado ?? 'Sem estado';
+        map.set(est, (map.get(est) ?? 0) + (v.valorTotal ?? 0));
       });
     } else if (dimensao === 'genero') {
-      itensAnalise.forEach((item) => {
-        const disco = discos.find((d) => d.id === item.discoId);
-        const nome = disco?.generoId
-          ? (generosMusicais.find(
-              (genero) => String(genero.generoMusicalId) === disco.generoId
-            )?.nomeGenero ?? 'Sem gênero')
-          : 'Sem gênero';
-        map.set(nome, (map.get(nome) ?? 0) + item.precoVenda);
+      itensBase.forEach((item) => {
+        const disco = todosDiscos.find((d) => d.discoId === item.discoId);
+        const nome = disco?.generosMusicais?.[0]?.nomeGenero ?? 'Sem gênero';
+        map.set(nome, (map.get(nome) ?? 0) + (item.precoVenda ?? 0));
       });
     } else if (dimensao === 'artista') {
-      itensAnalise.forEach((item) => {
-        const disco = discos.find((d) => d.id === item.discoId);
-        const nome = disco?.artistaId
-          ? (artistas.find(
-              (artista) => String(artista.artistaId) === disco.artistaId
-            )?.nomeArtista ?? 'Desconhecido')
-          : 'Desconhecido';
-        map.set(nome, (map.get(nome) ?? 0) + item.precoVenda);
+      itensBase.forEach((item) => {
+        const nome = item.nomeArtista ?? 'Desconhecido';
+        map.set(nome, (map.get(nome) ?? 0) + (item.precoVenda ?? 0));
       });
     }
 
     return agrupar(Array.from(map.entries()));
-  }, [
-    dimensao,
-    vendasAnalise,
-    itensAnalise,
-    canaisVenda,
-    enderecos,
-    discos,
-    generosMusicais,
-    artistas,
-  ]);
+  }, [dimensao, vendasBase, itensBase, todosDiscos]);
 
   const dadosDimensao = dadosDimensaoReal.length
     ? dadosDimensaoReal
     : escalarDimensao(mockDimensoesProporcoes[dimensao], totalReceita);
   const isMockDimensao = dadosDimensaoReal.length === 0;
 
-  const receitaAnalise = dadosDimensao.reduce((s, d) => s + d.total, 0);
-  void receitaAnalise;
-
-  const estadosDisponiveis = useMemo(
-    () => [...new Set(enderecos.map((endereco) => endereco.estado).filter(Boolean))].sort(),
-    [enderecos]
-  );
-  const pagamentosDisponiveis = useMemo(
-    () => [...new Set(vendas.map((v) => v.pagamento).filter(Boolean))].sort(),
-    [vendas]
-  );
-  void estadosDisponiveis;
-  void pagamentosDisponiveis;
-
   const vendasDetalhe = vendasBase.map((v) => ({
-    id: v.id,
-    data: v.dataVenda,
-    cliente: v.clienteId,
-    canal:
-      canaisVenda.find(
-        (canal) => String(canal.idCanalVenda) === v.canalVendaId
-      )?.nomeCanalVenda ?? '',
-    pagamento: v.pagamento,
-    frete: v.frete,
-    custosAdicionais: v.custosAdicionais,
-    total: v.valorTotal,
-    status: v.statusPedido,
+    id: String(v.vendaId ?? ''),
+    data: v.dataVenda ?? '',
+    cliente: v.cliente?.nomeCliente ?? '',
+    canal: v.canalVenda?.nomeCanalVenda ?? '',
+    pagamento: v.pagamento ?? '',
+    frete: v.frete ?? 0,
+    custosAdicionais: v.custosAdicionais ?? 0,
+    total: v.valorTotal ?? 0,
+    status: v.statusPedido ?? '',
   }));
 
   const handleExportRelatorio = () =>

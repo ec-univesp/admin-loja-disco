@@ -9,8 +9,8 @@ import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import Button from '@/shared/components/ui/button/Button';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import { useListaDeDiscos } from '@/app/estoque/model/disco.model';
-import { useCriarCompra } from '@/app/compras/model/compra.model';
+import { useDiscosModel } from '@/app/estoque/model/discosModel';
+import { useComprasModel } from '@/app/compras/model/comprasModel';
 import AddDiscoForm from '@/app/estoque/components/AddDiscoForm';
 
 interface ItemCompraForm {
@@ -28,8 +28,11 @@ interface PurchaseFormProps {
 }
 
 const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
-  const { mutateAsync: criarCompra, isPending: criando } = useCriarCompra();
-  const { data: discos = [] } = useListaDeDiscos();
+  const { criar } = useComprasModel();
+  const { lista: listaDiscos } = useDiscosModel();
+  const criarCompra = criar.mutateAsync.bind(criar);
+  const criando = criar.isPending;
+  const discos = listaDiscos.data ?? [];
   const [successMsg, setSuccessMsg] = useState('');
   const [itens, setItens] = useState<ItemCompraForm[]>([{ discoId: '', custoDisco: 0 }]);
   const cadastrarDiscoModal = useModal();

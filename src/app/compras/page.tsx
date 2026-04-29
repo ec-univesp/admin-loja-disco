@@ -1,8 +1,8 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useMemo, useState } from 'react';
-import { useCompras, useItensCompra } from '@/shared/store/useStore';
+import { Suspense, useMemo, useState } from 'react';
+import { useComprasModel } from '@/app/compras/model/comprasModel';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { Trash2 } from 'lucide-react';
@@ -28,8 +28,8 @@ export default function ComprasPage() {
 }
 
 function ComprasContent() {
-  const { comprasComDetalhes, fetchCompras, deleteCompra } = useCompras();
-  const { itensCompra, fetchItensCompra } = useItensCompra();
+  const { lista, excluir } = useComprasModel();
+  const compras = lista.data ?? [];
 
   const searchParams = useSearchParams();
 
@@ -38,36 +38,31 @@ function ComprasContent() {
     () => searchParams.get('novo') === '1'
   );
   const deleteCompraModal = useModal();
-  const [compraParaApagar, setCompraParaApagar] = useState<{ id: string; numero: string } | null>(
+  const [compraParaApagar, setCompraParaApagar] = useState<{ id: number; numero: string } | null>(
     null
   );
 
-  useEffect(() => {
-    fetchCompras();
-    fetchItensCompra();
-  }, [fetchCompras, fetchItensCompra]);
-
   const handleConfirmarApagarCompra = async () => {
     if (!compraParaApagar) return;
-    await deleteCompra(compraParaApagar.id);
+    await excluir.mutateAsync(compraParaApagar.id);
     setCompraParaApagar(null);
     deleteCompraModal.closeModal();
   };
 
   const linhas = useMemo(() => {
-    const comprasOrdenadas = [...comprasComDetalhes].sort((compraA, compraB) =>
-      compraA.dataCompra < compraB.dataCompra ? 1 : -1
+    const comprasOrdenadas = [...compras].sort((a, b) =>
+      (a.dataCompra ?? '') < (b.dataCompra ?? '') ? 1 : -1
     );
 
     return comprasOrdenadas.map((compra, posicao) => ({
-      id: compra.id,
+      id: compra.compraId ?? 0,
       numero: formatNumeroCompra(posicao),
-      fornecedor: compra.fornecedor,
-      data: compra.dataCompra,
-      itens: itensCompra.filter((item) => item.compraId === compra.id).length,
-      total: compra.valorTotal,
+      fornecedor: compra.fornecedor ?? '—',
+      data: compra.dataCompra ?? '',
+      itens: compra.itens?.length ?? 0,
+      total: compra.valorTotal ?? 0,
     }));
-  }, [comprasComDetalhes, itensCompra]);
+  }, [compras]);
 
   const buscaNormalizada = busca.toLowerCase();
   const linhasFiltradas = linhas.filter(
