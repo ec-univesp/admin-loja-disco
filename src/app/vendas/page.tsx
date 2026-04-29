@@ -4,13 +4,13 @@ import { useSearchParams } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { useVendas, useItensVenda } from '@/shared/store/useStore';
-import { useListaDeCanaisVenda } from '@/features/vendas/model/canal-venda.model';
+import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
 import {
   useListaDeClientes,
   useExcluirCliente,
-} from '@/features/vendas/model/cliente.model';
-import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoModal';
-import NovoCadastroModal from '@/features/vendas/components/NovoCadastroModal';
+} from '@/app/vendas/model/cliente.model';
+import ClienteEnderecoModal from '@/app/vendas/components/ClienteEnderecoModal';
+import NovoCadastroModal from '@/app/vendas/components/NovoCadastroModal';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { exportarTabelaExcel } from '@/shared/services/exportExcel';

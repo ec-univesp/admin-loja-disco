@@ -13,8 +13,8 @@ import {
 } from '@/shared/store/useStore';
 import { useListaDeGenerosMusicais } from '@/app/estoque/model/genero-musical.model';
 import { useListaDeArtistas } from '@/app/estoque/model/artista.model';
-import { useListaDeCanaisVenda } from '@/features/vendas/model/canal-venda.model';
-import { useListaDeEnderecos } from '@/features/vendas/model/endereco.model';
+import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
+import { useListaDeEnderecos } from '@/app/vendas/model/endereco.model';
 import { useAppStore } from '@/shared/store/appStore';
 import {
   exportarBackupCompleto,
