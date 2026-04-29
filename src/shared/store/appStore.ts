@@ -27,7 +27,7 @@ import {
   apiItensCompra,
   apiCanaisVenda,
   apiClientesEnderecos,
-} from '@/shared/services/api';
+} from '@/shared/services/apiMock';
 
 interface AppStore extends AppState {
   // Ações para Generos Musicais
