@@ -5,8 +5,12 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
-import { useDiscos, useArtistas } from '@/shared/store/useStore';
+import { useDiscos } from '@/shared/store/useStore';
 import { useListaDeGenerosMusicais } from '@/shared/queries/generos-musicais.queries';
+import {
+  useListaDeArtistas,
+  useAtualizarArtista,
+} from '@/shared/queries/artistas.queries';
 import type { Disco } from '@/shared/types/models';
 
 interface EditDiscoModalProps {
@@ -52,7 +56,8 @@ const initialForm: FormState = {
 export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoModalProps) {
   const { discosComArtista, updateDisco } = useDiscos();
   const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
-  const { artistas, updateArtista } = useArtistas();
+  const { data: artistas = [] } = useListaDeArtistas();
+  const { mutateAsync: atualizarArtista } = useAtualizarArtista();
 
   const [form, setForm] = useState<FormState>(initialForm);
   const [artistaId, setArtistaId] = useState('');
@@ -96,9 +101,14 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
     setSaving(true);
     try {
       // Atualiza nome do artista se mudou
-      const artista = artistas.find((a) => a.id === artistaId);
-      if (artista && artista.nome !== form.artistaNome) {
-        await updateArtista(artistaId, { nome: form.artistaNome });
+      const artista = artistas.find(
+        (item) => String(item.artistaId) === artistaId
+      );
+      if (artista && artista.nomeArtista !== form.artistaNome) {
+        await atualizarArtista({
+          artistaId: artista.artistaId,
+          nomeArtista: form.artistaNome,
+        });
       }
 
       const updates: Partial<Disco> = {
