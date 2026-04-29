@@ -4,8 +4,7 @@ import type { RequestDiscoDTO, ResponseDiscoDTO } from './types';
 const BASE = '/discos';
 
 export type BuscarDiscoQuery = {
-  album?: string;
-  artistaNome?: string;
+  termo: string;
 };
 
 export const discosService = {

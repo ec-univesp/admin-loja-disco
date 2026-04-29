@@ -1,11 +1,11 @@
 import { apiClient } from './client';
-import type { RequestCanalVendaDTO, ResponseCanalVendaDTO } from './types';
+import type { CanalVendaEntity, RequestCanalVendaDTO, ResponseCanalVendaDTO } from './types';
 
 const BASE = '/canais-venda';
 
 export const canaisVendaService = {
   list: (signal?: AbortSignal) =>
-    apiClient.get<ResponseCanalVendaDTO[]>(`${BASE}/lista`, undefined, signal),
+    apiClient.get<CanalVendaEntity[]>(`${BASE}/lista`, undefined, signal),
 
   getById: (id: number, signal?: AbortSignal) =>
     apiClient.get<ResponseCanalVendaDTO>(`${BASE}/${id}`, undefined, signal),

@@ -32,7 +32,7 @@ export function useBuscarDiscos(filtros: BuscarDiscoQuery, habilitado = true) {
   return useQuery({
     queryKey: chavesDeDiscos.busca(filtros),
     queryFn: ({ signal }) => discosService.buscar(filtros, signal),
-    enabled: habilitado && (Boolean(filtros.album) || Boolean(filtros.artistaNome)),
+    enabled: habilitado && Boolean(filtros.termo),
   });
 }
 
