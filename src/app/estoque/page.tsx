@@ -7,12 +7,12 @@ import {
   useListaDeGenerosMusicais,
   useCriarGeneroMusical,
   useExcluirGeneroMusical,
-} from '@/shared/queries/generos-musicais.queries';
+} from '@/features/estoque/model/genero-musical.model';
 import {
   useListaDeArtistas,
   useCriarArtista,
   useExcluirArtista,
-} from '@/shared/queries/artistas.queries';
+} from '@/features/estoque/model/artista.model';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import EditDiscoModal from '@/features/estoque/components/EditDiscoModal';

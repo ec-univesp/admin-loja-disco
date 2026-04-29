@@ -3,8 +3,13 @@ import {
   generosMusicaisService,
   type RequestGeneroMusicalDTO,
 } from '@/shared/services/api';
-import { chavesDeGenerosMusicais } from './keys';
-import { notificarErro, notificarSucesso } from './toastHelpers';
+import { notificarErro, notificarSucesso } from '@/shared/utils/notify';
+
+const chavesDeGenerosMusicais = {
+  todas: ['generos-musicais'],
+  lista: () => ['generos-musicais', 'lista'],
+  porId: (id: number) => ['generos-musicais', 'detalhe', id],
+};
 
 export function useListaDeGenerosMusicais() {
   return useQuery({

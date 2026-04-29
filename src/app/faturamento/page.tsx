@@ -12,9 +12,9 @@ import {
   useDiscos,
   useEnderecos,
 } from '@/shared/store/useStore';
-import { useListaDeGenerosMusicais } from '@/shared/queries/generos-musicais.queries';
-import { useListaDeArtistas } from '@/shared/queries/artistas.queries';
-import { useListaDeCanaisVenda } from '@/shared/queries/canais-venda.queries';
+import { useListaDeGenerosMusicais } from '@/features/estoque/model/genero-musical.model';
+import { useListaDeArtistas } from '@/features/estoque/model/artista.model';
+import { useListaDeCanaisVenda } from '@/features/vendas/model/canal-venda.model';
 import { useAppStore } from '@/shared/store/appStore';
 import {
   exportarBackupCompleto,

@@ -6,11 +6,11 @@ import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import { useDiscos } from '@/shared/store/useStore';
-import { useListaDeGenerosMusicais } from '@/shared/queries/generos-musicais.queries';
+import { useListaDeGenerosMusicais } from '@/features/estoque/model/genero-musical.model';
 import {
   useListaDeArtistas,
   useAtualizarArtista,
-} from '@/shared/queries/artistas.queries';
+} from '@/features/estoque/model/artista.model';
 import type { Disco } from '@/shared/types/models';
 
 interface EditDiscoModalProps {
