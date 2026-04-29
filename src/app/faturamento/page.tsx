@@ -10,11 +10,11 @@ import {
   useCompras,
   useItensVenda,
   useDiscos,
-  useCanaisVenda,
   useEnderecos,
 } from '@/shared/store/useStore';
 import { useListaDeGenerosMusicais } from '@/shared/queries/generos-musicais.queries';
 import { useListaDeArtistas } from '@/shared/queries/artistas.queries';
+import { useListaDeCanaisVenda } from '@/shared/queries/canais-venda.queries';
 import { useAppStore } from '@/shared/store/appStore';
 import {
   exportarBackupCompleto,
@@ -64,7 +64,7 @@ export default function FaturamentoPage() {
   const { compras, fetchCompras } = useCompras();
   const { itensVenda, fetchItensVenda } = useItensVenda();
   const { discos, fetchDiscos } = useDiscos();
-  const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
+  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
   const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
   const { data: artistas = [] } = useListaDeArtistas();
   const { enderecos, fetchEnderecos } = useEnderecos();
@@ -86,14 +86,12 @@ export default function FaturamentoPage() {
     fetchCompras();
     fetchItensVenda();
     fetchDiscos();
-    fetchCanaisVenda();
     fetchEnderecos();
   }, [
     fetchVendas,
     fetchCompras,
     fetchItensVenda,
     fetchDiscos,
-    fetchCanaisVenda,
     fetchEnderecos,
   ]);
 
@@ -197,7 +195,10 @@ export default function FaturamentoPage() {
   const dadosCanalVendaReal = useMemo(() => {
     const map = new Map<string, number>();
     vendasBase.forEach((v) => {
-      const nome = canaisVenda.find((c) => c.id === v.canalVendaId)?.nome ?? 'Sem canal';
+      const nome =
+        canaisVenda.find(
+          (canal) => String(canal.canalVendaId) === v.canalVendaId
+        )?.nomeCanalVenda ?? 'Sem canal';
       map.set(nome, (map.get(nome) ?? 0) + v.valorTotal);
     });
     return agrupar(Array.from(map.entries()));
@@ -213,7 +214,10 @@ export default function FaturamentoPage() {
 
     if (dimensao === 'canal') {
       vendasAnalise.forEach((v) => {
-        const nome = canaisVenda.find((c) => c.id === v.canalVendaId)?.nome ?? 'Sem canal';
+        const nome =
+          canaisVenda.find(
+            (canal) => String(canal.canalVendaId) === v.canalVendaId
+          )?.nomeCanalVenda ?? 'Sem canal';
         map.set(nome, (map.get(nome) ?? 0) + v.valorTotal);
       });
     } else if (dimensao === 'pagamento') {
@@ -283,7 +287,10 @@ export default function FaturamentoPage() {
     id: v.id,
     data: v.dataVenda,
     cliente: v.clienteId,
-    canal: canaisVenda.find((c) => c.id === v.canalVendaId)?.nome ?? '',
+    canal:
+      canaisVenda.find(
+        (canal) => String(canal.canalVendaId) === v.canalVendaId
+      )?.nomeCanalVenda ?? '',
     pagamento: v.pagamento,
     frete: v.frete,
     custosAdicionais: v.custosAdicionais,
