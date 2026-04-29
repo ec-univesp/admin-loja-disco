@@ -7,24 +7,14 @@ const ReactApexChart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
 });
 
-const MONTHS_PT = [
-  'Jan',
-  'Fev',
-  'Mar',
-  'Abr',
-  'Mai',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Set',
-  'Out',
-  'Nov',
-  'Dez',
+const MONTHS = [
+  'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+  'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
 ];
 const CURRENT_YEAR = new Date().getFullYear();
 const AVAILABLE_YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
 
-export default function VendasMensaisChart() {
+export default function MonthlySalesChart() {
   const [year, setYear] = useState<number>(CURRENT_YEAR);
   const [month, setMonth] = useState<number>(0);
 
@@ -55,7 +45,7 @@ export default function VendasMensaisChart() {
       colors: ['transparent'],
     },
     xaxis: {
-      categories: month === 0 ? MONTHS_PT : [MONTHS_PT[month - 1]],
+      categories: month === 0 ? MONTHS : [MONTHS[month - 1]],
       axisBorder: {
         show: false,
       },
@@ -129,7 +119,7 @@ export default function VendasMensaisChart() {
             className="text-theme-sm shadow-theme-xs h-10 rounded-lg border border-gray-300 bg-white px-3 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
           >
             <option value={0}>Todos os meses</option>
-            {MONTHS_PT.map((m, i) => (
+            {MONTHS.map((m, i) => (
               <option key={m} value={i + 1}>
                 {m}
               </option>

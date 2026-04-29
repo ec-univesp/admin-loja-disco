@@ -28,9 +28,9 @@ export function useRecordsModel(id?: number, searchFilters?: RecordSearchParams)
   });
 
   const search = useQuery({
-    queryKey: keys.search(searchFilters ?? { termo: '' }),
-    queryFn: ({ signal }) => recordsService.buscar(searchFilters as RecordSearchParams, signal),
-    enabled: Boolean(searchFilters?.termo),
+    queryKey: keys.search(searchFilters ?? { query: '' }),
+    queryFn: ({ signal }) => recordsService.search(searchFilters as RecordSearchParams, signal),
+    enabled: Boolean(searchFilters?.query),
   });
 
   const create = useMutation({

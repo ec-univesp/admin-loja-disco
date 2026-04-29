@@ -5,9 +5,9 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
-import { useRecordsModel } from '@/app/estoque/model/recordsModel';
-import { useGenresModel } from '@/app/estoque/model/genresModel';
-import { useArtistsModel } from '@/app/estoque/model/artistsModel';
+import { useRecordsModel } from '@/app/inventory/model/recordsModel';
+import { useGenresModel } from '@/app/inventory/model/genresModel';
+import { useArtistsModel } from '@/app/inventory/model/artistsModel';
 
 interface EditDiscoModalProps {
   isOpen: boolean;
@@ -137,17 +137,17 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
     <Modal isOpen={isOpen} onClose={onClose} className="m-4 max-w-[720px]">
       <div className="max-h-[80vh] overflow-y-auto p-6">
         <h4 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
-          Editar Disco
+          Edit Record
         </h4>
 
         <div className="space-y-5">
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Informações Básicas
+              Basic Information
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
-                <Label htmlFor="edit-artista">Artista</Label>
+                <Label htmlFor="edit-artista">Artist</Label>
                 <input
                   id="edit-artista"
                   type="text"
@@ -163,14 +163,14 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 </datalist>
               </div>
               <div>
-                <Label htmlFor="edit-genero">Gênero Musical</Label>
+                <Label htmlFor="edit-genero">Music Genre</Label>
                 <select
                   id="edit-genero"
                   value={form.generoMusicalId}
                   onChange={handleChange('generoMusicalId')}
                   className={inputClass}
                 >
-                  <option value="">-- Selecione --</option>
+                  <option value="">-- Select --</option>
                   {genres.map((genre) => (
                     <option key={genre.generoMusicalId} value={genre.generoMusicalId ?? ''}>
                       {genre.nomeGenero}
@@ -179,7 +179,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 </select>
               </div>
               <div>
-                <Label htmlFor="edit-album">Álbum</Label>
+                <Label htmlFor="edit-album">Album</Label>
                 <input
                   id="edit-album"
                   type="text"
@@ -193,11 +193,11 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Informações Técnicas
+              Technical Information
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
-                <Label htmlFor="edit-nacionalidade">Nacionalidade</Label>
+                <Label htmlFor="edit-nacionalidade">Nationality</Label>
                 <input
                   id="edit-nacionalidade"
                   type="text"
@@ -207,7 +207,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-prensagem">Prensagem</Label>
+                <Label htmlFor="edit-prensagem">Pressing</Label>
                 <input
                   id="edit-prensagem"
                   type="text"
@@ -217,7 +217,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-encarte">Encarte</Label>
+                <Label htmlFor="edit-encarte">Insert</Label>
                 <select
                   id="edit-encarte"
                   value={form.encarte}
@@ -230,7 +230,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 </select>
               </div>
               <div>
-                <Label htmlFor="edit-gravadora">Gravadora</Label>
+                <Label htmlFor="edit-gravadora">Label</Label>
                 <input
                   id="edit-gravadora"
                   type="text"
@@ -240,7 +240,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-anoLancamento">Ano Lançamento</Label>
+                <Label htmlFor="edit-anoLancamento">Release Year</Label>
                 <input
                   id="edit-anoLancamento"
                   type="number"
@@ -250,7 +250,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-anoPrensagem">Ano Prensagem</Label>
+                <Label htmlFor="edit-anoPrensagem">Pressing Year</Label>
                 <input
                   id="edit-anoPrensagem"
                   type="number"
@@ -264,11 +264,11 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Condição
+              Condition
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
-                <Label htmlFor="edit-condicaoCapa">Condição da Capa</Label>
+                <Label htmlFor="edit-condicaoCapa">Cover Condition</Label>
                 <input
                   id="edit-condicaoCapa"
                   type="text"
@@ -278,7 +278,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-condicaoDisco">Condição do Disco</Label>
+                <Label htmlFor="edit-condicaoDisco">Record Condition</Label>
                 <input
                   id="edit-condicaoDisco"
                   type="text"
@@ -292,11 +292,11 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Valores
+              Pricing
             </h5>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
-                <Label htmlFor="edit-custoDisco">Custo do Disco</Label>
+                <Label htmlFor="edit-custoDisco">Record Cost</Label>
                 <CurrencyInput
                   id="edit-custoDisco"
                   value={form.custoDisco}
@@ -304,7 +304,7 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
                 />
               </div>
               <div>
-                <Label htmlFor="edit-valorMercado">Valor de Mercado</Label>
+                <Label htmlFor="edit-valorMercado">Market Value</Label>
                 <CurrencyInput
                   id="edit-valorMercado"
                   value={form.valorMercado}
@@ -331,10 +331,10 @@ export default function EditDiscoModal({ isOpen, onClose, discoId }: EditDiscoMo
 
           <div className="flex justify-end gap-3 pt-2">
             <Button size="sm" variant="outline" onClick={onClose} disabled={saving}>
-              Cancelar
+              Cancel
             </Button>
             <Button size="sm" variant="primary" onClick={handleSave} isLoading={saving}>
-              Salvar alterações
+              Save changes
             </Button>
           </div>
         </div>

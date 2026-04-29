@@ -2,38 +2,38 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useVendas, useItensVenda, useDiscos } from '@/shared/store/useStore';
+import { useSalesStore, useSaleItemsStore, useRecordsStore } from '@/shared/store/useStore';
 
-export default function EntregasPendentesPage() {
-  const { vendasComDetalhes, fetchVendas } = useVendas();
-  const { fetchItensVenda } = useItensVenda();
-  const { fetchDiscos } = useDiscos();
-  const [busca, setBusca] = useState('');
+export default function PendingDeliveriesPage() {
+  const { salesWithDetails, fetchSales } = useSalesStore();
+  const { fetchSaleItems } = useSaleItemsStore();
+  const { fetchRecords } = useRecordsStore();
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetchVendas();
-    fetchItensVenda();
-    fetchDiscos();
-  }, [fetchVendas, fetchItensVenda, fetchDiscos]);
+    fetchSales();
+    fetchSaleItems();
+    fetchRecords();
+  }, [fetchSales, fetchSaleItems, fetchRecords]);
 
-  const pendentes = useMemo(
+  const pendingDeliveries = useMemo(
     () =>
-      vendasComDetalhes.filter(
+      salesWithDetails.filter(
         (v) => v.statusPedido === 'Confirmada' || v.statusPedido === 'Enviada'
       ),
-    [vendasComDetalhes]
+    [salesWithDetails]
   );
 
-  const filtradas = useMemo(() => {
-    const buscaNorm = busca.toLowerCase();
-    return pendentes.filter(
+  const filteredDeliveries = useMemo(() => {
+    const normalizedSearch = searchTerm.toLowerCase();
+    return pendingDeliveries.filter(
       (v) =>
-        v.id.toLowerCase().includes(buscaNorm) ||
-        v.clienteNome.toLowerCase().includes(buscaNorm) ||
-        v.enderecoCompleto.toLowerCase().includes(buscaNorm) ||
-        v.produtosResumo.toLowerCase().includes(buscaNorm)
+        v.id.toLowerCase().includes(normalizedSearch) ||
+        v.customerName.toLowerCase().includes(normalizedSearch) ||
+        v.fullAddress.toLowerCase().includes(normalizedSearch) ||
+        v.productsSummary.toLowerCase().includes(normalizedSearch)
     );
-  }, [pendentes, busca]);
+  }, [pendingDeliveries, searchTerm]);
 
   return (
     <div>
@@ -41,7 +41,7 @@ export default function EntregasPendentesPage() {
 
       <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 px-5 py-4 dark:border-yellow-800/50 dark:bg-yellow-900/20">
         <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
-          Existem <strong>{pendentes.length}</strong> entrega(s) aguardando despacho ou em
+          Existem <strong>{pendingDeliveries.length}</strong> entrega(s) aguardando despacho ou em
           trânsito.
         </p>
       </div>
@@ -53,19 +53,19 @@ export default function EntregasPendentesPage() {
               Pendentes de Despacho
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {filtradas.length} entrega(s)
+              {filteredDeliveries.length} entrega(s)
             </p>
           </div>
           <div className="flex gap-3">
             <input
               type="text"
               placeholder="Buscar..."
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             />
             <Link
-              href="/entregas"
+              href="/deliveries"
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               Todas as Entregas
@@ -95,7 +95,7 @@ export default function EntregasPendentesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {filtradas.length === 0 ? (
+              {filteredDeliveries.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -105,32 +105,32 @@ export default function EntregasPendentesPage() {
                   </td>
                 </tr>
               ) : (
-                filtradas.map((venda) => (
+                filteredDeliveries.map((delivery) => (
                   <tr
-                    key={venda.id}
+                    key={delivery.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
                     <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-gray-400">
-                      {venda.id}
+                      {delivery.id}
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
-                      {venda.clienteNome}
+                      {delivery.customerName}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.produtosResumo}
+                      {delivery.productsSummary}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.enderecoCompleto}
+                      {delivery.fullAddress}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          venda.statusPedido === 'Enviada'
+                          delivery.statusPedido === 'Enviada'
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                         }`}
                       >
-                        {venda.statusPedido}
+                        {delivery.statusPedido}
                       </span>
                     </td>
                   </tr>

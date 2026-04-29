@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
-import { useGenresModel } from '@/app/estoque/model/genresModel';
-import { useArtistsModel } from '@/app/estoque/model/artistsModel';
-import { useRecordsModel } from '@/app/estoque/model/recordsModel';
+import { useGenresModel } from '@/app/inventory/model/genresModel';
+import { useArtistsModel } from '@/app/inventory/model/artistsModel';
+import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
@@ -86,7 +86,7 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
         artistaId = existingArtist.artistaId;
       } else {
         const newArtist = await createArtist.mutateAsync({ nomeArtista });
-        if (newArtist.artistaId === undefined) throw new Error('Falha ao criar artista');
+        if (newArtist.artistaId === undefined) throw new Error('Failed to create artist');
         artistaId = newArtist.artistaId;
       }
 
@@ -109,7 +109,7 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
           : [],
       });
 
-      setSuccessMessage('Disco adicionado com sucesso!');
+      setSuccessMessage('Record added successfully!');
       reset();
 
       if (onSuccess) {
@@ -120,11 +120,11 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
       } else {
         setTimeout(() => {
           setSuccessMessage('');
-          router.push('/estoque');
+          router.push('/inventory');
         }, 2000);
       }
     } catch (err) {
-      console.error('Erro ao adicionar disco:', err);
+      console.error('Error adding record:', err);
     }
   };
 
@@ -140,10 +140,10 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
         {!embedded && (
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-brand-900 dark:text-brand-50">
-              🎵 Novo Disco
+              New Record
             </h2>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Adicione um novo disco ao seu estoque
+              Add a new record to your inventory
             </p>
           </div>
         )}
@@ -161,17 +161,17 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Artista e Álbum */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Informações Básicas</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Basic Information</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <Label htmlFor="artistaNome">Artista *</Label>
+                <Label htmlFor="artistaNome">Artist *</Label>
                 <input
                   type="text"
                   id="artistaNome"
                   list="artistas-disponiveis"
-                  placeholder="Ex: The Beatles"
+                  placeholder="e.g. The Beatles"
                   autoComplete="off"
-                  {...register('artistaNome', { required: 'Artista é obrigatório' })}
+                  {...register('artistaNome', { required: 'Artist is required' })}
                   className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                     errors.artistaNome
                       ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
@@ -189,13 +189,13 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
               </div>
 
               <div>
-                <Label htmlFor="generoMusicalId">Gênero Musical</Label>
+                <Label htmlFor="generoMusicalId">Music Genre</Label>
                 <select
                   id="generoMusicalId"
                   {...register('generoMusicalId')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 >
-                  <option value="">-- Selecione --</option>
+                  <option value="">-- Select --</option>
                   {genres.map((genre) => (
                     <option
                       key={genre.generoMusicalId}
@@ -208,12 +208,12 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
               </div>
 
               <div>
-                <Label htmlFor="album">Álbum *</Label>
+                <Label htmlFor="album">Album *</Label>
                 <input
                   type="text"
                   id="album"
-                  placeholder="Nome do álbum"
-                  {...register('album', { required: 'Álbum é obrigatório' })}
+                  placeholder="Album name"
+                  {...register('album', { required: 'Album is required' })}
                   className={`h-11 w-full rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                     errors.album
                       ? 'border-error-500 bg-error-50 dark:border-error-600 dark:bg-error-900/20'
@@ -229,21 +229,21 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
 
           {/* Informações Técnicas */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Informações Técnicas</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Technical Information</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <Label htmlFor="nacionalidade">Nacionalidade</Label>
+                <Label htmlFor="nacionalidade">Nationality</Label>
                 <input
                   type="text"
                   id="nacionalidade"
-                  placeholder="Ex: Brasil"
+                  placeholder="e.g. Brazil"
                   {...register('nacionalidade')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 />
               </div>
 
               <div>
-                <Label htmlFor="prensagem">Prensagem</Label>
+                <Label htmlFor="prensagem">Pressing</Label>
                 <input
                   type="text"
                   id="prensagem"
@@ -254,7 +254,7 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
               </div>
 
               <div>
-                <Label htmlFor="encarte">Encarte</Label>
+                <Label htmlFor="encarte">Insert</Label>
                 <select
                   id="encarte"
                   {...register('encarte')}
@@ -269,18 +269,18 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="gravadora">Gravadora</Label>
+                <Label htmlFor="gravadora">Label</Label>
                 <input
                   type="text"
                   id="gravadora"
-                  placeholder="Ex: Sony"
+                  placeholder="e.g. Sony"
                   {...register('gravadora')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 />
               </div>
 
               <div>
-                <Label htmlFor="anoLancamento">Ano de Lançamento</Label>
+                <Label htmlFor="anoLancamento">Release Year</Label>
                 <input
                   type="number"
                   id="anoLancamento"
@@ -293,25 +293,25 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
 
           {/* Condição */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Condição do Disco</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Record Condition</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="condicaoCapa">Condição da Capa</Label>
+                <Label htmlFor="condicaoCapa">Cover Condition</Label>
                 <input
                   type="text"
                   id="condicaoCapa"
-                  placeholder="Ex: Excelente, Bom..."
+                  placeholder="e.g. Excellent, Good..."
                   {...register('condicaoCapa')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 />
               </div>
 
               <div>
-                <Label htmlFor="condicaoDisco">Condição do Disco</Label>
+                <Label htmlFor="condicaoDisco">Record Condition</Label>
                 <input
                   type="text"
                   id="condicaoDisco"
-                  placeholder="Ex: Excelente, Bom..."
+                  placeholder="e.g. Excellent, Good..."
                   {...register('condicaoDisco')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 />
@@ -321,16 +321,16 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
 
           {/* Valores */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Valores</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Pricing</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="custoDisco">Custo do Disco *</Label>
+                <Label htmlFor="custoDisco">Record Cost *</Label>
                 <Controller
                   control={control}
                   name="custoDisco"
                   rules={{
-                    required: 'Custo é obrigatório',
-                    min: { value: 0, message: 'Custo não pode ser negativo' },
+                    required: 'Cost is required',
+                    min: { value: 0, message: 'Cost cannot be negative' },
                   }}
                   render={({ field }) => (
                     <CurrencyInput
@@ -347,13 +347,13 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
               </div>
 
               <div>
-                <Label htmlFor="valorMercado">Valor de Mercado *</Label>
+                <Label htmlFor="valorMercado">Market Value *</Label>
                 <Controller
                   control={control}
                   name="valorMercado"
                   rules={{
-                    required: 'Valor de mercado é obrigatório',
-                    min: { value: 0, message: 'Valor não pode ser negativo' },
+                    required: 'Market value is required',
+                    min: { value: 0, message: 'Value cannot be negative' },
                   }}
                   render={({ field }) => (
                     <CurrencyInput
@@ -375,19 +375,19 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
               <div className="rounded-lg bg-brand-50 p-4 dark:bg-brand-900/20">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Margem</p>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Margin</p>
                     <p className={`text-lg font-bold ${margin >= 0 ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'}`}>
                       {formatBRL(margin)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Percentual</p>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Percentage</p>
                     <p className={`text-lg font-bold ${margin >= 0 ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'}`}>
                       {marginPct}%
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Preço de Venda</p>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Sale Price</p>
                     <p className="text-lg font-bold text-brand-700 dark:text-brand-400">
                       {formatBRL(valorMercado)}
                     </p>
@@ -400,10 +400,10 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
           {/* Botões */}
           <div className="flex gap-3 pt-4">
             <Button type="submit" disabled={isSubmitting} size="lg" variant="primary" fullWidth>
-              {isSubmitting ? 'Salvando...' : 'Salvar Disco'}
+              {isSubmitting ? 'Saving...' : 'Save Record'}
             </Button>
             <Button type="reset" size="lg" variant="secondary" fullWidth>
-              Limpar
+              Clear
             </Button>
           </div>
         </form>

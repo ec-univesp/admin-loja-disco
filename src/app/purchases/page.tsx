@@ -2,13 +2,13 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useMemo, useState } from 'react';
-import { usePurchasesModel } from '@/app/compras/model/purchasesModel';
+import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { Trash2 } from 'lucide-react';
 import { exportTableToExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
-import NovaCompraModal from '@/app/compras/components/NovaCompraModal';
+import NewPurchaseModal from '@/app/purchases/components/NewPurchaseModal';
 
 const iconPlus = (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -16,29 +16,29 @@ const iconPlus = (
   </svg>
 );
 
-const formatNumeroCompra = (posicaoNaLista: number) =>
-  `CMP-${String(posicaoNaLista + 1).padStart(4, '0')}`;
+const formatPurchaseNumber = (positionInList: number) =>
+  `CMP-${String(positionInList + 1).padStart(4, '0')}`;
 
-export default function ComprasPage() {
+export default function PurchasesPage() {
   return (
     <Suspense fallback={null}>
-      <ComprasContent />
+      <PurchasesContent />
     </Suspense>
   );
 }
 
-function ComprasContent() {
+function PurchasesContent() {
   const { list, remove } = usePurchasesModel();
   const purchases = list.data ?? [];
 
   const searchParams = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [showNovaCompraModal, setShowNovaCompraModal] = useState(
+  const [showNewPurchaseModal, setShowNewPurchaseModal] = useState(
     () => searchParams.get('novo') === '1'
   );
-  const deleteCompraModal = useModal();
-  const [purchaseToDelete, setPurchaseToDelete] = useState<{ id: number; numero: string } | null>(
+  const deletePurchaseModal = useModal();
+  const [purchaseToDelete, setPurchaseToDelete] = useState<{ id: number; number: string } | null>(
     null
   );
 
@@ -46,7 +46,7 @@ function ComprasContent() {
     if (!purchaseToDelete) return;
     await remove.mutateAsync(purchaseToDelete.id);
     setPurchaseToDelete(null);
-    deleteCompraModal.closeModal();
+    deletePurchaseModal.closeModal();
   };
 
   const rows = useMemo(() => {
@@ -56,10 +56,10 @@ function ComprasContent() {
 
     return sortedPurchases.map((purchase, index) => ({
       id: purchase.compraId ?? 0,
-      numero: formatNumeroCompra(index),
-      fornecedor: purchase.fornecedor ?? '—',
-      data: purchase.dataCompra ?? '',
-      itens: purchase.itens?.length ?? 0,
+      number: formatPurchaseNumber(index),
+      supplier: purchase.fornecedor ?? '—',
+      date: purchase.dataCompra ?? '',
+      items: purchase.itens?.length ?? 0,
       total: purchase.valorTotal ?? 0,
     }));
   }, [purchases]);
@@ -67,27 +67,27 @@ function ComprasContent() {
   const normalizedSearch = searchTerm.toLowerCase();
   const filteredRows = rows.filter(
     (row) =>
-      row.fornecedor.toLowerCase().includes(normalizedSearch) ||
-      row.numero.toLowerCase().includes(normalizedSearch)
+      row.supplier.toLowerCase().includes(normalizedSearch) ||
+      row.number.toLowerCase().includes(normalizedSearch)
   );
 
   const totalSpent = filteredRows.reduce((acc, row) => acc + row.total, 0);
 
   const rowsToExport = () =>
-    filteredRows.map(({ numero, fornecedor, data, itens, total }) => ({
-      'Nº Compra': numero,
-      Fornecedor: fornecedor,
-      Data: data,
-      Itens: itens,
+    filteredRows.map(({ number, supplier, date, items, total }) => ({
+      'Nº Compra': number,
+      Fornecedor: supplier,
+      Data: date,
+      Itens: items,
       'Total (R$)': total.toFixed(2),
     }));
 
   const handleExportToExcel = () => {
     const stamp = new Date().toISOString().slice(0, 10);
-    exportarTabelaExcel(
-      'Compras',
+    exportTableToExcel(
+      'Purchases',
       rowsToExport() as Array<Record<string, unknown>>,
-      `compras-${stamp}.xlsx`
+      `purchases-${stamp}.xlsx`
     );
   };
 
@@ -108,7 +108,7 @@ function ComprasContent() {
           <div className="flex flex-wrap items-center gap-3">
             <input
               type="text"
-              placeholder="Buscar por número da compra ou fornecedor..."
+              placeholder="Buscar por número ou fornecedor..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="focus:border-brand-500 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none sm:w-72 md:w-80 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
@@ -117,7 +117,7 @@ function ComprasContent() {
               size="md"
               variant="primary"
               startIcon={iconPlus}
-              onClick={() => setShowNovaCompraModal(true)}
+              onClick={() => setShowNewPurchaseModal(true)}
             >
               Nova Compra
             </Button>
@@ -159,7 +159,7 @@ function ComprasContent() {
               {filteredRows.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-10 text-center text-gray-400">
-                    Nenhuma compra registrada ainda.
+                    Nenhuma compra registrada.
                   </td>
                 </tr>
               ) : (
@@ -169,14 +169,14 @@ function ComprasContent() {
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
                     <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
-                      {purchase.numero}
+                      {purchase.number}
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
-                      {purchase.fornecedor}
+                      {purchase.supplier}
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{purchase.data}</td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{purchase.date}</td>
                     <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
-                      {purchase.itens}
+                      {purchase.items}
                     </td>
                     <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
                       R$ {purchase.total.toFixed(2)}
@@ -184,11 +184,11 @@ function ComprasContent() {
                     <td className="px-6 py-4 text-center">
                       <button
                         type="button"
-                        aria-label={`Apagar compra ${purchase.numero}`}
-                        title={`Apagar compra ${purchase.numero}`}
+                        aria-label={`Apagar compra ${purchase.number}`}
+                        title={`Apagar compra ${purchase.number}`}
                         onClick={() => {
-                          setPurchaseToDelete({ id: purchase.id, numero: purchase.numero });
-                          deleteCompraModal.openModal();
+                          setPurchaseToDelete({ id: purchase.id, number: purchase.number });
+                          deletePurchaseModal.openModal();
                         }}
                         className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                       >
@@ -203,14 +203,14 @@ function ComprasContent() {
         </div>
       </div>
 
-      <NovaCompraModal
-        isOpen={showNovaCompraModal}
-        onClose={() => setShowNovaCompraModal(false)}
+      <NewPurchaseModal
+        isOpen={showNewPurchaseModal}
+        onClose={() => setShowNewPurchaseModal(false)}
       />
 
       <Modal
-        isOpen={deleteCompraModal.isOpen}
-        onClose={deleteCompraModal.closeModal}
+        isOpen={deletePurchaseModal.isOpen}
+        onClose={deletePurchaseModal.closeModal}
         className="m-4 max-w-[440px]"
         showCloseButton={false}
       >
@@ -221,14 +221,14 @@ function ComprasContent() {
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
             Tem certeza que deseja apagar a compra{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {purchaseToDelete?.numero}
+              {purchaseToDelete?.number}
             </span>
             ? Esta ação não pode ser desfeita.
           </p>
           <div className="flex justify-end gap-3">
             <button
               type="button"
-              onClick={deleteCompraModal.closeModal}
+              onClick={deletePurchaseModal.closeModal}
               className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
             >
               Cancelar

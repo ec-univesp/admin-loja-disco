@@ -3,10 +3,10 @@ import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useMemo, useState } from 'react';
-import { useSalesModel } from '@/app/vendas/model/salesModel';
-import { useCustomersModel } from '@/app/vendas/model/customersModel';
-import ClienteEnderecoModal from '@/app/vendas/components/ClienteEnderecoModal';
-import NovoCadastroModal from '@/app/vendas/components/NovoCadastroModal';
+import { useSalesModel } from '@/app/sales/model/salesModel';
+import { useCustomersModel } from '@/app/sales/model/customersModel';
+import CustomerAddressModal from '@/app/sales/components/CustomerAddressModal';
+import NewRegistrationModal from '@/app/sales/components/NewRegistrationModal';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { exportTableToExcel } from '@/shared/services/exportExcel';
@@ -27,81 +27,76 @@ const statusColor: Record<string, string> = {
   Cancelada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
-const formatNumeroVenda = (posicaoNaLista: number) =>
-  `VND-${String(posicaoNaLista + 1).padStart(4, '0')}`;
+const formatSaleNumber = (index: number) =>
+  `VND-${String(index + 1).padStart(4, '0')}`;
 
-const formatarDataBR = (dataIso: string) => {
-  if (!dataIso || dataIso.length < 10) return dataIso || '—';
-  const [ano, mes, dia] = dataIso.slice(0, 10).split('-');
-  return `${dia}/${mes}/${ano}`;
+const formatDateBR = (isoDate: string) => {
+  if (!isoDate || isoDate.length < 10) return isoDate || '—';
+  const [year, month, day] = isoDate.slice(0, 10).split('-');
+  return `${day}/${month}/${year}`;
 };
 
-const STATUS_CONCLUIDOS = ['Concluída', 'Entregue'] as const;
+const COMPLETED_STATUSES = ['Concluída', 'Entregue'];
 
-export default function VendasPage() {
+export default function SalesPage() {
   return (
     <Suspense fallback={null}>
-      <VendasContent />
+      <SalesContent />
     </Suspense>
   );
 }
 
-function VendasContent() {
+function SalesContent() {
   const { list: salesList, remove: removeSale, update: updateSale } = useSalesModel();
   const { list: customersList, remove: removeCustomer } = useCustomersModel();
   const sales = salesList.data ?? [];
   const customers = customersList.data ?? [];
 
   const searchParams = useSearchParams();
-  const abrirNaVenda = searchParams.get('novo') === '1';
+  const openNewSaleOnLoad = searchParams.get('novo') === '1';
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
   const [showCustomerModal, setShowCustomerModal] = useState(false);
-  const [showNewRegistrationModal, setShowNewRegistrationModal] = useState(() => abrirNaVenda);
+  const [showNewRegistrationModal, setShowNewRegistrationModal] = useState(() => openNewSaleOnLoad);
   const [editCustomerId, setEditCustomerId] = useState<number | undefined>();
 
-  const deleteVendaModal = useModal();
-  const [saleToDelete, setSaleToDelete] = useState<{
-    id: number;
-    numero: string;
-  } | null>(null);
+  const deleteSaleModal = useModal();
+  const [saleToDelete, setSaleToDelete] = useState<{ id: number; number: string } | null>(null);
 
-  const deleteClienteModal = useModal();
-  const [customerToDelete, setCustomerToDelete] = useState<{ id: number; nome: string } | null>(
-    null
-  );
+  const deleteCustomerModal = useModal();
+  const [customerToDelete, setCustomerToDelete] = useState<{ id: number; name: string } | null>(null);
 
   const handleConfirmDeleteSale = async () => {
     if (!saleToDelete) return;
     await removeSale.mutateAsync(saleToDelete.id);
     setSaleToDelete(null);
-    deleteVendaModal.closeModal();
+    deleteSaleModal.closeModal();
   };
 
   const handleConfirmDeleteCustomer = async () => {
     if (!customerToDelete) return;
     await removeCustomer.mutateAsync(customerToDelete.id);
     setCustomerToDelete(null);
-    deleteClienteModal.closeModal();
+    deleteCustomerModal.closeModal();
   };
 
-  const handleToggleDelivered = async (vendaIdx: number, statusAtual: string) => {
-    const venda = sortedSales[vendaIdx];
-    if (!venda?.vendaId) return;
-    const novoStatus = statusAtual === 'Entregue' ? 'Pendente' : 'Entregue';
+  const handleToggleDelivered = async (saleIndex: number, currentStatus: string) => {
+    const sale = sortedSales[saleIndex];
+    if (!sale?.vendaId) return;
+    const newStatus = currentStatus === 'Entregue' ? 'Pendente' : 'Entregue';
     await updateSale.mutateAsync({
-      vendasId: venda.vendaId,
-      cliente: venda.cliente,
-      dataVenda: venda.dataVenda,
-      endereco: venda.endereco,
-      frete: venda.frete,
-      valorTotal: venda.valorTotal,
-      pagamento: venda.pagamento,
-      canalVenda: venda.canalVenda,
-      custosAdicionais: venda.custosAdicionais,
-      statusPedido: novoStatus,
-      itens: venda.itens?.map((item) => ({
+      vendasId: sale.vendaId,
+      cliente: sale.cliente,
+      dataVenda: sale.dataVenda,
+      endereco: sale.endereco,
+      frete: sale.frete,
+      valorTotal: sale.valorTotal,
+      pagamento: sale.pagamento,
+      canalVenda: sale.canalVenda,
+      custosAdicionais: sale.custosAdicionais,
+      statusPedido: newStatus,
+      itens: sale.itens?.map((item) => ({
         discoId: item.discoId,
         nomeDisco: item.nomeDisco,
         nomeArtista: item.nomeArtista,
@@ -117,18 +112,18 @@ function VendasContent() {
 
   const rows = useMemo(
     () =>
-      sortedSales.map((venda, posicao) => ({
-        id: venda.vendaId ?? 0,
-        numero: formatNumeroVenda(posicao),
-        cliente: venda.cliente?.nomeCliente ?? '—',
-        clienteId: venda.cliente?.clienteId,
-        data: venda.dataVenda ?? '',
-        itens: venda.itens?.length ?? 0,
-        total: venda.valorTotal ?? 0,
-        pagamento: venda.pagamento ?? '—',
-        canalVenda: venda.canalVenda?.nomeCanalVenda ?? '—',
-        status: venda.statusPedido ?? 'Pendente',
-        rawIdx: posicao,
+      sortedSales.map((sale, index) => ({
+        id: sale.vendaId ?? 0,
+        number: formatSaleNumber(index),
+        customer: sale.cliente?.nomeCliente ?? '—',
+        customerId: sale.cliente?.clienteId,
+        date: sale.dataVenda ?? '',
+        items: sale.itens?.length ?? 0,
+        total: sale.valorTotal ?? 0,
+        payment: sale.pagamento ?? '—',
+        salesChannel: sale.canalVenda?.nomeCanalVenda ?? '—',
+        status: sale.statusPedido ?? 'Pendente',
+        rawIdx: index,
       })),
     [sortedSales]
   );
@@ -136,35 +131,33 @@ function VendasContent() {
   const normalizedSearch = searchTerm.toLowerCase();
   const filteredRows = rows.filter((row) => {
     const matchesSearch =
-      row.numero.toLowerCase().includes(normalizedSearch) ||
-      row.cliente.toLowerCase().includes(normalizedSearch);
+      row.number.toLowerCase().includes(normalizedSearch) ||
+      row.customer.toLowerCase().includes(normalizedSearch);
     const matchesStatus = statusFilter === 'Todos' || row.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const totalRevenue = filteredRows
-    .filter((row) =>
-      STATUS_CONCLUIDOS.includes(row.status as (typeof STATUS_CONCLUIDOS)[number])
-    )
+    .filter((row) => COMPLETED_STATUSES.includes(row.status))
     .reduce((acc, row) => acc + row.total, 0);
 
-  const rowsForExport = () =>
-    filteredRows.map(({ numero, cliente, data, itens, total, pagamento, canalVenda, status }) => ({
-      'Nº Venda': numero,
-      Cliente: cliente,
-      Data: formatarDataBR(data),
-      Itens: itens,
+  const buildExportRows = () =>
+    filteredRows.map(({ number, customer, date, items, total, payment, salesChannel, status }) => ({
+      'Nº Venda': number,
+      Cliente: customer,
+      Data: formatDateBR(date),
+      Itens: items,
       'Total (R$)': total.toFixed(2),
-      Pagamento: pagamento,
-      'Canal de Venda': canalVenda,
+      Pagamento: payment,
+      'Canal de Venda': salesChannel,
       Status: status,
     }));
 
   const handleExportToExcel = () => {
     const stamp = new Date().toISOString().slice(0, 10);
-    exportarTabelaExcel(
+    exportTableToExcel(
       'Vendas',
-      rowsForExport() as Array<Record<string, unknown>>,
+      buildExportRows() as Array<Record<string, unknown>>,
       `vendas-${stamp}.xlsx`
     );
   };
@@ -259,9 +252,9 @@ function VendasContent() {
                       if (customer.clienteId === undefined) return;
                       setCustomerToDelete({
                         id: customer.clienteId,
-                        nome: customer.nomeCliente ?? '',
+                        name: customer.nomeCliente ?? '',
                       });
-                      deleteClienteModal.openModal();
+                      deleteCustomerModal.openModal();
                     }}
                     className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                   >
@@ -312,37 +305,37 @@ function VendasContent() {
                   </td>
                 </tr>
               ) : (
-                filteredRows.map((sale) => (
+                filteredRows.map((row) => (
                   <tr
-                    key={sale.id}
+                    key={row.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
                     <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
-                      {sale.numero}
+                      {row.number}
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
-                      {sale.cliente}
+                      {row.customer}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {formatarDataBR(sale.data)}
+                      {formatDateBR(row.date)}
                     </td>
                     <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
-                      {sale.itens}
+                      {row.items}
                     </td>
                     <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
-                      R$ {sale.total.toFixed(2)}
+                      R$ {row.total.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {sale.pagamento}
+                      {row.payment}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {sale.canalVenda}
+                      {row.salesChannel}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[sale.status] || statusColor.Pendente}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[row.status] || statusColor.Pendente}`}
                       >
-                        {sale.status}
+                        {row.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -350,7 +343,7 @@ function VendasContent() {
                         <button
                           type="button"
                           onClick={() => {
-                            setEditCustomerId(sale.clienteId);
+                            setEditCustomerId(row.customerId);
                             setShowCustomerModal(true);
                           }}
                           aria-label="Editar cliente / endereço"
@@ -361,7 +354,7 @@ function VendasContent() {
                         </button>
                         <label
                           title={
-                            sale.status === 'Entregue'
+                            row.status === 'Entregue'
                               ? 'Marcar como não entregue'
                               : 'Marcar como entregue'
                           }
@@ -369,19 +362,19 @@ function VendasContent() {
                         >
                           <input
                             type="checkbox"
-                            checked={sale.status === 'Entregue'}
-                            onChange={() => handleToggleDelivered(sale.rawIdx, sale.status)}
-                            aria-label={`Marcar venda ${sale.numero} como entregue`}
+                            checked={row.status === 'Entregue'}
+                            onChange={() => handleToggleDelivered(row.rawIdx, row.status)}
+                            aria-label={`Marcar venda ${row.number} como entregue`}
                             className="h-4 w-4 cursor-pointer accent-green-600"
                           />
                         </label>
                         <button
                           type="button"
-                          aria-label={`Deletar venda ${sale.numero}`}
-                          title={`Deletar venda ${sale.numero}`}
+                          aria-label={`Apagar venda ${row.number}`}
+                          title={`Apagar venda ${row.number}`}
                           onClick={() => {
-                            setSaleToDelete({ id: sale.id, numero: sale.numero });
-                            deleteVendaModal.openModal();
+                            setSaleToDelete({ id: row.id, number: row.number });
+                            deleteSaleModal.openModal();
                           }}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                         >
@@ -397,20 +390,20 @@ function VendasContent() {
         </div>
       </div>
 
-      <ClienteEnderecoModal
+      <CustomerAddressModal
         isOpen={showCustomerModal}
         onClose={() => setShowCustomerModal(false)}
         clienteId={editCustomerId}
       />
-      <NovoCadastroModal
+      <NewRegistrationModal
         isOpen={showNewRegistrationModal}
         onClose={() => setShowNewRegistrationModal(false)}
-        initialView={abrirNaVenda ? 'venda' : 'select'}
+        initialView={openNewSaleOnLoad ? 'venda' : 'select'}
       />
 
       <Modal
-        isOpen={deleteVendaModal.isOpen}
-        onClose={deleteVendaModal.closeModal}
+        isOpen={deleteSaleModal.isOpen}
+        onClose={deleteSaleModal.closeModal}
         className="m-4 max-w-[440px]"
         showCloseButton={false}
       >
@@ -421,14 +414,14 @@ function VendasContent() {
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
             Tem certeza que deseja apagar a venda{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {saleToDelete?.numero}
+              {saleToDelete?.number}
             </span>
             ? Esta ação não pode ser desfeita.
           </p>
           <div className="flex justify-end gap-3">
             <button
               type="button"
-              onClick={deleteVendaModal.closeModal}
+              onClick={deleteSaleModal.closeModal}
               className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
             >
               Cancelar
@@ -445,8 +438,8 @@ function VendasContent() {
       </Modal>
 
       <Modal
-        isOpen={deleteClienteModal.isOpen}
-        onClose={deleteClienteModal.closeModal}
+        isOpen={deleteCustomerModal.isOpen}
+        onClose={deleteCustomerModal.closeModal}
         className="m-4 max-w-[440px]"
         showCloseButton={false}
       >
@@ -455,16 +448,16 @@ function VendasContent() {
             Excluir cliente
           </h4>
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-            Tem certeza que deseja excluir esse cliente{' '}
+            Tem certeza que deseja excluir o cliente{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {customerToDelete?.nome}
+              {customerToDelete?.name}
             </span>
             ?
           </p>
           <div className="flex justify-end gap-3">
             <button
               type="button"
-              onClick={deleteClienteModal.closeModal}
+              onClick={deleteCustomerModal.closeModal}
               className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
             >
               Cancelar

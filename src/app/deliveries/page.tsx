@@ -2,10 +2,10 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useVendas, useItensVenda, useDiscos } from '@/shared/store/useStore';
+import { useSalesStore, useSaleItemsStore, useRecordsStore } from '@/shared/store/useStore';
 
-const STATUS_ENTREGA = ['Confirmada', 'Enviada', 'Entregue', 'Cancelada'] as const;
-type StatusEntrega = (typeof STATUS_ENTREGA)[number];
+const DELIVERY_STATUSES = ['Confirmada', 'Enviada', 'Entregue', 'Cancelada'];
+type DeliveryStatus = (typeof DELIVERY_STATUSES)[number];
 
 const statusColor: Record<string, string> = {
   Entregue: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
@@ -14,53 +14,53 @@ const statusColor: Record<string, string> = {
   Cancelada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
-export default function EntregasPage() {
-  const { vendasComDetalhes, fetchVendas } = useVendas();
-  const { fetchItensVenda } = useItensVenda();
-  const { fetchDiscos } = useDiscos();
-  const [busca, setBusca] = useState('');
-  const [filtroStatus, setFiltroStatus] = useState('Todos');
+export default function DeliveriesPage() {
+  const { salesWithDetails, fetchSales } = useSalesStore();
+  const { fetchSaleItems } = useSaleItemsStore();
+  const { fetchRecords } = useRecordsStore();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('Todos');
 
   useEffect(() => {
-    fetchVendas();
-    fetchItensVenda();
-    fetchDiscos();
-  }, [fetchVendas, fetchItensVenda, fetchDiscos]);
+    fetchSales();
+    fetchSaleItems();
+    fetchRecords();
+  }, [fetchSales, fetchSaleItems, fetchRecords]);
 
-  const entregas = useMemo(
+  const deliveries = useMemo(
     () =>
-      vendasComDetalhes.filter((v) =>
-        STATUS_ENTREGA.includes(v.statusPedido as StatusEntrega)
+      salesWithDetails.filter((v) =>
+        DELIVERY_STATUSES.includes(v.statusPedido as DeliveryStatus)
       ),
-    [vendasComDetalhes]
+    [salesWithDetails]
   );
 
-  const entregasFiltradas = useMemo(() => {
-    const buscaNorm = busca.toLowerCase();
-    return entregas.filter((v) => {
-      const matchBusca =
-        v.id.toLowerCase().includes(buscaNorm) ||
-        v.clienteNome.toLowerCase().includes(buscaNorm) ||
-        v.enderecoCompleto.toLowerCase().includes(buscaNorm) ||
-        v.produtosResumo.toLowerCase().includes(buscaNorm);
-      const matchStatus = filtroStatus === 'Todos' || v.statusPedido === filtroStatus;
-      return matchBusca && matchStatus;
+  const filteredDeliveries = useMemo(() => {
+    const normalizedSearch = searchTerm.toLowerCase();
+    return deliveries.filter((v) => {
+      const matchSearch =
+        v.id.toLowerCase().includes(normalizedSearch) ||
+        v.customerName.toLowerCase().includes(normalizedSearch) ||
+        v.fullAddress.toLowerCase().includes(normalizedSearch) ||
+        v.productsSummary.toLowerCase().includes(normalizedSearch);
+      const matchStatus = statusFilter === 'Todos' || v.statusPedido === statusFilter;
+      return matchSearch && matchStatus;
     });
-  }, [entregas, busca, filtroStatus]);
+  }, [deliveries, searchTerm, statusFilter]);
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Entregas" />
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {STATUS_ENTREGA.map((s) => (
+        {DELIVERY_STATUSES.map((s) => (
           <div
             key={s}
             className="hover:border-brand-300 cursor-pointer rounded-xl border border-gray-200 bg-white p-4 transition-colors dark:border-gray-800 dark:bg-white/[0.03]"
-            onClick={() => setFiltroStatus(filtroStatus === s ? 'Todos' : s)}
+            onClick={() => setStatusFilter(statusFilter === s ? 'Todos' : s)}
           >
             <p className="mt-1 text-2xl font-bold text-gray-800 dark:text-white">
-              {entregas.filter((v) => v.statusPedido === s).length}
+              {deliveries.filter((v) => v.statusPedido === s).length}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">{s}</p>
           </div>
@@ -74,17 +74,17 @@ export default function EntregasPage() {
               Todas as Entregas
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {entregasFiltradas.length} entrega(s) encontrada(s)
+              {filteredDeliveries.length} entrega(s) encontrada(s)
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <select
-              value={filtroStatus}
-              onChange={(e) => setFiltroStatus(e.target.value)}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             >
               <option value="Todos">Todos os Status</option>
-              {STATUS_ENTREGA.map((s) => (
+              {DELIVERY_STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
@@ -93,22 +93,22 @@ export default function EntregasPage() {
             <input
               type="text"
               placeholder="Buscar entrega..."
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             />
             <div className="flex gap-2">
               <Link
-                href="/entregas/pendentes"
+                href="/deliveries/pending"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-yellow-300 bg-yellow-50 px-3 py-2 text-xs font-medium text-yellow-700 transition-colors hover:bg-yellow-100 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
               >
                 Pendentes
               </Link>
               <Link
-                href="/entregas/concluidas"
+                href="/deliveries/completed"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400"
               >
-                Concluidas
+                Concluídas
               </Link>
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function EntregasPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {entregasFiltradas.length === 0 ? (
+              {filteredDeliveries.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -146,28 +146,28 @@ export default function EntregasPage() {
                   </td>
                 </tr>
               ) : (
-                entregasFiltradas.map((venda) => (
+                filteredDeliveries.map((delivery) => (
                   <tr
-                    key={venda.id}
+                    key={delivery.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   >
                     <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-gray-400">
-                      {venda.id}
+                      {delivery.id}
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
-                      {venda.clienteNome}
+                      {delivery.customerName}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.produtosResumo}
+                      {delivery.productsSummary}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {venda.enderecoCompleto}
+                      {delivery.fullAddress}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[venda.statusPedido] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[delivery.statusPedido] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}
                       >
-                        {venda.statusPedido}
+                        {delivery.statusPedido}
                       </span>
                     </td>
                   </tr>

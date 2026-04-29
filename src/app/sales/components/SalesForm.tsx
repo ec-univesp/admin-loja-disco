@@ -9,12 +9,12 @@ import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import TextArea from '@/shared/components/form/TextArea';
 import Button from '@/shared/components/ui/button/Button';
 import { formatBRL } from '@/shared/utils/currency';
-import { useRecordsModel } from '@/app/estoque/model/recordsModel';
-import { useSalesChannelsModel } from '@/app/vendas/model/salesChannelsModel';
-import { useCustomersModel } from '@/app/vendas/model/customersModel';
-import { useSalesModel } from '@/app/vendas/model/salesModel';
-import ClienteEnderecoModal from './ClienteEnderecoModal';
-import CanalVendaModal from './CanalVendaModal';
+import { useRecordsModel } from '@/app/inventory/model/recordsModel';
+import { useSalesChannelsModel } from '@/app/sales/model/salesChannelsModel';
+import { useCustomersModel } from '@/app/sales/model/customersModel';
+import { useSalesModel } from '@/app/sales/model/salesModel';
+import ClienteEnderecoModal from './CustomerAddressModal';
+import CanalVendaModal from './SalesChannelModal';
 
 interface SaleItemForm {
   discoId: string;
@@ -167,11 +167,11 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
       reset();
       setItems([{ discoId: '', precoVenda: 0 }]);
-      setSuccessMessage('Venda registrada com sucesso!');
+      setSuccessMessage('Sale recorded successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
       onSuccess?.();
     } catch (err) {
-      console.error('Erro ao criar venda:', err);
+      console.error('Error creating sale:', err);
     }
   };
 
@@ -187,7 +187,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Dados do Cliente
+              Customer Details
             </h3>
             <div className="flex gap-2">
               {clienteId && (
@@ -200,7 +200,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     setShowCustomerModal(true);
                   }}
                 >
-                  Editar Endereço
+                  Edit Address
                 </Button>
               )}
               <Button
@@ -212,24 +212,24 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   setShowCustomerModal(true);
                 }}
               >
-                + Novo Cliente
+                + New Customer
               </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <Label htmlFor="clienteId">Selecione um Cliente *</Label>
+              <Label htmlFor="clienteId">Select a Customer *</Label>
               <select
                 id="clienteId"
                 {...register('clienteId', { required: 'Cliente é obrigatório' })}
                 className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
-                <option value="">-- Selecione --</option>
+                <option value="">-- Select --</option>
                 {customers.map((customer) => (
                   <option key={customer.clienteId} value={customer.clienteId ?? ''}>
                     {customer.nomeCliente}
-                    {customer.idade ? ` (${customer.idade} anos)` : ''}
+                    {customer.idade ? ` (${customer.idade} yrs)` : ''}
                   </option>
                 ))}
               </select>
@@ -239,7 +239,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
             </div>
 
             <div>
-              <Label htmlFor="enderecoId">Endereço de Entrega *</Label>
+              <Label htmlFor="enderecoId">Delivery Address *</Label>
               <select
                 id="enderecoId"
                 {...register('enderecoId', { required: 'Endereço é obrigatório' })}
@@ -247,7 +247,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                 disabled={!clienteId}
               >
                 <option value="">
-                  {clienteId ? '-- Selecione --' : 'Escolha um cliente primeiro'}
+                  {clienteId ? '-- Select --' : 'Choose a customer first'}
                 </option>
                 {customerAddresses.map((address) => (
                   <option key={address.enderecoId} value={address.enderecoId ?? ''}>
@@ -264,9 +264,9 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Discos</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Records</h3>
             <Button size="sm" variant="primary" type="button" onClick={addItem}>
-              + Adicionar Disco
+              + Add Record
             </Button>
           </div>
 
@@ -282,7 +282,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Disco {index + 1}
+                      Record {index + 1}
                     </span>
                     {items.length > 1 && (
                       <button
@@ -290,21 +290,21 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                         onClick={() => removeItem(index)}
                         className="text-sm text-red-500 hover:text-red-700"
                       >
-                        Remover
+                        Remove
                       </button>
                     )}
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                      <Label htmlFor={`disco-${index}`}>Selecione um Disco *</Label>
+                      <Label htmlFor={`disco-${index}`}>Select a Record *</Label>
                       <select
                         id={`disco-${index}`}
                         value={item.discoId}
                         onChange={(e) => updateItem(index, 'discoId', e.target.value)}
                         className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                       >
-                        <option value="">-- Selecione --</option>
+                        <option value="">-- Select --</option>
                         {availableRecords.map((record) => (
                           <option key={record.discoId} value={record.discoId ?? ''}>
                             {record.artista?.nomeArtista} - {record.album} (R${' '}
@@ -315,7 +315,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     </div>
 
                     <div>
-                      <Label htmlFor={`preco-${index}`}>Preço de Venda *</Label>
+                      <Label htmlFor={`preco-${index}`}>Sale Price *</Label>
                       <CurrencyInput
                         id={`preco-${index}`}
                         value={item.precoVenda}
@@ -327,13 +327,13 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   {selectedRecord && (
                     <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm dark:border-blue-900 dark:bg-blue-900/20">
                       <div>
-                        <p className="text-blue-600 dark:text-blue-300">Artista</p>
+                        <p className="text-blue-600 dark:text-blue-300">Artist</p>
                         <p className="font-medium text-blue-900 dark:text-blue-100">
                           {selectedRecord.artista?.nomeArtista}
                         </p>
                       </div>
                       <div>
-                        <p className="text-blue-600 dark:text-blue-300">Valor Mercado</p>
+                        <p className="text-blue-600 dark:text-blue-300">Market Value</p>
                         <p className="font-medium text-blue-900 dark:text-blue-100">
                           R$ {(selectedRecord.valorMercado ?? 0).toFixed(2)}
                         </p>
@@ -348,13 +348,13 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-            Dados da Venda
+            Sale Details
           </h3>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="dataVenda">Data da Venda *</Label>
+                <Label htmlFor="dataVenda">Sale Date *</Label>
                 <div className="relative">
                   <input
                     type="date"
@@ -372,7 +372,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   />
                   <button
                     type="button"
-                    aria-label="Abrir calendário"
+                    aria-label="Open calendar"
                     onClick={() => {
                       const input = dataVendaRef.current;
                       if (!input) return;
@@ -390,7 +390,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               </div>
 
               <div>
-                <Label htmlFor="frete">Frete</Label>
+                <Label htmlFor="frete">Shipping</Label>
                 <Controller
                   control={control}
                   name="frete"
@@ -403,7 +403,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="pagamento">Forma de Pagamento</Label>
+                <Label htmlFor="pagamento">Payment Method</Label>
                 <select
                   id="pagamento"
                   {...register('pagamento')}
@@ -420,13 +420,13 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
               <div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="canalVendaId">Canal de Venda</Label>
+                  <Label htmlFor="canalVendaId">Sales Channel</Label>
                   <button
                     type="button"
                     className="text-brand-600 dark:text-brand-400 text-xs font-medium hover:underline"
                     onClick={() => setShowChannelModal(true)}
                   >
-                    + Cadastrar canal
+                    + Register channel
                   </button>
                 </div>
                 <select
@@ -434,7 +434,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   {...register('canalVendaId')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 >
-                  <option value="">-- Selecione --</option>
+                  <option value="">-- Select --</option>
                   {salesChannels.map((channel) => (
                     <option key={channel.idCanalVenda} value={channel.idCanalVenda ?? ''}>
                       {channel.nomeCanalVenda}
@@ -446,7 +446,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="custosAdicionais">Custos Adicionais</Label>
+                <Label htmlFor="custosAdicionais">Additional Costs</Label>
                 <Controller
                   control={control}
                   name="custosAdicionais"
@@ -461,7 +461,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               </div>
 
               <div>
-                <Label htmlFor="statusPedido">Status do Pedido</Label>
+                <Label htmlFor="statusPedido">Order Status</Label>
                 <select
                   id="statusPedido"
                   {...register('statusPedido')}
@@ -478,7 +478,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
             <div className="border-brand-200 bg-brand-50 dark:border-brand-900 dark:bg-brand-900/20 rounded-lg border p-4">
               <p className="text-brand-700 dark:text-brand-200 text-sm">
-                Valor Total da Venda:{' '}
+                Total Sale Value:{' '}
                 <span className="ml-2 text-lg font-bold">{formatBRL(totalValue)}</span>
               </p>
             </div>
@@ -486,13 +486,13 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Observações</h3>
+          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Notes</h3>
           <Controller
             name="observacoes"
             control={control}
             render={({ field: { onChange, value } }) => (
               <TextArea
-                placeholder="Adicione observações sobre a venda..."
+                placeholder="Add notes about the sale..."
                 rows={4}
                 value={value}
                 onChange={onChange}
@@ -503,7 +503,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
         <div className="flex gap-4">
           <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
-            Registrar Venda
+            Register Sale
           </Button>
           <Button
             type="reset"
@@ -514,7 +514,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               setItems([{ discoId: '', precoVenda: 0 }]);
             }}
           >
-            Limpar
+            Clear
           </Button>
         </div>
       </Form>

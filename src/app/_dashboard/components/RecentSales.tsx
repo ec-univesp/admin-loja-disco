@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/shared/components/ui/table';
 import Badge from '@/shared/components/ui/badge/Badge';
-import { useSalesModel } from '@/app/vendas/model/salesModel';
+import { useSalesModel } from '@/app/sales/model/salesModel';
 
 const statusColor: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
   Entregue: 'success',
@@ -18,7 +18,7 @@ const formatSaleNumber = (index: number): string =>
 
 const RECENT_SALES_LIMIT = 5;
 
-export default function VendasRecentes() {
+export default function RecentSales() {
   const { list } = useSalesModel();
   const sales = list.data ?? [];
 
@@ -31,12 +31,12 @@ export default function VendasRecentes() {
       const firstItem = sale.itens?.[0];
       return {
         id: sale.vendaId ?? index,
-        numero: formatSaleNumber(index),
-        disco: firstItem?.nomeDisco ?? '—',
-        quantidade: sale.itens?.length ?? 0,
-        valor: sale.valorTotal ?? 0,
+        number: formatSaleNumber(index),
+        record: firstItem?.nomeDisco ?? '—',
+        quantity: sale.itens?.length ?? 0,
+        amount: sale.valorTotal ?? 0,
         status: sale.statusPedido ?? 'Pendente',
-        cliente: sale.cliente?.nomeCliente ?? '',
+        customer: sale.cliente?.nomeCliente ?? '',
       };
     });
   }, [sales]);
@@ -93,26 +93,26 @@ export default function VendasRecentes() {
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell className="px-4 py-6 text-center text-gray-400">
-                  Nenhuma venda registrada ainda.
+                  Nenhuma venda registrada.
                 </TableCell>
               </TableRow>
             ) : (
               rows.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell className="px-4 py-4 text-left font-mono text-xs text-gray-500 dark:text-gray-400">
-                    {row.numero}
+                    {row.number}
                   </TableCell>
                   <TableCell className="px-4 py-4 text-left">
-                    <div className="font-medium text-gray-800 dark:text-white">{row.disco}</div>
+                    <div className="font-medium text-gray-800 dark:text-white">{row.record}</div>
                   </TableCell>
                   <TableCell className="px-4 py-4 text-left text-gray-600 dark:text-gray-400">
-                    {row.cliente}
+                    {row.customer}
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center font-medium text-gray-800 dark:text-white">
-                    {row.quantidade}
+                    {row.quantity}
                   </TableCell>
                   <TableCell className="px-4 py-4 text-right font-semibold text-gray-800 dark:text-white">
-                    R$ {row.valor.toFixed(2)}
+                    R$ {row.amount.toFixed(2)}
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
                     <Badge color={statusColor[row.status] || 'warning'}>{row.status}</Badge>
