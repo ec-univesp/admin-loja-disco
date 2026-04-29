@@ -11,10 +11,10 @@ import {
   useItensVenda,
   useDiscos,
   useCanaisVenda,
-  useArtistas,
   useEnderecos,
 } from '@/shared/store/useStore';
 import { useListaDeGenerosMusicais } from '@/shared/queries/generos-musicais.queries';
+import { useListaDeArtistas } from '@/shared/queries/artistas.queries';
 import { useAppStore } from '@/shared/store/appStore';
 import {
   exportarBackupCompleto,
@@ -66,7 +66,7 @@ export default function FaturamentoPage() {
   const { discos, fetchDiscos } = useDiscos();
   const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
   const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
-  const { artistas, fetchArtistas } = useArtistas();
+  const { data: artistas = [] } = useListaDeArtistas();
   const { enderecos, fetchEnderecos } = useEnderecos();
   const fullState = useAppStore();
 
@@ -87,7 +87,6 @@ export default function FaturamentoPage() {
     fetchItensVenda();
     fetchDiscos();
     fetchCanaisVenda();
-    fetchArtistas();
     fetchEnderecos();
   }, [
     fetchVendas,
@@ -95,7 +94,6 @@ export default function FaturamentoPage() {
     fetchItensVenda,
     fetchDiscos,
     fetchCanaisVenda,
-    fetchArtistas,
     fetchEnderecos,
   ]);
 
@@ -242,7 +240,9 @@ export default function FaturamentoPage() {
       itensAnalise.forEach((item) => {
         const disco = discos.find((d) => d.id === item.discoId);
         const nome = disco?.artistaId
-          ? (artistas.find((a) => a.id === disco.artistaId)?.nome ?? 'Desconhecido')
+          ? (artistas.find(
+              (artista) => String(artista.artistaId) === disco.artistaId
+            )?.nomeArtista ?? 'Desconhecido')
           : 'Desconhecido';
         map.set(nome, (map.get(nome) ?? 0) + item.precoVenda);
       });
