@@ -3,6 +3,7 @@ import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSalesStore, useSaleItemsStore, useRecordsStore } from '@/shared/store/useStore';
+import { OrderStatus } from '@/shared/types';
 
 export default function PendingDeliveriesPage() {
   const { salesWithDetails, fetchSales } = useSalesStore();
@@ -19,7 +20,7 @@ export default function PendingDeliveriesPage() {
   const pendingDeliveries = useMemo(
     () =>
       salesWithDetails.filter(
-        (v) => v.orderStatus === 'Confirmada' || v.orderStatus === 'Enviada'
+        (v) => v.orderStatus === OrderStatus.CONFIRMED || v.orderStatus === OrderStatus.SHIPPED
       ),
     [salesWithDetails]
   );
@@ -125,12 +126,12 @@ export default function PendingDeliveriesPage() {
                     <td className="px-6 py-4 text-center">
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          delivery.orderStatus === 'Enviada'
+                          delivery.orderStatus === OrderStatus.SHIPPED
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                         }`}
                       >
-                        {delivery.orderStatus}
+                        {delivery.orderStatus === OrderStatus.SHIPPED ? 'Enviada' : 'Confirmada'}
                       </span>
                     </td>
                   </tr>

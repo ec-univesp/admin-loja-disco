@@ -3,14 +3,22 @@ import { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/shared/components/ui/table';
 import Badge from '@/shared/components/ui/badge/Badge';
 import { useSalesModel } from '@/app/sales/model/salesModel';
+import { OrderStatus } from '@/shared/types';
 
 const statusColor: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
-  Entregue: 'success',
-  Concluída: 'success',
-  Pendente: 'warning',
-  Cancelada: 'error',
-  Confirmada: 'info',
-  Enviada: 'info',
+  [OrderStatus.DELIVERED]: 'success',
+  [OrderStatus.PENDING]: 'warning',
+  [OrderStatus.CANCELLED]: 'error',
+  [OrderStatus.CONFIRMED]: 'info',
+  [OrderStatus.SHIPPED]: 'info',
+};
+
+const statusLabel: Record<string, string> = {
+  [OrderStatus.PENDING]: 'Pendente',
+  [OrderStatus.CONFIRMED]: 'Confirmada',
+  [OrderStatus.SHIPPED]: 'Enviada',
+  [OrderStatus.DELIVERED]: 'Entregue',
+  [OrderStatus.CANCELLED]: 'Cancelada',
 };
 
 const formatSaleNumber = (index: number): string =>
@@ -35,7 +43,7 @@ export default function RecentSales() {
         record: firstItem?.nomeDisco ?? '—',
         quantity: sale.itens?.length ?? 0,
         amount: sale.valorTotal ?? 0,
-        status: sale.statusPedido ?? 'Pendente',
+        status: sale.statusPedido ?? OrderStatus.PENDING,
         customer: sale.cliente?.nomeCliente ?? '',
       };
     });
@@ -115,7 +123,7 @@ export default function RecentSales() {
                     R$ {row.amount.toFixed(2)}
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
-                    <Badge color={statusColor[row.status] || 'warning'}>{row.status}</Badge>
+                    <Badge color={statusColor[row.status] ?? 'warning'}>{statusLabel[row.status] ?? row.status}</Badge>
                   </TableCell>
                 </TableRow>
               ))

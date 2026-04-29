@@ -3,15 +3,27 @@ import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSalesStore, useSaleItemsStore, useRecordsStore } from '@/shared/store/useStore';
+import { OrderStatus } from '@/shared/types';
 
-const DELIVERY_STATUSES = ['Confirmada', 'Enviada', 'Entregue', 'Cancelada'];
-type DeliveryStatus = (typeof DELIVERY_STATUSES)[number];
+const DELIVERY_STATUSES = [
+  OrderStatus.CONFIRMED,
+  OrderStatus.SHIPPED,
+  OrderStatus.DELIVERED,
+  OrderStatus.CANCELLED,
+];
 
 const statusColor: Record<string, string> = {
-  Entregue: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  Enviada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  Confirmada: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  Cancelada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  [OrderStatus.DELIVERED]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  [OrderStatus.SHIPPED]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  [OrderStatus.CONFIRMED]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  [OrderStatus.CANCELLED]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+};
+
+const statusLabel: Record<string, string> = {
+  [OrderStatus.CONFIRMED]: 'Confirmada',
+  [OrderStatus.SHIPPED]: 'Enviada',
+  [OrderStatus.DELIVERED]: 'Entregue',
+  [OrderStatus.CANCELLED]: 'Cancelada',
 };
 
 export default function DeliveriesPage() {
@@ -30,7 +42,7 @@ export default function DeliveriesPage() {
   const deliveries = useMemo(
     () =>
       salesWithDetails.filter((v) =>
-        DELIVERY_STATUSES.includes(v.orderStatus as DeliveryStatus)
+        (DELIVERY_STATUSES as string[]).includes(v.orderStatus)
       ),
     [salesWithDetails]
   );
@@ -62,7 +74,7 @@ export default function DeliveriesPage() {
             <p className="mt-1 text-2xl font-bold text-gray-800 dark:text-white">
               {deliveries.filter((v) => v.orderStatus === s).length}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{s}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{statusLabel[s] ?? s}</p>
           </div>
         ))}
       </div>
@@ -86,7 +98,7 @@ export default function DeliveriesPage() {
               <option value="Todos">Todos os Status</option>
               {DELIVERY_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {statusLabel[s] ?? s}
                 </option>
               ))}
             </select>
@@ -167,7 +179,7 @@ export default function DeliveriesPage() {
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[delivery.orderStatus] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}
                       >
-                        {delivery.orderStatus}
+                        {statusLabel[delivery.orderStatus] ?? delivery.orderStatus}
                       </span>
                     </td>
                   </tr>
