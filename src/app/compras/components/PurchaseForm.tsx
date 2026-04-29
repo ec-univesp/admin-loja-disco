@@ -1,15 +1,16 @@
 'use client';
 
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Form from '@/shared/components/form/Form';
 import Label from '@/shared/components/form/Label';
 import ControlledInput from '@/shared/components/form/ControlledInput';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import Button from '@/shared/components/ui/button/Button';
-import { useCompras, useDiscos, useItensCompra } from '@/shared/store/useStore';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
+import { useListaDeDiscos } from '@/app/estoque/model/disco.model';
+import { useCriarCompra } from '@/app/compras/model/compra.model';
 import AddDiscoForm from '@/app/estoque/components/AddDiscoForm';
 
 interface ItemCompraForm {
@@ -26,17 +27,14 @@ interface PurchaseFormProps {
   onSuccess?: () => void;
 }
 
-const MENSAGEM_SUCESSO_DURACAO_MS = 3000;
-
 const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
-  const { createCompra, loading } = useCompras();
-  const { createItemCompra } = useItensCompra();
-  const { discosComArtista, fetchDiscos } = useDiscos();
+  const { mutateAsync: criarCompra, isPending: criando } = useCriarCompra();
+  const { data: discos = [] } = useListaDeDiscos();
   const [successMsg, setSuccessMsg] = useState('');
   const [itens, setItens] = useState<ItemCompraForm[]>([{ discoId: '', custoDisco: 0 }]);
   const cadastrarDiscoModal = useModal();
   const [indiceCadastro, setIndiceCadastro] = useState<number | null>(null);
-  const [discoIdsAntes, setDiscoIdsAntes] = useState<Set<string>>(new Set());
+  const [discoIdsAntes, setDiscoIdsAntes] = useState<Set<number>>(new Set());
 
   const {
     register,
@@ -50,29 +48,23 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
     },
   });
 
-  useEffect(() => {
-    fetchDiscos();
-  }, [fetchDiscos]);
-
   const somaItens = itens.reduce((acc, item) => acc + Number(item.custoDisco || 0), 0);
 
   const adicionarItem = () => setItens((prev) => [...prev, { discoId: '', custoDisco: 0 }]);
-
   const removerItem = (index: number) => setItens((prev) => prev.filter((_, i) => i !== index));
-
   const atualizarItem = (index: number, campo: keyof ItemCompraForm, valor: string | number) =>
     setItens((prev) => prev.map((item, i) => (i === index ? { ...item, [campo]: valor } : item)));
 
   const abrirCadastroDisco = (index: number) => {
     setIndiceCadastro(index);
-    setDiscoIdsAntes(new Set(discosComArtista.map((d) => d.id)));
+    setDiscoIdsAntes(new Set(discos.map((d) => d.discoId ?? 0)));
     cadastrarDiscoModal.openModal();
   };
 
   const handleDiscoCadastrado = () => {
-    const novoDisco = discosComArtista.find((d) => !discoIdsAntes.has(d.id));
-    if (indiceCadastro !== null && novoDisco) {
-      atualizarItem(indiceCadastro, 'discoId', novoDisco.id);
+    const novoDisco = discos.find((d) => !discoIdsAntes.has(d.discoId ?? 0));
+    if (indiceCadastro !== null && novoDisco?.discoId) {
+      atualizarItem(indiceCadastro, 'discoId', String(novoDisco.discoId));
     }
     setIndiceCadastro(null);
     setDiscoIdsAntes(new Set());
@@ -83,29 +75,25 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
     const itensValidos = itens.filter((item) => item.discoId);
     if (itensValidos.length === 0) return;
 
-    const novaCompra = await createCompra({
-      clienteId: '',
+    await criarCompra({
       dataCompra: dadosFormulario.dataCompra,
       fornecedor: dadosFormulario.fornecedor,
       valorTotal: somaItens,
+      itens: itensValidos.map((item) => {
+        const disco = discos.find((d) => String(d.discoId) === item.discoId);
+        return {
+          discoId: Number(item.discoId),
+          nomeDisco: disco?.album ?? '',
+          nomeArtista: disco?.artista?.nomeArtista ?? '',
+          custoDisco: Number(item.custoDisco),
+        };
+      }),
     });
-
-    if (novaCompra) {
-      await Promise.all(
-        itensValidos.map((item) =>
-          createItemCompra({
-            compraId: novaCompra.id,
-            discoId: item.discoId,
-            precoCompra: Number(item.custoDisco),
-          })
-        )
-      );
-    }
 
     reset();
     setItens([{ discoId: '', custoDisco: 0 }]);
     setSuccessMsg('Compra registrada com sucesso!');
-    setTimeout(() => setSuccessMsg(''), MENSAGEM_SUCESSO_DURACAO_MS);
+    setTimeout(() => setSuccessMsg(''), 3000);
     onSuccess?.();
   };
 
@@ -158,7 +146,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
 
           <div className="space-y-4">
             {itens.map((item, index) => {
-              const discoSelecionado = discosComArtista.find((d) => d.id === item.discoId);
+              const discoSelecionado = discos.find((d) => String(d.discoId) === item.discoId);
               return (
                 <div
                   key={index}
@@ -198,9 +186,9 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                         className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                       >
                         <option value="">-- Selecione --</option>
-                        {discosComArtista.map((disco) => (
-                          <option key={disco.id} value={disco.id}>
-                            {disco.artistaNome} - {disco.album}
+                        {discos.map((disco) => (
+                          <option key={disco.discoId} value={disco.discoId ?? ''}>
+                            {disco.artista?.nomeArtista} - {disco.album}
                           </option>
                         ))}
                       </select>
@@ -221,7 +209,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                       <div>
                         <p className="text-blue-600 dark:text-blue-300">Artista</p>
                         <p className="font-medium text-blue-900 dark:text-blue-100">
-                          {discoSelecionado.artistaNome}
+                          {discoSelecionado.artista?.nomeArtista}
                         </p>
                       </div>
                       <div>
@@ -248,7 +236,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
         </div>
 
         <div className="flex gap-4">
-          <Button type="submit" variant="primary" fullWidth isLoading={loading}>
+          <Button type="submit" variant="primary" fullWidth isLoading={criando}>
             Registrar Compra
           </Button>
           <Button
