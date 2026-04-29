@@ -2,34 +2,34 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
 import { useState, useMemo } from 'react';
-import { useRecordsModel } from '@/app/estoque/model/recordsModel';
-import { useGenresModel } from '@/app/estoque/model/genresModel';
-import { useArtistsModel } from '@/app/estoque/model/artistsModel';
+import { useRecordsModel } from '@/app/inventory/model/recordsModel';
+import { useGenresModel } from '@/app/inventory/model/genresModel';
+import { useArtistsModel } from '@/app/inventory/model/artistsModel';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import EditDiscoModal from '@/app/estoque/components/EditDiscoModal';
-import AddDiscoForm from '@/app/estoque/components/AddDiscoForm';
+import EditDiscoModal from '@/app/inventory/components/EditRecordModal';
+import AddDiscoForm from '@/app/inventory/components/AddRecordForm';
 import { Pencil, Trash2 } from 'lucide-react';
 
-type AddOption = 'menu' | 'genero' | 'artista' | 'disco';
+type AddOption = 'menu' | 'genre' | 'artist' | 'record';
 
 interface RecordRow {
   id: number;
-  codigo: string;
-  titulo: string;
-  artista: string;
-  genero: string;
-  nacionalidade: string;
-  prensagem: string;
-  encarte: string;
-  gravadora: string;
-  anoLancamento: number;
-  anoPrensagem: number;
-  condicaoCapa: string;
-  condicaoDisco: string;
-  valorMercado: number;
-  custoDisco: number;
-  preco: number;
+  code: string;
+  title: string;
+  artist: string;
+  genre: string;
+  nationality: string;
+  pressing: string;
+  insert: string;
+  label: string;
+  releaseYear: number;
+  pressingYear: number;
+  coverCondition: string;
+  recordCondition: string;
+  marketValue: number;
+  recordCost: number;
+  price: number;
   status: string;
 }
 
@@ -37,7 +37,7 @@ const generateCode = (index: number): string => {
   return `DISC-${String(index + 1).padStart(4, '0')}`;
 };
 
-export default function EstoquePage() {
+export default function InventoryPage() {
   const { list: recordsList, remove: removeRecord } = useRecordsModel();
   const { list: genresList, create: createGenre, remove: removeGenre } = useGenresModel();
   const { list: artistsList, create: createArtist, remove: removeArtist } = useArtistsModel();
@@ -58,7 +58,7 @@ export default function EstoquePage() {
   };
 
   const deleteRecordModal = useModal();
-  const [recordToDelete, setRecordToDelete] = useState<{ id: number; titulo: string } | null>(null);
+  const [recordToDelete, setRecordToDelete] = useState<{ id: number; title: string } | null>(null);
 
   const deleteGenreModal = useModal();
   const [genreToDelete, setGenreToDelete] = useState<{
@@ -109,24 +109,24 @@ export default function EstoquePage() {
 
   const rows = useMemo<RecordRow[]>(
     () =>
-      records.map((disco, index) => ({
-        id: disco.discoId ?? 0,
-        codigo: generateCode(index),
-        titulo: disco.album ?? '',
-        artista: disco.artista?.nomeArtista ?? 'Desconhecido',
-        genero: disco.generosMusicais?.[0]?.nomeGenero ?? '',
-        nacionalidade: disco.nacionalidade ?? '',
-        prensagem: disco.prensagem ?? '',
-        encarte: disco.encarte ?? '',
-        gravadora: disco.gravadora ?? '',
-        anoLancamento: disco.anoLancamento ?? 0,
-        anoPrensagem: disco.anoPrensagem ?? 0,
-        condicaoCapa: disco.condicaoCapa ?? '',
-        condicaoDisco: disco.condicaoDisco ?? '',
-        valorMercado: disco.valorMercado ?? 0,
-        custoDisco: disco.custoDisco ?? 0,
-        preco: disco.valorMercado ?? 0,
-        status: disco.status ?? 'Disponível',
+      records.map((record, index) => ({
+        id: record.discoId ?? 0,
+        code: generateCode(index),
+        title: record.album ?? '',
+        artist: record.artista?.nomeArtista ?? 'Desconhecido',
+        genre: record.generosMusicais?.[0]?.nomeGenero ?? '',
+        nationality: record.nacionalidade ?? '',
+        pressing: record.prensagem ?? '',
+        insert: record.encarte ?? '',
+        label: record.gravadora ?? '',
+        releaseYear: record.anoLancamento ?? 0,
+        pressingYear: record.anoPrensagem ?? 0,
+        coverCondition: record.condicaoCapa ?? '',
+        recordCondition: record.condicaoDisco ?? '',
+        marketValue: record.valorMercado ?? 0,
+        recordCost: record.custoDisco ?? 0,
+        price: record.valorMercado ?? 0,
+        status: record.status ?? 'Disponível',
       })),
     [records]
   );
@@ -135,9 +135,9 @@ export default function EstoquePage() {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
-      row.titulo.toLowerCase().includes(term) ||
-      row.artista.toLowerCase().includes(term) ||
-      row.codigo.toLowerCase().includes(term)
+      row.title.toLowerCase().includes(term) ||
+      row.artist.toLowerCase().includes(term) ||
+      row.code.toLowerCase().includes(term)
     );
   });
 
@@ -149,7 +149,7 @@ export default function EstoquePage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Estoque – Produtos" />
+      <PageBreadcrumb pageTitle="Estoque" />
 
       <div className="grid gap-4">
         <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-brand-50 via-white to-brand-25 dark:border-gray-700 dark:from-brand-950/50 dark:via-gray-900 dark:to-brand-900/30">
@@ -165,7 +165,7 @@ export default function EstoquePage() {
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
-                placeholder="Buscar album, artista ou codigo..."
+                placeholder="Buscar álbum, artista ou código..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
@@ -189,7 +189,7 @@ export default function EstoquePage() {
                 <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Código</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Álbum</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Nome Artista</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Artista</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Gênero</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Nacionalidade</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Prensagem</th>
@@ -199,7 +199,7 @@ export default function EstoquePage() {
                   <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Ano Prens.</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cond. Capa</th>
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cond. Disco</th>
-                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Valor Mercado</th>
+                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Valor de Mercado</th>
                   <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Custo</th>
                   <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">Ações</th>
                 </tr>
@@ -213,11 +213,11 @@ export default function EstoquePage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                         </svg>
                         <p className="text-gray-500 dark:text-gray-400">
-                          {loading ? '⏳ Carregando estoque...' : '📭 Nenhum disco encontrado'}
+                          {loading ? 'Carregando estoque...' : 'Nenhum disco encontrado'}
                         </p>
                         {!loading && (
                           <p className="text-xs text-gray-400 dark:text-gray-500">
-                            Clique em &quot;Adicionar Disco&quot; para começar
+                            Clique em &quot;Adicionar&quot; para começar
                           </p>
                         )}
                       </div>
@@ -230,53 +230,53 @@ export default function EstoquePage() {
                       className="transition-all duration-200 hover:bg-brand-50/50 dark:hover:bg-brand-900/20"
                     >
                       <td className="px-4 py-4 font-mono text-xs font-medium text-gray-600 dark:text-gray-400">
-                        {row.codigo}
+                        {row.code}
                       </td>
                       <td className="px-4 py-4 font-semibold text-gray-900 dark:text-white">
-                        {row.titulo}
+                        {row.title}
                       </td>
                       <td className="px-4 py-4 text-gray-700 dark:text-gray-300">
-                        {row.artista}
+                        {row.artist}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {row.genero || '—'}
+                        {row.genre || '—'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {row.nacionalidade || '—'}
+                        {row.nationality || '—'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {row.prensagem || '—'}
+                        {row.pressing || '—'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {row.encarte || '—'}
+                        {row.insert || '—'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {row.gravadora || '—'}
+                        {row.label || '—'}
                       </td>
                       <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
-                        {row.anoLancamento || '—'}
+                        {row.releaseYear || '—'}
                       </td>
                       <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
-                        {row.anoPrensagem || '—'}
+                        {row.pressingYear || '—'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {row.condicaoCapa || '—'}
+                        {row.coverCondition || '—'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {row.condicaoDisco || '—'}
+                        {row.recordCondition || '—'}
                       </td>
                       <td className="px-4 py-4 text-right font-medium text-brand-700 dark:text-brand-400">
-                        R$ {row.valorMercado.toFixed(2)}
+                        R$ {row.marketValue.toFixed(2)}
                       </td>
                       <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
-                        R$ {row.custoDisco.toFixed(2)}
+                        R$ {row.recordCost.toFixed(2)}
                       </td>
                       <td className="px-4 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"
-                            aria-label={`Editar disco ${row.titulo}`}
-                            title={`Editar disco ${row.titulo}`}
+                            aria-label={`Editar disco ${row.title}`}
+                            title={`Editar disco ${row.title}`}
                             onClick={() => setEditRecordId(row.id > 0 ? row.id : null)}
                             className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
                           >
@@ -284,10 +284,10 @@ export default function EstoquePage() {
                           </button>
                           <button
                             type="button"
-                            aria-label={`Apagar disco ${row.titulo}`}
-                            title={`Apagar disco ${row.titulo}`}
+                            aria-label={`Apagar disco ${row.title}`}
+                            title={`Apagar disco ${row.title}`}
                             onClick={() => {
-                              setRecordToDelete({ id: row.id > 0 ? row.id : 0, titulo: row.titulo });
+                              setRecordToDelete({ id: row.id > 0 ? row.id : 0, title: row.title });
                               deleteRecordModal.openModal();
                             }}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
@@ -315,7 +315,7 @@ export default function EstoquePage() {
                 <span className="text-gray-600 dark:text-gray-400">
                   Valor total:{' '}
                   <span className="font-semibold text-brand-700 dark:text-brand-400">
-                    R$ {filteredRows.reduce((sum, row) => sum + row.preco, 0).toFixed(2)}
+                    R$ {filteredRows.reduce((sum, row) => sum + row.price, 0).toFixed(2)}
                   </span>
                 </span>
               </div>
@@ -327,7 +327,7 @@ export default function EstoquePage() {
       <Modal
         isOpen={addModal.isOpen}
         onClose={closeAddModal}
-        className={`m-4 ${addOption === 'disco' ? 'max-w-[1000px]' : 'max-w-[560px]'}`}
+        className={`m-4 ${addOption === 'record' ? 'max-w-[1000px]' : 'max-w-[560px]'}`}
       >
         <div className="p-6">
           {addOption !== 'menu' && (
@@ -354,7 +354,7 @@ export default function EstoquePage() {
               <div className="grid gap-3 sm:grid-cols-3">
                 <button
                   type="button"
-                  onClick={() => setAddOption('genero')}
+                  onClick={() => setAddOption('genre')}
                   className="group flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
                 >
                   <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400">
@@ -368,7 +368,7 @@ export default function EstoquePage() {
 
                 <button
                   type="button"
-                  onClick={() => setAddOption('artista')}
+                  onClick={() => setAddOption('artist')}
                   className="group flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
                 >
                   <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400">
@@ -382,7 +382,7 @@ export default function EstoquePage() {
 
                 <button
                   type="button"
-                  onClick={() => setAddOption('disco')}
+                  onClick={() => setAddOption('record')}
                   className="group flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
                 >
                   <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400">
@@ -392,13 +392,13 @@ export default function EstoquePage() {
                     </svg>
                   </span>
                   <span className="font-semibold text-gray-800 dark:text-white/90">Adicionar Disco</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Cadastre um novo disco no estoque.</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Adicione um disco ao estoque.</span>
                 </button>
               </div>
             </>
           )}
 
-          {addOption === 'genero' && (
+          {addOption === 'genre' && (
             <>
               <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
                 Cadastrar Gênero Musical
@@ -412,7 +412,7 @@ export default function EstoquePage() {
                     type="text"
                     value={newGenre}
                     onChange={(e) => setNewGenre(e.target.value)}
-                    placeholder="Ex: MPB, Reggae, Samba..."
+                    placeholder="e.g. MPB, Reggae, Samba..."
                     className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleAddGenre();
@@ -424,7 +424,7 @@ export default function EstoquePage() {
                 {genres.length > 0 && (
                   <div>
                     <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-                      Gêneros já cadastrados:
+                      Gêneros cadastrados:
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {genres.map((genre) => (
@@ -437,8 +437,8 @@ export default function EstoquePage() {
                           </span>
                           <button
                             type="button"
-                            aria-label={`Excluir gênero ${genre.nomeGenero}`}
-                            title={`Excluir gênero ${genre.nomeGenero}`}
+                            aria-label={`Delete genre ${genre.nomeGenero}`}
+                            title={`Delete genre ${genre.nomeGenero}`}
                             onClick={() => {
                               if (genre.generoMusicalId === undefined) return;
                               setGenreToDelete({
@@ -469,7 +469,7 @@ export default function EstoquePage() {
             </>
           )}
 
-          {addOption === 'artista' && (
+          {addOption === 'artist' && (
             <>
               <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
                 Cadastrar Artista
@@ -483,7 +483,7 @@ export default function EstoquePage() {
                     type="text"
                     value={newArtist}
                     onChange={(e) => setNewArtist(e.target.value)}
-                    placeholder="Ex: The Beatles, Caetano Veloso..."
+                    placeholder="e.g. The Beatles, Caetano Veloso..."
                     className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleAddArtist();
@@ -495,7 +495,7 @@ export default function EstoquePage() {
                 {artists.length > 0 && (
                   <div>
                     <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-                      Artistas já cadastrados:
+                      Artistas cadastrados:
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {artists.map((artist) => (
@@ -508,8 +508,8 @@ export default function EstoquePage() {
                           </span>
                           <button
                             type="button"
-                            aria-label={`Excluir artista ${artist.nomeArtista}`}
-                            title={`Excluir artista ${artist.nomeArtista}`}
+                            aria-label={`Delete artist ${artist.nomeArtista}`}
+                            title={`Delete artist ${artist.nomeArtista}`}
                             onClick={() => {
                               if (artist.artistaId === undefined) return;
                               setArtistToDelete({
@@ -540,7 +540,7 @@ export default function EstoquePage() {
             </>
           )}
 
-          {addOption === 'disco' && (
+          {addOption === 'record' && (
             <>
               <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
                 Adicionar Disco
@@ -561,10 +561,10 @@ export default function EstoquePage() {
       >
         <div className="p-6">
           <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Excluir artista
+            Apagar artista
           </h4>
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-            Tem certeza que deseja excluir esse artista{' '}
+            Tem certeza que deseja apagar o artista{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
               {artistToDelete?.nomeArtista}
             </span>
@@ -608,7 +608,7 @@ export default function EstoquePage() {
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
             Tem certeza que deseja apagar o disco{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {recordToDelete?.titulo}
+              {recordToDelete?.title}
             </span>
             ? Esta ação não pode ser desfeita.
           </p>
@@ -639,10 +639,10 @@ export default function EstoquePage() {
       >
         <div className="p-6">
           <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Excluir gênero musical
+            Apagar gênero musical
           </h4>
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-            Tem certeza que deseja excluir esse gênero{' '}
+            Tem certeza que deseja apagar o gênero{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
               {genreToDelete?.nomeGenero}
             </span>

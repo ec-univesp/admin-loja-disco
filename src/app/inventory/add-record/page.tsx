@@ -1,12 +1,12 @@
 'use client';
 
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
-import AddDiscoForm from '@/app/estoque/components/AddDiscoForm';
+import AddDiscoForm from '@/app/inventory/components/AddRecordForm';
 
-export default function AddProdutoPage() {
+export default function AddRecordPage() {
   return (
     <>
-      <PageBreadcrumb pageTitle="Adicionar Produto" />
+      <PageBreadcrumb pageTitle="Add Record" />
       <div className="grid gap-6">
         <AddDiscoForm />
       </div>

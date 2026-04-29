@@ -3,10 +3,10 @@ import React from 'react';
 import Badge from '@/shared/components/ui/badge/Badge';
 import { ArrowUpIcon, BoxIconLine, GroupIcon } from '@/shared/icons';
 
-export const MetricasLoja = () => {
+export const StoreMetrics = () => {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-      {/* Clientes */}
+      {/* Customers */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
           <GroupIcon className="size-6 text-gray-800 dark:text-white/90" />
@@ -23,7 +23,7 @@ export const MetricasLoja = () => {
         </div>
       </div>
 
-      {/* Discos Vendidos */}
+      {/* Records Sold */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
           <BoxIconLine className="text-gray-800 dark:text-white/90" />

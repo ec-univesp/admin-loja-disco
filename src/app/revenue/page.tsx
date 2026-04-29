@@ -5,20 +5,20 @@ import React, { useMemo, useState } from 'react';
 import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
-import { useSalesModel } from '@/app/vendas/model/salesModel';
-import { usePurchasesModel } from '@/app/compras/model/purchasesModel';
-import { useRecordsModel } from '@/app/estoque/model/recordsModel';
-import { useGenresModel } from '@/app/estoque/model/genresModel';
+import { useSalesModel } from '@/app/sales/model/salesModel';
+import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
+import { useRecordsModel } from '@/app/inventory/model/recordsModel';
+import { useGenresModel } from '@/app/inventory/model/genresModel';
 import { useAppStore } from '@/shared/store/appStore';
 import {
   exportFullBackup,
   exportFinancialReport,
   exportFinancialReportCSV,
 } from '@/shared/services/exportExcel';
-import { getMockMonthly, mockDimensionProportions, scaleDimension } from '@/app/faturamento/mocks';
-import type { Dimension } from '@/app/faturamento/mocks';
+import { getMockMonthly, mockDimensionProportions, scaleDimension } from '@/app/revenue/mocks';
+import type { Dimension } from '@/app/revenue/mocks';
 
-const MONTHS_PT = [
+const MONTH_LABELS = [
   'Jan',
   'Fev',
   'Mar',
@@ -52,7 +52,7 @@ function groupBy(
     .sort((a, b) => b.total - a.total);
 }
 
-export default function FaturamentoPage() {
+export default function RevenuePage() {
   const { list: salesQuery } = useSalesModel();
   const { list: purchasesQuery } = usePurchasesModel();
   const { list: recordsQuery } = useRecordsModel();
@@ -117,7 +117,7 @@ export default function FaturamentoPage() {
       .map(([k, t]) => {
         const [, m] = k.split('-');
         return {
-          month: MONTHS_PT[Number(m) - 1] ?? k,
+          month: MONTH_LABELS[Number(m) - 1] ?? k,
           revenue: t.revenue,
           expenses: t.expenses,
           profit: t.revenue - t.expenses,
@@ -250,7 +250,7 @@ export default function FaturamentoPage() {
               className="h-9 rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             >
               <option value={0}>Todos os meses</option>
-              {MONTHS_PT.map((m, i) => (
+              {MONTH_LABELS.map((m, i) => (
                 <option key={m} value={i + 1}>
                   {m}
                 </option>
@@ -315,7 +315,7 @@ export default function FaturamentoPage() {
             Receita por canal —{' '}
             {monthFilter === 0
               ? `ano ${yearFilter}`
-              : `${MONTHS_PT[monthFilter - 1]}/${yearFilter}`}
+              : `${MONTH_LABELS[monthFilter - 1]}/${yearFilter}`}
           </p>
           <BarChart data={channelRevenue} color="#465FFF" />
         </div>
@@ -373,7 +373,7 @@ export default function FaturamentoPage() {
             <p className="mt-0.5 text-xs text-gray-400">
               {monthFilter === 0
                 ? `Ano ${yearFilter}`
-                : `${MONTHS_PT[monthFilter - 1]}/${yearFilter}`}
+                : `${MONTH_LABELS[monthFilter - 1]}/${yearFilter}`}
               {' · '}Receita base:{' '}
               <span className="font-semibold text-gray-600 dark:text-gray-300">
                 R$ {totalRevenue.toFixed(2)}
