@@ -2,6 +2,7 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
 import { useState, useMemo } from 'react';
+import { RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
 import { useArtistsModel } from '@/app/inventory/model/artistsModel';
@@ -126,7 +127,7 @@ export default function InventoryPage() {
         marketValue: record.valorMercado ?? 0,
         recordCost: record.custoDisco ?? 0,
         price: record.valorMercado ?? 0,
-        status: record.status ?? 'DISPONIVEL',
+        status: record.status ?? RecordStatus.AVAILABLE,
       })),
     [records]
   );

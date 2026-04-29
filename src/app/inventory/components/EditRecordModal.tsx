@@ -5,6 +5,7 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
+import { RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
 import { useArtistsModel } from '@/app/inventory/model/artistsModel';
@@ -48,7 +49,7 @@ const initialForm: FormState = {
   condicaoDisco: '',
   valorMercado: 0,
   custoDisco: 0,
-  status: 'DISPONIVEL',
+  status: RecordStatus.AVAILABLE,
 };
 
 export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecordModalProps) {
@@ -80,7 +81,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
       condicaoDisco: record.condicaoDisco ?? '',
       valorMercado: record.valorMercado ?? 0,
       custoDisco: record.custoDisco ?? 0,
-      status: record.status ?? 'Disponível',
+      status: record.status ?? RecordStatus.AVAILABLE,
     });
   }, [isOpen, record]);
 
@@ -323,8 +324,8 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 onChange={handleChange('status')}
                 className={inputClass}
               >
-                <option value="DISPONIVEL">Disponível</option>
-                <option value="VENDIDO">Vendido</option>
+                <option value={RecordStatus.AVAILABLE}>Disponível</option>
+                <option value={RecordStatus.SOLD}>Vendido</option>
               </select>
             </div>
           </div>

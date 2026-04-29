@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
+import { RecordStatus } from '@/shared/types';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
 import { useArtistsModel } from '@/app/inventory/model/artistsModel';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
@@ -65,7 +66,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
       condicaoDisco: '',
       valorMercado: 0,
       custoDisco: 0,
-      status: 'DISPONIVEL',
+      status: RecordStatus.AVAILABLE,
     },
   });
 

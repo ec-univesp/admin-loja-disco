@@ -9,6 +9,7 @@ import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import TextArea from '@/shared/components/form/TextArea';
 import Button from '@/shared/components/ui/button/Button';
 import { formatBRL } from '@/shared/utils/currency';
+import { RecordStatus, OrderStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useSalesChannelsModel } from '@/app/sales/model/salesChannelsModel';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
@@ -55,7 +56,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const dataVendaRef = useRef<HTMLInputElement | null>(null);
 
   const availableRecords = useMemo(
-    () => records.filter((d) => d.status === 'DISPONIVEL' || !d.status),
+    () => records.filter((d) => d.status === RecordStatus.AVAILABLE || !d.status),
     [records]
   );
 
@@ -75,7 +76,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
       pagamento: 'PIX',
       canalVendaId: '',
       custosAdicionais: 0,
-      statusPedido: 'PENDENTE',
+      statusPedido: OrderStatus.PENDING,
       observacoes: '',
     },
   });
@@ -160,7 +161,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
           return updateRecord.mutateAsync({
             ...record,
             discoId: record.discoId,
-            status: 'VENDIDO',
+            status: RecordStatus.SOLD,
           });
         })
       );
@@ -467,11 +468,11 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   {...register('statusPedido')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 >
-                  <option value="PENDENTE">Pendente</option>
-                  <option value="CONFIRMADA">Confirmada</option>
-                  <option value="ENVIADA">Enviada</option>
-                  <option value="ENTREGUE">Entregue</option>
-                  <option value="CANCELADA">Cancelada</option>
+                  <option value={OrderStatus.PENDING}>Pendente</option>
+                  <option value={OrderStatus.CONFIRMED}>Confirmada</option>
+                  <option value={OrderStatus.SHIPPED}>Enviada</option>
+                  <option value={OrderStatus.DELIVERED}>Entregue</option>
+                  <option value={OrderStatus.CANCELLED}>Cancelada</option>
                 </select>
               </div>
             </div>
