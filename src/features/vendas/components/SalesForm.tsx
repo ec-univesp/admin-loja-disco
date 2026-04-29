@@ -15,9 +15,9 @@ import {
   useEnderecos,
   useDiscos,
   useItensVenda,
-  useCanaisVenda,
   useClientesEnderecos,
 } from '@/shared/store/useStore';
+import { useListaDeCanaisVenda } from '@/shared/queries/canais-venda.queries';
 import ClienteEnderecoModal from './ClienteEnderecoModal';
 import CanalVendaModal from './CanalVendaModal';
 
@@ -50,7 +50,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const { enderecos, fetchEnderecos } = useEnderecos();
   const { discosComArtista, fetchDiscos, updateDisco } = useDiscos();
   const { createItemVenda } = useItensVenda();
-  const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
+  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
   const { clientesEnderecos, fetchClientesEnderecos } = useClientesEnderecos();
 
   const [showClienteModal, setShowClienteModal] = useState(false);
@@ -85,9 +85,8 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
     fetchClientes();
     fetchEnderecos();
     fetchDiscos();
-    fetchCanaisVenda();
     fetchClientesEnderecos();
-  }, [fetchClientes, fetchEnderecos, fetchDiscos, fetchCanaisVenda, fetchClientesEnderecos]);
+  }, [fetchClientes, fetchEnderecos, fetchDiscos, fetchClientesEnderecos]);
 
   const clienteId = useWatch({ control, name: 'clienteId' });
   const canalVendaId = useWatch({ control, name: 'canalVendaId' });
@@ -112,14 +111,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
 
   const somaItens = itens.reduce((acc, item) => acc + Number(item.precoVenda || 0), 0);
 
-  useEffect(() => {
-    if (!canalVendaId) return;
-    const canal = canaisVenda.find((c) => c.id === canalVendaId);
-    if (canal && somaItens) {
-      const custoSugerido = (somaItens * canal.taxaPadrao) / 100;
-      setValue('custosAdicionais', Number(custoSugerido.toFixed(2)));
-    }
-  }, [canalVendaId, somaItens, canaisVenda, setValue]);
+  // taxaPadrao foi removida do contrato do backend; custosAdicionais agora e digitado a mao.
 
   const valorTotal = somaItens + Number(frete || 0) + Number(custosAdicionais || 0);
 
@@ -434,9 +426,8 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                 >
                   <option value="">-- Selecione --</option>
                   {canaisVenda.map((canal) => (
-                    <option key={canal.id} value={canal.id}>
-                      {canal.nome}
-                      {canal.taxaPadrao ? ` (taxa ${canal.taxaPadrao}%)` : ''}
+                    <option key={canal.canalVendaId} value={canal.canalVendaId ?? ''}>
+                      {canal.nomeCanalVenda}
                     </option>
                   ))}
                 </select>
@@ -534,7 +525,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
       <CanalVendaModal
         isOpen={showCanalModal}
         onClose={() => setShowCanalModal(false)}
-        onCreated={(id) => setValue('canalVendaId', id)}
+        onCreated={(id) => setValue('canalVendaId', String(id))}
       />
     </>
   );

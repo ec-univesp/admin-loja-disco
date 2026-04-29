@@ -3,7 +3,8 @@ import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
-import { useVendas, useClientes, useItensVenda, useCanaisVenda } from '@/shared/store/useStore';
+import { useVendas, useClientes, useItensVenda } from '@/shared/store/useStore';
+import { useListaDeCanaisVenda } from '@/shared/queries/canais-venda.queries';
 import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoModal';
 import NovoCadastroModal from '@/features/vendas/components/NovoCadastroModal';
 import { Modal } from '@/shared/components/ui/modal';
@@ -49,7 +50,7 @@ function VendasContent() {
   const { vendasComDetalhes, fetchVendas, deleteVenda, updateVenda } = useVendas();
   const { clientes, fetchClientes, deleteCliente } = useClientes();
   const { itensVenda, fetchItensVenda } = useItensVenda();
-  const { canaisVenda, fetchCanaisVenda } = useCanaisVenda();
+  const { data: canaisVenda = [] } = useListaDeCanaisVenda();
 
   const searchParams = useSearchParams();
   const abrirNaVenda = searchParams.get('novo') === '1';
@@ -93,8 +94,7 @@ function VendasContent() {
     fetchVendas();
     fetchClientes();
     fetchItensVenda();
-    fetchCanaisVenda();
-  }, [fetchVendas, fetchClientes, fetchItensVenda, fetchCanaisVenda]);
+  }, [fetchVendas, fetchClientes, fetchItensVenda]);
 
   const linhas = useMemo(() => {
     const vendasOrdenadas = [...vendasComDetalhes].sort((vendaA, vendaB) =>
@@ -110,7 +110,10 @@ function VendasContent() {
       itens: itensVenda.filter((item) => item.vendaId === venda.id).length,
       total: venda.valorTotal,
       pagamento: venda.pagamento,
-      canalVenda: canaisVenda.find((c) => c.id === venda.canalVendaId)?.nome ?? '—',
+      canalVenda:
+        canaisVenda.find(
+          (canal) => String(canal.canalVendaId) === venda.canalVendaId
+        )?.nomeCanalVenda ?? '—',
       status: venda.statusPedido || 'Pendente',
     }));
   }, [vendasComDetalhes, itensVenda, canaisVenda]);
