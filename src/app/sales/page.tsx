@@ -398,7 +398,7 @@ function SalesContent() {
       <NewRegistrationModal
         isOpen={showNewRegistrationModal}
         onClose={() => setShowNewRegistrationModal(false)}
-        initialView={openNewSaleOnLoad ? 'venda' : 'select'}
+        initialView={openNewSaleOnLoad ? 'sale' : 'select'}
       />
 
       <Modal

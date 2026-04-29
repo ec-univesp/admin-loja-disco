@@ -16,17 +16,17 @@ import type {
   AppState,
 } from '@/shared/types/index';
 import {
-  apiGenerosMusical,
-  apiArtistas,
-  apiDiscos,
-  apiClientes,
-  apiEnderecos,
-  apiVendas,
-  apiItensVenda,
-  apiCompras,
-  apiItensCompra,
-  apiCanaisVenda,
-  apiClientesEnderecos,
+  musicGenresApi,
+  artistsApi,
+  recordsApi,
+  customersApi,
+  addressesApi,
+  salesApi,
+  saleItemsApi,
+  purchasesApi,
+  purchaseItemsApi,
+  salesChannelsApi,
+  customerAddressesApi,
 } from '@/shared/services/apiMock';
 
 interface AppStore extends AppState {
@@ -126,7 +126,7 @@ export const useAppStore = create<AppStore>()(
         fetchMusicGenres: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiGenerosMusical.getAll();
+            const data = await musicGenresApi.getAll();
             set({ musicGenres: data, loading: false });
           } catch {
             set({ error: 'Failed to load music genres', loading: false });
@@ -136,7 +136,7 @@ export const useAppStore = create<AppStore>()(
         createMusicGenre: async (genre) => {
           set({ loading: true, error: null });
           try {
-            const newGenre = await apiGenerosMusical.create(genre);
+            const newGenre = await musicGenresApi.create(genre);
             set((state) => ({
               musicGenres: [...state.musicGenres, newGenre],
               loading: false,
@@ -149,7 +149,7 @@ export const useAppStore = create<AppStore>()(
         updateMusicGenre: async (id, updates) => {
           set({ loading: true, error: null });
           try {
-            await apiGenerosMusical.update(id, updates);
+            await musicGenresApi.update(id, updates);
             set((state) => ({
               musicGenres: state.musicGenres.map((g) =>
                 g.id === id ? { ...g, ...updates } : g
@@ -164,7 +164,7 @@ export const useAppStore = create<AppStore>()(
         deleteMusicGenre: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiGenerosMusical.delete(id);
+            await musicGenresApi.delete(id);
             set((state) => ({
               musicGenres: state.musicGenres.filter((g) => g.id !== id),
               loading: false,
@@ -178,7 +178,7 @@ export const useAppStore = create<AppStore>()(
         fetchArtists: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiArtistas.getAll();
+            const data = await artistsApi.getAll();
             set({ artists: data, loading: false });
           } catch {
             set({ error: 'Failed to load artists', loading: false });
@@ -188,7 +188,7 @@ export const useAppStore = create<AppStore>()(
         createArtist: async (artist) => {
           set({ loading: true, error: null });
           try {
-            const newArtist = await apiArtistas.create(artist);
+            const newArtist = await artistsApi.create(artist);
             set((state) => ({
               artists: [...state.artists, newArtist],
               loading: false,
@@ -202,7 +202,7 @@ export const useAppStore = create<AppStore>()(
         updateArtist: async (id, updates) => {
           set({ loading: true, error: null });
           try {
-            await apiArtistas.update(id, updates);
+            await artistsApi.update(id, updates);
             set((state) => ({
               artists: state.artists.map((a) =>
                 a.id === id ? { ...a, ...updates } : a
@@ -217,7 +217,7 @@ export const useAppStore = create<AppStore>()(
         deleteArtist: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiArtistas.delete(id);
+            await artistsApi.delete(id);
             set((state) => ({
               artists: state.artists.filter((a) => a.id !== id),
               loading: false,
@@ -231,7 +231,7 @@ export const useAppStore = create<AppStore>()(
         fetchRecords: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiDiscos.getAll();
+            const data = await recordsApi.getAll();
             set({ records: data, loading: false });
           } catch {
             set({ error: 'Failed to load records', loading: false });
@@ -241,7 +241,7 @@ export const useAppStore = create<AppStore>()(
         createRecord: async (record) => {
           set({ loading: true, error: null });
           try {
-            const newRecord = await apiDiscos.create(record);
+            const newRecord = await recordsApi.create(record);
             set((state) => ({
               records: [...state.records, newRecord],
               loading: false,
@@ -254,7 +254,7 @@ export const useAppStore = create<AppStore>()(
         updateRecord: async (id, updates) => {
           set({ loading: true, error: null });
           try {
-            await apiDiscos.update(id, updates);
+            await recordsApi.update(id, updates);
             set((state) => ({
               records: state.records.map((d) =>
                 d.id === id ? { ...d, ...updates } : d
@@ -269,7 +269,7 @@ export const useAppStore = create<AppStore>()(
         deleteRecord: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiDiscos.delete(id);
+            await recordsApi.delete(id);
             set((state) => ({
               records: state.records.filter((d) => d.id !== id),
               loading: false,
@@ -283,7 +283,7 @@ export const useAppStore = create<AppStore>()(
         fetchCustomers: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiClientes.getAll();
+            const data = await customersApi.getAll();
             set({ customers: data, loading: false });
           } catch {
             set({ error: 'Failed to load customers', loading: false });
@@ -293,7 +293,7 @@ export const useAppStore = create<AppStore>()(
         createCustomer: async (customer) => {
           set({ loading: true, error: null });
           try {
-            const newCustomer = await apiClientes.create(customer);
+            const newCustomer = await customersApi.create(customer);
             set((state) => ({
               customers: [...state.customers, newCustomer],
               loading: false,
@@ -307,7 +307,7 @@ export const useAppStore = create<AppStore>()(
         updateCustomer: async (id, updates) => {
           set({ loading: true, error: null });
           try {
-            await apiClientes.update(id, updates);
+            await customersApi.update(id, updates);
             set((state) => ({
               customers: state.customers.map((c) =>
                 c.id === id ? { ...c, ...updates } : c
@@ -322,7 +322,7 @@ export const useAppStore = create<AppStore>()(
         deleteCustomer: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiClientes.delete(id);
+            await customersApi.delete(id);
             set((state) => ({
               customers: state.customers.filter((c) => c.id !== id),
               loading: false,
@@ -336,7 +336,7 @@ export const useAppStore = create<AppStore>()(
         fetchAddresses: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiEnderecos.getAll();
+            const data = await addressesApi.getAll();
             set({ addresses: data, loading: false });
           } catch {
             set({ error: 'Failed to load addresses', loading: false });
@@ -346,7 +346,7 @@ export const useAppStore = create<AppStore>()(
         createAddress: async (address) => {
           set({ loading: true, error: null });
           try {
-            const newAddress = await apiEnderecos.create(address);
+            const newAddress = await addressesApi.create(address);
             set((state) => ({
               addresses: [...state.addresses, newAddress],
               loading: false,
@@ -360,7 +360,7 @@ export const useAppStore = create<AppStore>()(
         updateAddress: async (id, updates) => {
           set({ loading: true, error: null });
           try {
-            await apiEnderecos.update(id, updates);
+            await addressesApi.update(id, updates);
             set((state) => ({
               addresses: state.addresses.map((e) =>
                 e.id === id ? { ...e, ...updates } : e
@@ -375,7 +375,7 @@ export const useAppStore = create<AppStore>()(
         deleteAddress: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiEnderecos.delete(id);
+            await addressesApi.delete(id);
             set((state) => ({
               addresses: state.addresses.filter((e) => e.id !== id),
               loading: false,
@@ -389,7 +389,7 @@ export const useAppStore = create<AppStore>()(
         fetchSales: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiVendas.getAll();
+            const data = await salesApi.getAll();
             set({ sales: data, loading: false });
           } catch {
             set({ error: 'Failed to load sales', loading: false });
@@ -399,7 +399,7 @@ export const useAppStore = create<AppStore>()(
         createSale: async (sale) => {
           set({ loading: true, error: null });
           try {
-            const newSale = await apiVendas.create(sale);
+            const newSale = await salesApi.create(sale);
             set((state) => ({
               sales: [...state.sales, newSale],
               loading: false,
@@ -413,7 +413,7 @@ export const useAppStore = create<AppStore>()(
         updateSale: async (id, updates) => {
           set({ loading: true, error: null });
           try {
-            await apiVendas.update(id, updates);
+            await salesApi.update(id, updates);
             set((state) => ({
               sales: state.sales.map((v) =>
                 v.id === id ? { ...v, ...updates } : v
@@ -428,7 +428,7 @@ export const useAppStore = create<AppStore>()(
         deleteSale: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiVendas.delete(id);
+            await salesApi.delete(id);
             set((state) => ({
               sales: state.sales.filter((v) => v.id !== id),
               loading: false,
@@ -442,7 +442,7 @@ export const useAppStore = create<AppStore>()(
         fetchSaleItems: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiItensVenda.getAll();
+            const data = await saleItemsApi.getAll();
             set({ saleItems: data, loading: false });
           } catch {
             set({ error: 'Failed to load sale items', loading: false });
@@ -452,7 +452,7 @@ export const useAppStore = create<AppStore>()(
         createSaleItem: async (saleItem) => {
           set({ loading: true, error: null });
           try {
-            const newSaleItem = await apiItensVenda.create(saleItem);
+            const newSaleItem = await saleItemsApi.create(saleItem);
             set((state) => ({
               saleItems: [...state.saleItems, newSaleItem],
               loading: false,
@@ -465,7 +465,7 @@ export const useAppStore = create<AppStore>()(
         deleteSaleItem: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiItensVenda.delete(id);
+            await saleItemsApi.delete(id);
             set((state) => ({
               saleItems: state.saleItems.filter((v) => v.id !== id),
               loading: false,
@@ -479,7 +479,7 @@ export const useAppStore = create<AppStore>()(
         fetchPurchases: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiCompras.getAll();
+            const data = await purchasesApi.getAll();
             set({ purchases: data, loading: false });
           } catch {
             set({ error: 'Failed to load purchases', loading: false });
@@ -489,7 +489,7 @@ export const useAppStore = create<AppStore>()(
         createPurchase: async (purchase) => {
           set({ loading: true, error: null });
           try {
-            const newPurchase = await apiCompras.create(purchase);
+            const newPurchase = await purchasesApi.create(purchase);
             set((state) => ({
               purchases: [...state.purchases, newPurchase],
               loading: false,
@@ -503,7 +503,7 @@ export const useAppStore = create<AppStore>()(
         updatePurchase: async (id, updates) => {
           set({ loading: true, error: null });
           try {
-            await apiCompras.update(id, updates);
+            await purchasesApi.update(id, updates);
             set((state) => ({
               purchases: state.purchases.map((c) =>
                 c.id === id ? { ...c, ...updates } : c
@@ -518,7 +518,7 @@ export const useAppStore = create<AppStore>()(
         deletePurchase: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiCompras.delete(id);
+            await purchasesApi.delete(id);
             set((state) => ({
               purchases: state.purchases.filter((c) => c.id !== id),
               loading: false,
@@ -532,7 +532,7 @@ export const useAppStore = create<AppStore>()(
         fetchPurchaseItems: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiItensCompra.getAll();
+            const data = await purchaseItemsApi.getAll();
             set({ purchaseItems: data, loading: false });
           } catch {
             set({ error: 'Failed to load purchase items', loading: false });
@@ -542,7 +542,7 @@ export const useAppStore = create<AppStore>()(
         createPurchaseItem: async (purchaseItem) => {
           set({ loading: true, error: null });
           try {
-            const newPurchaseItem = await apiItensCompra.create(purchaseItem);
+            const newPurchaseItem = await purchaseItemsApi.create(purchaseItem);
             set((state) => ({
               purchaseItems: [...state.purchaseItems, newPurchaseItem],
               loading: false,
@@ -555,7 +555,7 @@ export const useAppStore = create<AppStore>()(
         deletePurchaseItem: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiItensCompra.delete(id);
+            await purchaseItemsApi.delete(id);
             set((state) => ({
               purchaseItems: state.purchaseItems.filter((c) => c.id !== id),
               loading: false,
@@ -569,7 +569,7 @@ export const useAppStore = create<AppStore>()(
         fetchCustomerAddresses: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiClientesEnderecos.getAll();
+            const data = await customerAddressesApi.getAll();
             set({ customerAddresses: data, loading: false });
           } catch {
             set({ error: 'Failed to load customer addresses', loading: false });
@@ -578,7 +578,7 @@ export const useAppStore = create<AppStore>()(
 
         linkCustomerAddress: async (customerId, addressId) => {
           try {
-            await apiClientesEnderecos.create({ customerId, addressId });
+            await customerAddressesApi.create({ customerId, addressId });
             set((state) => ({
               customerAddresses: [...state.customerAddresses, { customerId, addressId }],
             }));
@@ -589,7 +589,7 @@ export const useAppStore = create<AppStore>()(
 
         unlinkCustomerAddress: async (customerId, addressId) => {
           try {
-            await apiClientesEnderecos.delete(customerId, addressId);
+            await customerAddressesApi.delete(customerId, addressId);
             set((state) => ({
               customerAddresses: state.customerAddresses.filter(
                 (link) =>
@@ -605,7 +605,7 @@ export const useAppStore = create<AppStore>()(
         fetchSalesChannels: async () => {
           set({ loading: true, error: null });
           try {
-            const data = await apiCanaisVenda.getAll();
+            const data = await salesChannelsApi.getAll();
             set({ salesChannels: data, loading: false });
           } catch {
             set({ error: 'Failed to load sales channels', loading: false });
@@ -615,7 +615,7 @@ export const useAppStore = create<AppStore>()(
         createSalesChannel: async (channel) => {
           set({ loading: true, error: null });
           try {
-            const newChannel = await apiCanaisVenda.create(channel);
+            const newChannel = await salesChannelsApi.create(channel);
             set((state) => ({
               salesChannels: [...state.salesChannels, newChannel],
               loading: false,
@@ -629,7 +629,7 @@ export const useAppStore = create<AppStore>()(
         updateSalesChannel: async (id, updates) => {
           set({ loading: true, error: null });
           try {
-            await apiCanaisVenda.update(id, updates);
+            await salesChannelsApi.update(id, updates);
             set((state) => ({
               salesChannels: state.salesChannels.map((channel) =>
                 channel.id === id ? { ...channel, ...updates } : channel
@@ -644,7 +644,7 @@ export const useAppStore = create<AppStore>()(
         deleteSalesChannel: async (id) => {
           set({ loading: true, error: null });
           try {
-            await apiCanaisVenda.delete(id);
+            await salesChannelsApi.delete(id);
             set((state) => ({
               salesChannels: state.salesChannels.filter((channel) => channel.id !== id),
               loading: false,

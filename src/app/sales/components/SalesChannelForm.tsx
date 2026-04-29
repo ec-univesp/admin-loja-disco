@@ -5,14 +5,14 @@ import { Trash2 } from 'lucide-react';
 import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
-import { useSalesChannelsModel } from '@/app/vendas/model/salesChannelsModel';
+import { useSalesChannelsModel } from '@/app/sales/model/salesChannelsModel';
 
-interface CanalVendaFormProps {
+interface SalesChannelFormProps {
   onClose: () => void;
   onCreated?: (id: number) => void;
 }
 
-export default function CanalVendaForm({ onClose, onCreated }: CanalVendaFormProps) {
+export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFormProps) {
   const { list, create, remove } = useSalesChannelsModel();
   const salesChannels = list.data ?? [];
   const isSubmitting = create.isPending;

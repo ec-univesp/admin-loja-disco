@@ -30,7 +30,7 @@ export default function DeliveriesPage() {
   const deliveries = useMemo(
     () =>
       salesWithDetails.filter((v) =>
-        DELIVERY_STATUSES.includes(v.statusPedido as DeliveryStatus)
+        DELIVERY_STATUSES.includes(v.orderStatus as DeliveryStatus)
       ),
     [salesWithDetails]
   );
@@ -43,7 +43,7 @@ export default function DeliveriesPage() {
         v.customerName.toLowerCase().includes(normalizedSearch) ||
         v.fullAddress.toLowerCase().includes(normalizedSearch) ||
         v.productsSummary.toLowerCase().includes(normalizedSearch);
-      const matchStatus = statusFilter === 'Todos' || v.statusPedido === statusFilter;
+      const matchStatus = statusFilter === 'Todos' || v.orderStatus === statusFilter;
       return matchSearch && matchStatus;
     });
   }, [deliveries, searchTerm, statusFilter]);
@@ -60,7 +60,7 @@ export default function DeliveriesPage() {
             onClick={() => setStatusFilter(statusFilter === s ? 'Todos' : s)}
           >
             <p className="mt-1 text-2xl font-bold text-gray-800 dark:text-white">
-              {deliveries.filter((v) => v.statusPedido === s).length}
+              {deliveries.filter((v) => v.orderStatus === s).length}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">{s}</p>
           </div>
@@ -165,9 +165,9 @@ export default function DeliveriesPage() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[delivery.statusPedido] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[delivery.orderStatus] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}
                       >
-                        {delivery.statusPedido}
+                        {delivery.orderStatus}
                       </span>
                     </td>
                   </tr>

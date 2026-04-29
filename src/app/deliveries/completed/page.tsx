@@ -17,7 +17,7 @@ export default function CompletedDeliveriesPage() {
   }, [fetchSales, fetchSaleItems, fetchRecords]);
 
   const completedDeliveries = useMemo(
-    () => salesWithDetails.filter((v) => v.statusPedido === 'Entregue'),
+    () => salesWithDetails.filter((v) => v.orderStatus === 'Entregue'),
     [salesWithDetails]
   );
 
@@ -33,7 +33,7 @@ export default function CompletedDeliveriesPage() {
   }, [completedDeliveries, searchTerm]);
 
   const totalRevenue = useMemo(
-    () => completedDeliveries.reduce((acc, v) => acc + v.valorTotal, 0),
+    () => completedDeliveries.reduce((acc, v) => acc + v.totalValue, 0),
     [completedDeliveries]
   );
 
@@ -138,7 +138,7 @@ export default function CompletedDeliveriesPage() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                        {delivery.statusPedido}
+                        {delivery.orderStatus}
                       </span>
                     </td>
                   </tr>

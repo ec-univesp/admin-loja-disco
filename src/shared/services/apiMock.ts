@@ -154,7 +154,7 @@ export const musicGenresApi = {
 };
 
 // ============ ARTISTAS ============
-export const apiArtists = {
+export const artistsApi = {
   getAll: async (): Promise<Artist[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.ARTISTS);
@@ -221,7 +221,7 @@ export const recordsApi = {
     const data = localStorage.getItem(STORAGE_KEYS.RECORDS) || '[]';
     const items: VinylRecord[] = JSON.parse(data);
     const newItem: VinylRecord = {
-      ...disco,
+      ...record,
       id: String(Date.now()),
     };
     items.push(newItem);
@@ -269,7 +269,7 @@ export const customersApi = {
     const data = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || '[]';
     const items: Customer[] = JSON.parse(data);
     const newItem: Customer = {
-      ....customer,
+      ...customer,
       id: String(Date.now()),
     };
     items.push(newItem);
@@ -317,7 +317,7 @@ export const addressesApi = {
     const data = localStorage.getItem(STORAGE_KEYS.ADDRESSES) || '[]';
     const items: Address[] = JSON.parse(data);
     const newItem: Address = {
-      ...endereco,
+      ...address,
       id: String(Date.now()),
     };
     items.push(newItem);
@@ -346,7 +346,7 @@ export const addressesApi = {
 };
 
 // ============ CLIENTES_ENDERECOS ============
-export const customersApiEnderecos = {
+export const customerAddressesApi = {
   getAll: async (): Promise<CustomerAddress[]> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CUSTOMER_ADDRESSES);
@@ -356,18 +356,17 @@ export const customersApiEnderecos = {
   create: async (link: CustomerAddress): Promise<CustomerAddress> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CUSTOMER_ADDRESSES) || '[]';
-    const vinculos: CustomerAddress[] = JSON.parse(data);
-    links.push(link);
-    localStorage.setItem(STORAGE_KEYS.CUSTOMER_ADDRESSES, JSON.stringify(links));
+    const items: CustomerAddress[] = JSON.parse(data);
+    items.push(link);
+    localStorage.setItem(STORAGE_KEYS.CUSTOMER_ADDRESSES, JSON.stringify(items));
     return link;
   },
 
   delete: async (customerId: string, addressId: string): Promise<void> => {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.CUSTOMER_ADDRESSES) || '[]';
-    const vinculosRestantes = (JSON.parse(data) as CustomerAddress[]).filter(
-      (vinculo) =>
-        !(link.clienteId === customerId && link.enderecoId === addressId)
+    const remaining = (JSON.parse(data) as CustomerAddress[]).filter(
+      (item) => !(item.customerId === customerId && item.addressId === addressId)
     );
     localStorage.setItem(STORAGE_KEYS.CUSTOMER_ADDRESSES, JSON.stringify(remaining));
   },
@@ -393,7 +392,7 @@ export const salesApi = {
     const data = localStorage.getItem(STORAGE_KEYS.SALES) || '[]';
     const items: Sale[] = JSON.parse(data);
     const newItem: Sale = {
-      ...venda,
+      ...sale,
       id: String(Date.now()),
     };
     items.push(newItem);
@@ -433,7 +432,7 @@ export const saleItemsApi = {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.SALE_ITEMS) || '[]';
     const items: SaleItem[] = JSON.parse(data);
-    return items.filter((item) => item.vendaId === saleId);
+    return items.filter((item) => item.saleId === saleId);
   },
 
   create: async (saleItem: Omit<SaleItem, 'id'>): Promise<SaleItem> => {
@@ -477,7 +476,7 @@ export const purchasesApi = {
     const data = localStorage.getItem(STORAGE_KEYS.PURCHASES) || '[]';
     const items: Purchase[] = JSON.parse(data);
     const newItem: Purchase = {
-      ...compra,
+      ...purchase,
       id: String(Date.now()),
     };
     items.push(newItem);
@@ -517,7 +516,7 @@ export const salesChannelsApi = {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.SALES_CHANNELS) || '[]';
     const items: SalesChannel[] = JSON.parse(data);
-    const newItem: SalesChannel = { ...canal, id: String(Date.now()) };
+    const newItem: SalesChannel = { ...salesChannel, id: String(Date.now()) };
     items.push(newItem);
     localStorage.setItem(STORAGE_KEYS.SALES_CHANNELS, JSON.stringify(items));
     return newItem;
@@ -555,7 +554,7 @@ export const purchaseItemsApi = {
     await delay();
     const data = localStorage.getItem(STORAGE_KEYS.PURCHASE_ITEMS) || '[]';
     const items: PurchaseItem[] = JSON.parse(data);
-    return items.filter((item) => item.compraId === purchaseId);
+    return items.filter((item) => item.purchaseId === purchaseId);
   },
 
   create: async (purchaseItem: Omit<PurchaseItem, 'id'>): Promise<PurchaseItem> => {

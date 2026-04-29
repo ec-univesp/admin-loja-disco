@@ -19,7 +19,7 @@ export default function PendingDeliveriesPage() {
   const pendingDeliveries = useMemo(
     () =>
       salesWithDetails.filter(
-        (v) => v.statusPedido === 'Confirmada' || v.statusPedido === 'Enviada'
+        (v) => v.orderStatus === 'Confirmada' || v.orderStatus === 'Enviada'
       ),
     [salesWithDetails]
   );
@@ -125,12 +125,12 @@ export default function PendingDeliveriesPage() {
                     <td className="px-6 py-4 text-center">
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          delivery.statusPedido === 'Enviada'
+                          delivery.orderStatus === 'Enviada'
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                         }`}
                       >
-                        {delivery.statusPedido}
+                        {delivery.orderStatus}
                       </span>
                     </td>
                   </tr>
