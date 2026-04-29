@@ -3,8 +3,13 @@ import {
   canaisVendaService,
   type RequestCanalVendaDTO,
 } from '@/shared/services/api';
-import { chavesDeCanaisVenda } from './keys';
-import { notificarErro, notificarSucesso } from './toastHelpers';
+import { notificarErro, notificarSucesso } from '@/shared/utils/notify';
+
+const chavesDeCanaisVenda = {
+  todas: ['canais-venda'],
+  lista: () => ['canais-venda', 'lista'],
+  porId: (id: number) => ['canais-venda', 'detalhe', id],
+};
 
 export function useListaDeCanaisVenda() {
   return useQuery({

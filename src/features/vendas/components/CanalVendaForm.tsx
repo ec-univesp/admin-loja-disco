@@ -9,7 +9,7 @@ import {
   useListaDeCanaisVenda,
   useCriarCanalVenda,
   useExcluirCanalVenda,
-} from '@/shared/queries/canais-venda.queries';
+} from '@/features/vendas/model/canal-venda.model';
 
 interface CanalVendaFormProps {
   onClose: () => void;

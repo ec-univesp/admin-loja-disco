@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { useVendas, useClientes, useItensVenda } from '@/shared/store/useStore';
-import { useListaDeCanaisVenda } from '@/shared/queries/canais-venda.queries';
+import { useListaDeCanaisVenda } from '@/features/vendas/model/canal-venda.model';
 import ClienteEnderecoModal from '@/features/vendas/components/ClienteEnderecoModal';
 import NovoCadastroModal from '@/features/vendas/components/NovoCadastroModal';
 import { Modal } from '@/shared/components/ui/modal';

@@ -17,7 +17,7 @@ import {
   useItensVenda,
   useClientesEnderecos,
 } from '@/shared/store/useStore';
-import { useListaDeCanaisVenda } from '@/shared/queries/canais-venda.queries';
+import { useListaDeCanaisVenda } from '@/features/vendas/model/canal-venda.model';
 import ClienteEnderecoModal from './ClienteEnderecoModal';
 import CanalVendaModal from './CanalVendaModal';
 
