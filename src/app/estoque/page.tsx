@@ -2,12 +2,17 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
 import { useState, useMemo, useEffect } from 'react';
-import { useDiscos, useArtistas } from '@/shared/store/useStore';
+import { useDiscos } from '@/shared/store/useStore';
 import {
   useListaDeGenerosMusicais,
   useCriarGeneroMusical,
   useExcluirGeneroMusical,
 } from '@/shared/queries/generos-musicais.queries';
+import {
+  useListaDeArtistas,
+  useCriarArtista,
+  useExcluirArtista,
+} from '@/shared/queries/artistas.queries';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import EditDiscoModal from '@/features/estoque/components/EditDiscoModal';
@@ -46,7 +51,9 @@ export default function EstoquePage() {
   const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
   const { mutateAsync: criarGeneroMusical } = useCriarGeneroMusical();
   const { mutateAsync: excluirGeneroMusical } = useExcluirGeneroMusical();
-  const { artistas, fetchArtistas, createArtista, deleteArtista } = useArtistas();
+  const { data: artistas = [] } = useListaDeArtistas();
+  const { mutateAsync: criarArtista } = useCriarArtista();
+  const { mutateAsync: excluirArtista } = useExcluirArtista();
   const [busca, setBusca] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
   const [novoArtista, setNovoArtista] = useState('');
@@ -69,11 +76,10 @@ export default function EstoquePage() {
   } | null>(null);
 
   const deleteArtistaModal = useModal();
-  const [artistaParaApagar, setArtistaParaApagar] = useState<{ id: string; nome: string } | null>(null);
-
-  useEffect(() => {
-    fetchArtistas();
-  }, [fetchArtistas]);
+  const [artistaParaApagar, setArtistaParaApagar] = useState<{
+    artistaId: number;
+    nomeArtista: string;
+  } | null>(null);
 
   const handleAddGenero = async () => {
     const nomeGenero = novoGenero.trim();
@@ -97,15 +103,15 @@ export default function EstoquePage() {
   };
 
   const handleAddArtista = async () => {
-    const nome = novoArtista.trim();
-    if (!nome) return;
-    await createArtista({ nome, generoId: '' });
+    const nomeArtista = novoArtista.trim();
+    if (!nomeArtista) return;
+    await criarArtista({ nomeArtista });
     setNovoArtista('');
   };
 
   const handleConfirmarApagarArtista = async () => {
     if (!artistaParaApagar) return;
-    await deleteArtista(artistaParaApagar.id); // TODO: API
+    await excluirArtista(artistaParaApagar.artistaId);
     setArtistaParaApagar(null);
     deleteArtistaModal.closeModal();
   };
@@ -504,18 +510,22 @@ export default function EstoquePage() {
                     <div className="flex flex-wrap gap-2">
                       {artistas.map((artista) => (
                         <div
-                          key={artista.id}
+                          key={artista.artistaId}
                           className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
                         >
                           <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
-                            {artista.nome}
+                            {artista.nomeArtista}
                           </span>
                           <button
                             type="button"
-                            aria-label={`Excluir artista ${artista.nome}`}
-                            title={`Excluir artista ${artista.nome}`}
+                            aria-label={`Excluir artista ${artista.nomeArtista}`}
+                            title={`Excluir artista ${artista.nomeArtista}`}
                             onClick={() => {
-                              setArtistaParaApagar({ id: artista.id, nome: artista.nome });
+                              if (artista.artistaId === undefined) return;
+                              setArtistaParaApagar({
+                                artistaId: artista.artistaId,
+                                nomeArtista: artista.nomeArtista ?? '',
+                              });
                               deleteArtistaModal.openModal();
                             }}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
@@ -566,7 +576,7 @@ export default function EstoquePage() {
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
             Tem certeza que deseja excluir esse artista{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {artistaParaApagar?.nome}
+              {artistaParaApagar?.nomeArtista}
             </span>
             ?
           </p>
