@@ -45,69 +45,6 @@ export const useDiscos = () => {
 };
 
 /**
- * Hook para usar dados de Cliente
- */
-export const useClientes = () => {
-  const clientes = useAppStore((state) => state.clientes);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchClientes = useAppStore((state) => state.fetchClientes);
-  const createCliente = useAppStore((state) => state.createCliente);
-  const updateCliente = useAppStore((state) => state.updateCliente);
-  const deleteCliente = useAppStore((state) => state.deleteCliente);
-
-  return {
-    clientes,
-    loading,
-    error,
-    fetchClientes,
-    createCliente,
-    updateCliente,
-    deleteCliente,
-  };
-};
-
-/**
- * Hook para usar dados de Endereço
- */
-export const useEnderecos = () => {
-  const enderecos = useAppStore((state) => state.enderecos);
-  const loading = useAppStore((state) => state.loading);
-  const error = useAppStore((state) => state.error);
-  const fetchEnderecos = useAppStore((state) => state.fetchEnderecos);
-  const createEndereco = useAppStore((state) => state.createEndereco);
-  const updateEndereco = useAppStore((state) => state.updateEndereco);
-  const deleteEndereco = useAppStore((state) => state.deleteEndereco);
-
-  return {
-    enderecos,
-    loading,
-    error,
-    fetchEnderecos,
-    createEndereco,
-    updateEndereco,
-    deleteEndereco,
-  };
-};
-
-/**
- * Hook para usar relação Cliente-Endereço
- */
-export const useClientesEnderecos = () => {
-  const clientesEnderecos = useAppStore((state) => state.clientesEnderecos);
-  const fetchClientesEnderecos = useAppStore((state) => state.fetchClientesEnderecos);
-  const vincularClienteEndereco = useAppStore((state) => state.vincularClienteEndereco);
-  const desvincularClienteEndereco = useAppStore((state) => state.desvincularClienteEndereco);
-
-  return {
-    clientesEnderecos,
-    fetchClientesEnderecos,
-    vincularClienteEndereco,
-    desvincularClienteEndereco,
-  };
-};
-
-/**
  * Hook para usar dados de Venda
  */
 export const useVendas = () => {
