@@ -302,7 +302,9 @@ function SalesContent() {
                 <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
                   Status
                 </th>
-                <th className="w-20 px-6 py-3" aria-hidden="true" />
+                <th className="w-28 px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -348,18 +350,6 @@ function SalesContent() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="inline-flex items-center justify-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditCustomerId(row.customerId);
-                            setShowCustomerModal(true);
-                          }}
-                          aria-label="Editar cliente / endereço"
-                          title="Editar cliente / endereço"
-                          className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
-                        >
-                          <Pencil size={15} strokeWidth={2.25} />
-                        </button>
                         <label
                           title={
                             row.status === OrderStatus.DELIVERED
@@ -376,6 +366,18 @@ function SalesContent() {
                             className="h-4 w-4 cursor-pointer accent-green-600"
                           />
                         </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditCustomerId(row.customerId);
+                            setShowCustomerModal(true);
+                          }}
+                          aria-label="Editar cliente / endereço"
+                          title="Editar cliente / endereço"
+                          className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
+                        >
+                          <Pencil size={15} strokeWidth={2.25} />
+                        </button>
                         <button
                           type="button"
                           aria-label={`Apagar venda ${row.number}`}
