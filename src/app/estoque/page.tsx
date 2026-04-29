@@ -2,7 +2,12 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
 import { useState, useMemo, useEffect } from 'react';
-import { useDiscos, useGenerosMusical, useArtistas } from '@/shared/store/useStore';
+import { useDiscos, useArtistas } from '@/shared/store/useStore';
+import {
+  useListaDeGenerosMusicais,
+  useCriarGeneroMusical,
+  useExcluirGeneroMusical,
+} from '@/shared/queries/generos-musicais.queries';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import EditDiscoModal from '@/features/estoque/components/EditDiscoModal';
@@ -38,7 +43,9 @@ const gerarCodigo = (index: number): string => {
 
 export default function EstoquePage() {
   const { discosComArtista, loading, deleteDisco } = useDiscos();
-  const { generosMusical, fetchGenerosMusical, createGeneroMusical, deleteGeneroMusical } = useGenerosMusical();
+  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
+  const { mutateAsync: criarGeneroMusical } = useCriarGeneroMusical();
+  const { mutateAsync: excluirGeneroMusical } = useExcluirGeneroMusical();
   const { artistas, fetchArtistas, createArtista, deleteArtista } = useArtistas();
   const [busca, setBusca] = useState('');
   const [novoGenero, setNovoGenero] = useState('');
@@ -56,20 +63,22 @@ export default function EstoquePage() {
   const [discoParaApagar, setDiscoParaApagar] = useState<{ id: string; titulo: string } | null>(null);
 
   const deleteGeneroModal = useModal();
-  const [generoParaApagar, setGeneroParaApagar] = useState<{ id: string; nome: string } | null>(null);
+  const [generoParaApagar, setGeneroParaApagar] = useState<{
+    generoMusicalId: number;
+    nomeGenero: string;
+  } | null>(null);
 
   const deleteArtistaModal = useModal();
   const [artistaParaApagar, setArtistaParaApagar] = useState<{ id: string; nome: string } | null>(null);
 
   useEffect(() => {
-    fetchGenerosMusical();
     fetchArtistas();
-  }, [fetchGenerosMusical, fetchArtistas]);
+  }, [fetchArtistas]);
 
   const handleAddGenero = async () => {
-    const nome = novoGenero.trim();
-    if (!nome) return;
-    await createGeneroMusical({ nome });
+    const nomeGenero = novoGenero.trim();
+    if (!nomeGenero) return;
+    await criarGeneroMusical({ nomeGenero });
     setNovoGenero('');
   };
 
@@ -82,7 +91,7 @@ export default function EstoquePage() {
 
   const handleConfirmarApagarGenero = async () => {
     if (!generoParaApagar) return;
-    await deleteGeneroMusical(generoParaApagar.id); // TODO: API
+    await excluirGeneroMusical(generoParaApagar.generoMusicalId);
     setGeneroParaApagar(null);
     deleteGeneroModal.closeModal();
   };
@@ -416,26 +425,30 @@ export default function EstoquePage() {
                   />
                 </div>
 
-                {generosMusical.length > 0 && (
+                {generosMusicais.length > 0 && (
                   <div>
                     <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
                       Gêneros já cadastrados:
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {generosMusical.map((genero) => (
+                      {generosMusicais.map((genero) => (
                         <div
-                          key={genero.id}
+                          key={genero.generoMusicalId}
                           className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
                         >
                           <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
-                            {genero.nome}
+                            {genero.nomeGenero}
                           </span>
                           <button
                             type="button"
-                            aria-label={`Excluir gênero ${genero.nome}`}
-                            title={`Excluir gênero ${genero.nome}`}
+                            aria-label={`Excluir gênero ${genero.nomeGenero}`}
+                            title={`Excluir gênero ${genero.nomeGenero}`}
                             onClick={() => {
-                              setGeneroParaApagar({ id: genero.id, nome: genero.nome });
+                              if (genero.generoMusicalId === undefined) return;
+                              setGeneroParaApagar({
+                                generoMusicalId: genero.generoMusicalId,
+                                nomeGenero: genero.nomeGenero ?? '',
+                              });
                               deleteGeneroModal.openModal();
                             }}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
@@ -631,7 +644,7 @@ export default function EstoquePage() {
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
             Tem certeza que deseja excluir esse gênero{' '}
             <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {generoParaApagar?.nome}
+              {generoParaApagar?.nomeGenero}
             </span>
             ?
           </p>
