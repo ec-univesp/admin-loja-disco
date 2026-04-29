@@ -11,13 +11,11 @@ import Button from '@/shared/components/ui/button/Button';
 import { formatBRL } from '@/shared/utils/currency';
 import {
   useVendas,
-  useClientes,
-  useEnderecos,
   useDiscos,
   useItensVenda,
-  useClientesEnderecos,
 } from '@/shared/store/useStore';
 import { useListaDeCanaisVenda } from '@/app/vendas/model/canal-venda.model';
+import { useListaDeClientes } from '@/app/vendas/model/cliente.model';
 import ClienteEnderecoModal from './ClienteEnderecoModal';
 import CanalVendaModal from './CanalVendaModal';
 
@@ -46,12 +44,10 @@ const MENSAGEM_SUCESSO_DURACAO_MS = 3000;
 
 const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const { createVenda, loading: vendaLoading } = useVendas();
-  const { clientes, fetchClientes } = useClientes();
-  const { enderecos, fetchEnderecos } = useEnderecos();
+  const { data: clientes = [] } = useListaDeClientes();
   const { discosComArtista, fetchDiscos, updateDisco } = useDiscos();
   const { createItemVenda } = useItensVenda();
   const { data: canaisVenda = [] } = useListaDeCanaisVenda();
-  const { clientesEnderecos, fetchClientesEnderecos } = useClientesEnderecos();
 
   const [showClienteModal, setShowClienteModal] = useState(false);
   const [editClienteId, setEditClienteId] = useState<string | undefined>();
@@ -82,11 +78,8 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   });
 
   useEffect(() => {
-    fetchClientes();
-    fetchEnderecos();
     fetchDiscos();
-    fetchClientesEnderecos();
-  }, [fetchClientes, fetchEnderecos, fetchDiscos, fetchClientesEnderecos]);
+  }, [fetchDiscos]);
 
   const clienteId = useWatch({ control, name: 'clienteId' });
   const canalVendaId = useWatch({ control, name: 'canalVendaId' });
@@ -94,16 +87,16 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const custosAdicionais = useWatch({ control, name: 'custosAdicionais' });
 
   const enderecosDoCliente = useMemo(() => {
-    if (!clienteId) return [] as typeof enderecos;
-    const ids = new Set(
-      clientesEnderecos.filter((v) => v.clienteId === clienteId).map((v) => v.enderecoId)
+    if (!clienteId) return [];
+    const cliente = clientes.find(
+      (item) => String(item.clienteId) === clienteId
     );
-    return enderecos.filter((e) => ids.has(e.id));
-  }, [clienteId, clientesEnderecos, enderecos]);
+    return cliente?.enderecos ?? [];
+  }, [clienteId, clientes]);
 
   useEffect(() => {
-    if (enderecosDoCliente.length === 1) {
-      setValue('enderecoId', enderecosDoCliente[0].id);
+    if (enderecosDoCliente.length === 1 && enderecosDoCliente[0].enderecoId !== undefined) {
+      setValue('enderecoId', String(enderecosDoCliente[0].enderecoId));
     } else if (enderecosDoCliente.length === 0) {
       setValue('enderecoId', '');
     }
@@ -215,8 +208,8 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               >
                 <option value="">-- Selecione --</option>
                 {clientes.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>
-                    {cliente.nome}
+                  <option key={cliente.clienteId} value={cliente.clienteId ?? ''}>
+                    {cliente.nomeCliente}
                     {cliente.idade ? ` (${cliente.idade} anos)` : ''}
                   </option>
                 ))}
@@ -238,7 +231,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   {clienteId ? '-- Selecione --' : 'Escolha um cliente primeiro'}
                 </option>
                 {enderecosDoCliente.map((endereco) => (
-                  <option key={endereco.id} value={endereco.id}>
+                  <option key={endereco.enderecoId} value={endereco.enderecoId ?? ''}>
                     {endereco.logradouro}, {endereco.numero} - {endereco.cidade}/{endereco.estado}
                   </option>
                 ))}
