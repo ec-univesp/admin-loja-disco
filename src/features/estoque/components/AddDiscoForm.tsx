@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
-import { useDiscos, useArtistas } from '@/shared/store/useStore';
+import { useDiscos } from '@/shared/store/useStore';
 import { useListaDeGenerosMusicais } from '@/shared/queries/generos-musicais.queries';
+import {
+  useListaDeArtistas,
+  useCriarArtista,
+} from '@/shared/queries/artistas.queries';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
@@ -35,13 +39,10 @@ interface AddDiscoFormProps {
 export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFormProps = {}) {
   const router = useRouter();
   const { createDisco, loading, error } = useDiscos();
-  const { artistas, fetchArtistas, createArtista } = useArtistas();
+  const { data: artistas = [] } = useListaDeArtistas();
+  const { mutateAsync: criarArtista } = useCriarArtista();
   const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
   const [successMessage, setSuccessMessage] = useState('');
-
-  useEffect(() => {
-    fetchArtistas();
-  }, [fetchArtistas]);
 
   const {
     register,
@@ -78,19 +79,16 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
     try {
       const nomeArtista = data.artistaNome.trim();
       const artistaExistente = artistas.find(
-        (artista) => artista.nome.toLowerCase() === nomeArtista.toLowerCase()
+        (artista) => artista.nomeArtista?.toLowerCase() === nomeArtista.toLowerCase()
       );
 
       let artistaId: string;
-      if (artistaExistente) {
-        artistaId = artistaExistente.id;
+      if (artistaExistente?.artistaId !== undefined) {
+        artistaId = String(artistaExistente.artistaId);
       } else {
-        const novoArtista = await createArtista({
-          nome: nomeArtista,
-          generoId: '',
-        });
-        if (!novoArtista) throw new Error('Falha ao criar artista');
-        artistaId = novoArtista.id;
+        const novoArtista = await criarArtista({ nomeArtista });
+        if (novoArtista.artistaId === undefined) throw new Error('Falha ao criar artista');
+        artistaId = String(novoArtista.artistaId);
       }
 
       await createDisco({
@@ -189,7 +187,7 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
                 />
                 <datalist id="artistas-disponiveis">
                   {artistas.map((artista) => (
-                    <option key={artista.id} value={artista.nome} />
+                    <option key={artista.artistaId} value={artista.nomeArtista ?? ''} />
                   ))}
                 </datalist>
                 {errors.artistaNome && (
