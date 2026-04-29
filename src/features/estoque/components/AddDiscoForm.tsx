@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
-import { useDiscos, useArtistas, useGenerosMusical } from '@/shared/store/useStore';
+import { useDiscos, useArtistas } from '@/shared/store/useStore';
+import { useListaDeGenerosMusicais } from '@/shared/queries/generos-musicais.queries';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
@@ -35,13 +36,12 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
   const router = useRouter();
   const { createDisco, loading, error } = useDiscos();
   const { artistas, fetchArtistas, createArtista } = useArtistas();
-  const { generosMusical, fetchGenerosMusical } = useGenerosMusical();
+  const { data: generosMusicais = [] } = useListaDeGenerosMusicais();
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    fetchGenerosMusical();
     fetchArtistas();
-  }, [fetchGenerosMusical, fetchArtistas]);
+  }, [fetchArtistas]);
 
   const {
     register,
@@ -205,9 +205,12 @@ export default function AddDiscoForm({ onSuccess, embedded = false }: AddDiscoFo
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 >
                   <option value="">-- Selecione --</option>
-                  {generosMusical.map((genero) => (
-                    <option key={genero.id} value={genero.id}>
-                      {genero.nome}
+                  {generosMusicais.map((genero) => (
+                    <option
+                      key={genero.generoMusicalId}
+                      value={genero.generoMusicalId ?? ''}
+                    >
+                      {genero.nomeGenero}
                     </option>
                   ))}
                 </select>
