@@ -57,8 +57,8 @@ export default function SalesPage() {
 function SalesContent() {
   const { list: salesList, remove: removeSale, update: updateSale } = useSalesModel();
   const { list: customersList, remove: removeCustomer } = useCustomersModel();
-  const sales = salesList.data ?? [];
-  const customers = customersList.data ?? [];
+  const sales = useMemo(() => salesList.data ?? [], [salesList.data]);
+  const customers = useMemo(() => customersList.data ?? [], [customersList.data]);
 
   const searchParams = useSearchParams();
   const openNewSaleOnLoad = searchParams.get('novo') === '1';
@@ -89,6 +89,29 @@ function SalesContent() {
     deleteCustomerModal.closeModal();
   };
 
+  const sortedSales = useMemo(
+    () => [...sales].sort((a, b) => ((a.dataVenda ?? '') < (b.dataVenda ?? '') ? 1 : -1)),
+    [sales]
+  );
+
+  const rows = useMemo(
+    () =>
+      sortedSales.map((sale, index) => ({
+        id: sale.vendaId ?? 0,
+        number: formatSaleNumber(index),
+        customer: sale.cliente?.nomeCliente ?? '—',
+        customerId: sale.cliente?.clienteId,
+        date: sale.dataVenda ?? '',
+        items: sale.itens?.length ?? 0,
+        total: sale.valorTotal ?? 0,
+        payment: sale.pagamento ?? '—',
+        salesChannel: sale.canalVenda?.nomeCanalVenda ?? '—',
+        status: sale.statusPedido ?? OrderStatus.PENDING,
+        rawIdx: index,
+      })),
+    [sortedSales]
+  );
+
   const handleToggleDelivered = async (saleIndex: number, currentStatus: string) => {
     const sale = sortedSales[saleIndex];
     if (!sale?.vendaId) return;
@@ -112,29 +135,6 @@ function SalesContent() {
       })),
     });
   };
-
-  const sortedSales = useMemo(
-    () => [...sales].sort((a, b) => ((a.dataVenda ?? '') < (b.dataVenda ?? '') ? 1 : -1)),
-    [sales]
-  );
-
-  const rows = useMemo(
-    () =>
-      sortedSales.map((sale, index) => ({
-        id: sale.vendaId ?? 0,
-        number: formatSaleNumber(index),
-        customer: sale.cliente?.nomeCliente ?? '—',
-        customerId: sale.cliente?.clienteId,
-        date: sale.dataVenda ?? '',
-        items: sale.itens?.length ?? 0,
-        total: sale.valorTotal ?? 0,
-        payment: sale.pagamento ?? '—',
-        salesChannel: sale.canalVenda?.nomeCanalVenda ?? '—',
-        status: sale.statusPedido ?? OrderStatus.PENDING,
-        rawIdx: index,
-      })),
-    [sortedSales]
-  );
 
   const normalizedSearch = searchTerm.toLowerCase();
   const filteredRows = rows.filter((row) => {
@@ -173,7 +173,7 @@ function SalesContent() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Vendas" />
-      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
         <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -318,7 +318,7 @@ function SalesContent() {
                 filteredRows.map((row) => (
                   <tr
                     key={row.id}
-                    className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                    className="transition-colors hover:bg-gray-50 dark:hover:bg-white/2"
                   >
                     <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
                       {row.number}
@@ -414,7 +414,7 @@ function SalesContent() {
       <Modal
         isOpen={deleteSaleModal.isOpen}
         onClose={deleteSaleModal.closeModal}
-        className="m-4 max-w-[440px]"
+        className="m-4 max-w-110"
         showCloseButton={false}
       >
         <div className="p-6">
@@ -432,7 +432,7 @@ function SalesContent() {
             <button
               type="button"
               onClick={deleteSaleModal.closeModal}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/3 dark:text-gray-300 dark:hover:bg-white/5"
             >
               Cancelar
             </button>
@@ -450,7 +450,7 @@ function SalesContent() {
       <Modal
         isOpen={deleteCustomerModal.isOpen}
         onClose={deleteCustomerModal.closeModal}
-        className="m-4 max-w-[440px]"
+        className="m-4 max-w-110"
         showCloseButton={false}
       >
         <div className="p-6">
@@ -468,7 +468,7 @@ function SalesContent() {
             <button
               type="button"
               onClick={deleteCustomerModal.closeModal}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/3 dark:text-gray-300 dark:hover:bg-white/5"
             >
               Cancelar
             </button>
