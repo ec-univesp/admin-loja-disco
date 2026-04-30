@@ -44,9 +44,12 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const { list: customersList } = useCustomersModel();
   const { list: salesChannelsList } = useSalesChannelsModel();
   const isSubmitting = createSale.isPending;
-  const records = recordsList.data ?? [];
-  const customers = customersList.data ?? [];
-  const salesChannels = salesChannelsList.data ?? [];
+  const records = useMemo(() => recordsList.data ?? [], [recordsList.data]);
+  const customers = useMemo(() => customersList.data ?? [], [customersList.data]);
+  const salesChannels = useMemo(
+    () => salesChannelsList.data ?? [],
+    [salesChannelsList.data]
+  );
 
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [editCustomerId, setEditCustomerId] = useState<number | undefined>();
