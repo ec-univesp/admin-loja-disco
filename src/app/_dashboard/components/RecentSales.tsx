@@ -28,7 +28,7 @@ const RECENT_SALES_LIMIT = 5;
 
 export default function RecentSales() {
   const { list } = useSalesModel();
-  const sales = list.data ?? [];
+  const sales = useMemo(() => list.data ?? [], [list.data]);
 
   const rows = useMemo(() => {
     const sortedSales = [...sales].sort((a, b) =>
@@ -50,7 +50,7 @@ export default function RecentSales() {
   }, [sales]);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/3">
       <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
         Vendas Recentes
       </h3>
@@ -61,19 +61,19 @@ export default function RecentSales() {
             <TableRow>
               <TableCell
                 isHeader
-                className="min-w-[110px] px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="min-w-27.5 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
               >
                 Nº Venda
               </TableCell>
               <TableCell
                 isHeader
-                className="min-w-[200px] px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="min-w-50 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
               >
                 Disco
               </TableCell>
               <TableCell
                 isHeader
-                className="min-w-[150px] px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="min-w-37.5 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
               >
                 Cliente
               </TableCell>
@@ -85,13 +85,13 @@ export default function RecentSales() {
               </TableCell>
               <TableCell
                 isHeader
-                className="min-w-[120px] px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="min-w-30 px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400"
               >
                 Valor
               </TableCell>
               <TableCell
                 isHeader
-                className="min-w-[120px] px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="min-w-30 px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400"
               >
                 Status
               </TableCell>

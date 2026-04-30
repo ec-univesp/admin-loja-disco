@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
@@ -41,7 +41,7 @@ export default function CustomerAddressForm({
   showTitle = true,
 }: CustomerAddressFormProps) {
   const { list, create, update } = useCustomersModel();
-  const customers = list.data ?? [];
+  const customers = useMemo(() => list.data ?? [], [list.data]);
   const isCreating = create.isPending;
   const isUpdating = update.isPending;
 

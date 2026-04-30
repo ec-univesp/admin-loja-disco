@@ -29,7 +29,7 @@ export default function PurchasesPage() {
 
 function PurchasesContent() {
   const { list, remove } = usePurchasesModel();
-  const purchases = list.data ?? [];
+  const purchases = useMemo(() => list.data ?? [], [list.data]);
 
   const searchParams = useSearchParams();
 
@@ -94,7 +94,7 @@ function PurchasesContent() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Compras" />
-      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
         <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -166,7 +166,7 @@ function PurchasesContent() {
                 filteredRows.map((purchase) => (
                   <tr
                     key={purchase.id}
-                    className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                    className="transition-colors hover:bg-gray-50 dark:hover:bg-white/2"
                   >
                     <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">
                       {purchase.number}
@@ -211,7 +211,7 @@ function PurchasesContent() {
       <Modal
         isOpen={deletePurchaseModal.isOpen}
         onClose={deletePurchaseModal.closeModal}
-        className="m-4 max-w-[440px]"
+        className="m-4 max-w-110"
         showCloseButton={false}
       >
         <div className="p-6">
@@ -229,7 +229,7 @@ function PurchasesContent() {
             <button
               type="button"
               onClick={deletePurchaseModal.closeModal}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/3 dark:text-gray-300 dark:hover:bg-white/5"
             >
               Cancelar
             </button>
