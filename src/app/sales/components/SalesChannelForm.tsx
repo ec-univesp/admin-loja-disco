@@ -101,7 +101,7 @@ export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFor
       <Modal
         isOpen={channelToDelete !== null}
         onClose={() => setChannelToDelete(null)}
-        className="m-4 max-w-[440px]"
+        className="m-4 max-w-110"
         showCloseButton={false}
       >
         <div className="p-6">
@@ -119,7 +119,7 @@ export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFor
             <button
               type="button"
               onClick={() => setChannelToDelete(null)}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/3 dark:text-gray-300 dark:hover:bg-white/5"
             >
               Cancelar
             </button>
