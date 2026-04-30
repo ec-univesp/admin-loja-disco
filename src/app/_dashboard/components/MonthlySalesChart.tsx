@@ -1,7 +1,10 @@
 'use client';
 import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSalesModel } from '@/app/sales/model/salesModel';
+import { OrderStatus } from '@/shared/types';
+import { formatBRL } from '@/shared/utils/currency';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
@@ -13,10 +16,31 @@ const MONTHS = [
 ];
 const CURRENT_YEAR = new Date().getFullYear();
 const AVAILABLE_YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
+const REVENUE_STATUSES = new Set<string>([
+  OrderStatus.DELIVERED,
+  OrderStatus.CONFIRMED,
+  OrderStatus.SHIPPED,
+]);
 
 export default function MonthlySalesChart() {
   const [year, setYear] = useState<number>(CURRENT_YEAR);
   const [month, setMonth] = useState<number>(0);
+  const { list } = useSalesModel();
+  const sales = useMemo(() => list.data ?? [], [list.data]);
+
+  const allMonthsData = useMemo(() => {
+    const totals = Array.from({ length: 12 }, () => 0);
+    for (const sale of sales) {
+      if (!sale.dataVenda) continue;
+      if (!REVENUE_STATUSES.has(sale.statusPedido ?? '')) continue;
+      const d = new Date(sale.dataVenda);
+      if (d.getFullYear() !== year) continue;
+      totals[d.getMonth()] += sale.valorTotal ?? 0;
+    }
+    return totals;
+  }, [sales, year]);
+
+  const hasData = allMonthsData.some((v) => v > 0);
 
   const options: ApexOptions = {
     colors: ['#374151'],
@@ -77,13 +101,12 @@ export default function MonthlySalesChart() {
     tooltip: {
       y: {
         formatter: function (val) {
-          return 'R$ ' + val;
+          return formatBRL(val);
         },
       },
     },
   };
 
-  const allMonthsData = [4000, 3000, 2000, 2780, 1890, 2390, 3490, 2100, 3800, 4200, 3600, 4100];
   const series = [
     {
       name: 'Vendas',
@@ -92,7 +115,7 @@ export default function MonthlySalesChart() {
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-4 sm:px-6 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-4 sm:px-6 dark:border-gray-800 dark:bg-white/3">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Vendas Mensais</h3>
@@ -129,6 +152,11 @@ export default function MonthlySalesChart() {
       </div>
 
       {series && <ReactApexChart options={options} series={series} type="bar" height={280} />}
+      {!hasData && (
+        <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
+          Sem vendas registradas em {year}.
+        </p>
+      )}
     </div>
   );
 }
