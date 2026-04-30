@@ -39,7 +39,7 @@
 
 ## Sobre o projeto
 
-Aplicação **Next.js 16 + TypeScript** com App Router que simula o backend via **localStorage**. Desenvolvida como projeto de estudo para a UNIVESP, cobrindo os principais fluxos de uma loja de discos de vinil:
+Aplicação **Next.js 16 + TypeScript** com App Router, integrada ao backend Java/Spring [`loja-discos-api`](https://github.com/ec-univesp/loja-discos-api). Desenvolvida como projeto de estudo para a UNIVESP, cobrindo os principais fluxos de uma loja de discos de vinil:
 
 - Cadastro e gerenciamento de discos (estoque)
 - Registro de vendas e compras com suporte a múltiplos discos por transação
@@ -68,11 +68,11 @@ Aplicação **Next.js 16 + TypeScript** com App Router que simula o backend via 
 - **Framework:** Next.js 16 (App Router)
 - **Linguagem:** TypeScript 5.9
 - **Estilo:** Tailwind CSS 4
-- **Estado global:** Zustand 5 com `persist` (localStorage)
+- **Data fetching:** TanStack React Query 5
 - **Formulários:** react-hook-form 7 + react-number-format
 - **Gráficos:** ApexCharts via react-apexcharts
 - **Exportação:** ExcelJS
-- **Testes:** Poku 4 + `@pokujs/react` + happy-dom *(infra pronta, suíte a ser escrita após integração com o BE)*
+- **Testes:** Poku 4 + `@pokujs/react` + happy-dom *(infra pronta, suíte a ser escrita)*
 - **Linter / Formatter:** ESLint 9 + Prettier 3
 
 ---
@@ -118,8 +118,19 @@ src/
 
 - Node.js >= 20
 - npm >= 9
+- Backend [`loja-discos-api`](https://github.com/ec-univesp/loja-discos-api) rodando localmente em `http://localhost:8080`
 
-### Instalação
+### 1. Suba o backend
+
+Em outro terminal, na raiz do repositório do backend:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Verifique se a documentação Swagger está disponível em [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html).
+
+### 2. Instale as dependências do front
 
 ```bash
 git clone git@github.com:ec-univesp/admin-loja-disco.git
@@ -127,7 +138,15 @@ cd admin-loja-disco
 npm install
 ```
 
-### Desenvolvimento
+### 3. (Opcional) Configure variáveis de ambiente
+
+Por padrão o front aponta para `http://localhost:8080`. Para usar outro endereço, crie um arquivo `.env.local` na raiz:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
+### 4. Rode o servidor de desenvolvimento
 
 ```bash
 npm run dev
