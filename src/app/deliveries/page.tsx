@@ -1,9 +1,11 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
+import EmptyState from '@/shared/components/ui/empty-state/EmptyState';
 import Link from 'next/link';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useSalesStore, useSaleItemsStore, useRecordsStore } from '@/shared/store/useStore';
+import React, { useMemo, useState } from 'react';
 import { OrderStatus } from '@/shared/types';
+import { useSalesModel } from '@/app/sales/model/salesModel';
+import { PaperPlaneIcon } from '@/shared/icons';
 
 const DELIVERY_STATUSES = [
   OrderStatus.CONFIRMED,
@@ -26,61 +28,90 @@ const statusLabel: Record<string, string> = {
   [OrderStatus.CANCELLED]: 'Cancelada',
 };
 
+const formatSaleNumber = (id?: number) =>
+  `VND-${String(id ?? 0).padStart(4, '0')}`;
+
+const productsSummary = (itens?: { nomeDisco?: string }[]) => {
+  if (!itens || itens.length === 0) return '—';
+  const first = itens[0]?.nomeDisco ?? '—';
+  return itens.length === 1 ? first : `${first} +${itens.length - 1}`;
+};
+
+const formatAddress = (
+  endereco?: { logradouro?: string; numero?: number; cidade?: string; estado?: string }
+) => {
+  if (!endereco) return 'Endereço não informado';
+  const parts = [
+    [endereco.logradouro, endereco.numero].filter(Boolean).join(', '),
+    [endereco.cidade, endereco.estado].filter(Boolean).join('/'),
+  ].filter(Boolean);
+  return parts.length ? parts.join(' - ') : 'Endereço não informado';
+};
 
 export default function DeliveriesPage() {
-  const { salesWithDetails, fetchSales } = useSalesStore();
-  const { fetchSaleItems } = useSaleItemsStore();
-  const { fetchRecords } = useRecordsStore();
+  const { list } = useSalesModel();
+  const sales = useMemo(() => list.data ?? [], [list.data]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Todos');
-
-  useEffect(() => {
-    fetchSales();
-    fetchSaleItems();
-    fetchRecords();
-  }, [fetchSales, fetchSaleItems, fetchRecords]);
+  const [statusFilter, setStatusFilter] = useState<string>('Todos');
 
   const deliveries = useMemo(
     () =>
-      salesWithDetails.filter((v) =>
-        (DELIVERY_STATUSES as string[]).includes(v.orderStatus)
-      ),
-    [salesWithDetails]
+      sales
+        .filter((s) => (DELIVERY_STATUSES as string[]).includes(s.statusPedido ?? ''))
+        .map((s) => ({
+          id: s.vendaId,
+          number: formatSaleNumber(s.vendaId),
+          customerName: s.cliente?.nomeCliente ?? '—',
+          fullAddress: formatAddress(s.endereco),
+          productsSummary: productsSummary(s.itens),
+          status: s.statusPedido ?? OrderStatus.PENDING,
+        })),
+    [sales]
   );
 
   const filteredDeliveries = useMemo(() => {
-    const normalizedSearch = searchTerm.toLowerCase();
+    const q = searchTerm.toLowerCase();
     return deliveries.filter((v) => {
       const matchSearch =
-        v.id.toLowerCase().includes(normalizedSearch) ||
-        v.customerName.toLowerCase().includes(normalizedSearch) ||
-        v.fullAddress.toLowerCase().includes(normalizedSearch) ||
-        v.productsSummary.toLowerCase().includes(normalizedSearch);
-      const matchStatus = statusFilter === 'Todos' || v.orderStatus === statusFilter;
+        v.number.toLowerCase().includes(q) ||
+        v.customerName.toLowerCase().includes(q) ||
+        v.fullAddress.toLowerCase().includes(q) ||
+        v.productsSummary.toLowerCase().includes(q);
+      const matchStatus = statusFilter === 'Todos' || v.status === statusFilter;
       return matchSearch && matchStatus;
     });
   }, [deliveries, searchTerm, statusFilter]);
+
+  const isLoading = list.isLoading;
+  const hasAny = deliveries.length > 0;
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Entregas" />
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {DELIVERY_STATUSES.map((s) => (
-          <div
-            key={s}
-            className="hover:border-brand-300 cursor-pointer rounded-xl border border-gray-200 bg-white p-4 transition-colors dark:border-gray-800 dark:bg-white/[0.03]"
-            onClick={() => setStatusFilter(statusFilter === s ? 'Todos' : s)}
-          >
-            <p className="mt-1 text-2xl font-bold text-gray-800 dark:text-white">
-              {deliveries.filter((v) => v.orderStatus === s).length}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{statusLabel[s] ?? s}</p>
-          </div>
-        ))}
+        {DELIVERY_STATUSES.map((s) => {
+          const count = deliveries.filter((v) => v.status === s).length;
+          const active = statusFilter === s;
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setStatusFilter(active ? 'Todos' : s)}
+              className={`hover:border-brand-300 cursor-pointer rounded-xl border p-4 text-left transition-colors dark:bg-white/3 ${
+                active
+                  ? 'border-brand-500 bg-brand-50 dark:border-brand-500 dark:bg-brand-500/10'
+                  : 'border-gray-200 bg-white dark:border-gray-800'
+              }`}
+            >
+              <p className="mt-1 text-2xl font-bold text-gray-800 dark:text-white">{count}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{statusLabel[s] ?? s}</p>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
         <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -127,68 +158,85 @@ export default function DeliveriesPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-t border-gray-100 dark:border-gray-800">
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Venda
-                </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Cliente
-                </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Produto
-                </th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                  Endereço
-                </th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {filteredDeliveries.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-10 text-center text-sm text-gray-400 dark:text-gray-500"
-                  >
-                    Nenhuma entrega registrada.
-                  </td>
+        {!hasAny && !isLoading ? (
+          <EmptyState
+            icon={<PaperPlaneIcon className="size-6" />}
+            title="Nenhuma entrega registrada ainda"
+            description="Assim que uma venda for confirmada, ela aparecerá aqui para acompanhamento de despacho e entrega."
+            action={
+              <Link
+                href="/sales?novo=1"
+                className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
+              >
+                + Registrar nova venda
+              </Link>
+            }
+            className="border-t border-gray-100 dark:border-gray-800"
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-t border-gray-100 dark:border-gray-800">
+                  <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                    Venda
+                  </th>
+                  <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                    Cliente
+                  </th>
+                  <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                    Produto
+                  </th>
+                  <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                    Endereço
+                  </th>
+                  <th className="px-6 py-3 text-center font-medium text-gray-500 dark:text-gray-400">
+                    Status
+                  </th>
                 </tr>
-              ) : (
-                filteredDeliveries.map((delivery) => (
-                  <tr
-                    key={delivery.id}
-                    className="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
-                  >
-                    <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-gray-400">
-                      {delivery.id}
-                    </td>
-                    <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
-                      {delivery.customerName}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {delivery.productsSummary}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {delivery.fullAddress}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[delivery.orderStatus] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}
-                      >
-                        {statusLabel[delivery.orderStatus] ?? delivery.orderStatus}
-                      </span>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {filteredDeliveries.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-10 text-center text-sm text-gray-400 dark:text-gray-500"
+                    >
+                      Nenhuma entrega corresponde aos filtros aplicados.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  filteredDeliveries.map((delivery) => (
+                    <tr
+                      key={delivery.id}
+                      className="transition-colors hover:bg-gray-50 dark:hover:bg-white/2"
+                    >
+                      <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-gray-400">
+                        {delivery.number}
+                      </td>
+                      <td className="px-6 py-4 font-medium text-gray-800 dark:text-white/90">
+                        {delivery.customerName}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                        {delivery.productsSummary}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                        {delivery.fullAddress}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[delivery.status] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}
+                        >
+                          {statusLabel[delivery.status] ?? delivery.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
