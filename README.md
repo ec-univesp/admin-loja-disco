@@ -172,10 +172,6 @@ npm test                  # roda toda a suíte (quando existir)
 npm run test:watch        # modo watch
 ```
 
-Configuração em [`poku.config.mjs`](./poku.config.mjs). Os testes deverão viver em pastas `__tests__/` ao lado do código que validam.
-
-> ⚠️ **Bug conhecido** ao executar testes `.tsx` com `tsx` + `@pokujs/react`: ver [`docs/issues/`](./docs/issues) (a ser criado quando os testes forem retomados).
-
 ---
 
 ## Lint e formatação
@@ -185,36 +181,6 @@ npm run lint              # verifica lint
 npm run format            # formata o código
 npm run format:check      # apenas verifica
 ```
-
----
-
-## Próximos passos
-
-### Backend e dados
-- [ ] Substituir o `localStorage` por uma API real (NestJS / Express / Fastify a definir)
-- [ ] Migrar `src/shared/services/api.ts` para chamadas HTTP reais
-- [ ] Adicionar variáveis de ambiente (`.env`) para `NEXT_PUBLIC_API_URL`
-- [ ] Mover `src/features/faturamento/mocks/` para o BE assim que houver dados reais
-
-### Conteúdo do domínio
-- [ ] Atualizar opções dos `<select>` em `AddDiscoForm`: **Prensagem**, **Encarte**, **Condição da Capa**, **Condição do Disco** (lista a definir com o time)
-- [ ] Permitir upload de capa do disco
-- [ ] Adicionar filtro por artista/álbum no estoque
-
-### Testes
-- [ ] Escrever a suíte de testes de integração (Poku + `@pokujs/react`) após a integração com o BE
-- [ ] Documentar o bug `tsx + @pokujs/react` em `docs/issues/` para abertura de issue nos repositórios upstream
-- [ ] Configurar coverage report e atualizar a badge do README
-
-### Refatorações pendentes
-- [ ] Mover modelos de domínio de `shared/types/` para a feature correspondente quando fizer sentido (ex.: `Venda` → `features/vendas/types/`)
-- [ ] Avaliar substituir `react-hook-form` + `useWatch` por `Controller` em `SalesForm` para eliminar o aviso do React Compiler de forma definitiva
-
-### Deploy / DX
-- [ ] Configurar pipeline de CI (lint + build em PRs)
-- [ ] Adicionar pre-commit hook (`husky` + `lint-staged`) para rodar prettier/eslint antes do commit
-- [ ] Habilitar `next/image` para otimização de assets quando houver imagens reais
-
 ---
 
 ## Licença
