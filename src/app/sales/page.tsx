@@ -1,13 +1,14 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useMemo, useState } from 'react';
 import { OrderStatus } from '@/shared/types';
 import { useSalesModel } from '@/app/sales/model/salesModel';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
 import CustomerAddressModal from '@/app/sales/components/CustomerAddressModal';
 import NewRegistrationModal from '@/app/sales/components/NewRegistrationModal';
+import SaleDetailsModal from '@/app/sales/components/SaleDetailsModal';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { exportTableToExcel } from '@/shared/services/exportExcel';
@@ -71,6 +72,9 @@ function SalesContent() {
 
   const deleteSaleModal = useModal();
   const [saleToDelete, setSaleToDelete] = useState<{ id: number; number: string } | null>(null);
+
+  const detailsModal = useModal();
+  const [saleDetails, setSaleDetails] = useState<{ number: string; saleId: number } | null>(null);
 
   const deleteCustomerModal = useModal();
   const [customerToDelete, setCustomerToDelete] = useState<{ id: number; name: string } | null>(null);
@@ -368,6 +372,18 @@ function SalesContent() {
                         </label>
                         <button
                           type="button"
+                          aria-label={`Ver itens da venda ${row.number}`}
+                          title={`Ver itens da venda ${row.number}`}
+                          onClick={() => {
+                            setSaleDetails({ number: row.number, saleId: row.id });
+                            detailsModal.openModal();
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gray-500 text-white shadow-sm transition-colors hover:bg-gray-600"
+                        >
+                          <Eye size={15} strokeWidth={2.25} />
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => {
                             setEditCustomerId(row.customerId);
                             setShowCustomerModal(true);
@@ -399,6 +415,20 @@ function SalesContent() {
           </table>
         </div>
       </div>
+
+      <SaleDetailsModal
+        isOpen={detailsModal.isOpen}
+        onClose={() => {
+          detailsModal.closeModal();
+          setSaleDetails(null);
+        }}
+        saleNumber={saleDetails?.number ?? ''}
+        sale={
+          saleDetails
+            ? sortedSales.find((s) => s.vendaId === saleDetails.saleId) ?? null
+            : null
+        }
+      />
 
       <CustomerAddressModal
         isOpen={showCustomerModal}
