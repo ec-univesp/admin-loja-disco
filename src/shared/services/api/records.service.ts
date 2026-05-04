@@ -11,6 +11,9 @@ export const recordsService = {
   list: (signal?: AbortSignal) =>
     apiClient.get<RecordDTO[]>(`${BASE}/lista`, undefined, signal),
 
+  listFiltered: (tipo: 1 | 2, signal?: AbortSignal) =>
+    apiClient.get<RecordDTO[]>(`${BASE}/lista-filtrada/${tipo}`, undefined, signal),
+
   getById: (id: number, signal?: AbortSignal) =>
     apiClient.get<RecordDTO>(`${BASE}/${id}`, undefined, signal),
 
