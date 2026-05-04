@@ -5,6 +5,7 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
+import MultiSelect from '@/shared/components/form/MultiSelect';
 import { RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
@@ -177,40 +178,23 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
             </div>
 
             <div className="mt-3">
-              <Label>Gêneros Musicais</Label>
-              <div className="flex flex-wrap gap-2 rounded-lg border border-gray-300 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
-                {genres.length === 0 && (
-                  <span className="text-sm text-gray-400 dark:text-gray-500">
-                    Nenhum gênero cadastrado.
-                  </span>
-                )}
-                {genres.map((genre) => {
-                  const id = genre.generoMusicalId;
-                  if (id === undefined) return null;
-                  const selected = form.generosMusicaisIds.includes(id);
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() =>
-                        setForm((prev) => ({
-                          ...prev,
-                          generosMusicaisIds: selected
-                            ? prev.generosMusicaisIds.filter((v) => v !== id)
-                            : [...prev.generosMusicaisIds, id],
-                        }))
-                      }
-                      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                        selected
-                          ? 'border-brand-500 bg-brand-500 text-white'
-                          : 'border-gray-300 bg-white text-gray-600 hover:border-brand-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300'
-                      }`}
-                    >
-                      {genre.nomeGenero}
-                    </button>
-                  );
-                })}
-              </div>
+              <Label htmlFor="edit-generos">Gêneros Musicais</Label>
+              <MultiSelect
+                id="edit-generos"
+                value={form.generosMusicaisIds}
+                onChange={(ids) =>
+                  setForm((prev) => ({ ...prev, generosMusicaisIds: ids }))
+                }
+                options={genres
+                  .filter((g) => g.generoMusicalId !== undefined)
+                  .map((g) => ({
+                    value: g.generoMusicalId as number,
+                    label: g.nomeGenero ?? '',
+                  }))}
+                placeholder="Selecione um ou mais gêneros"
+                searchPlaceholder="Buscar gênero..."
+                emptyMessage="Nenhum gênero cadastrado."
+              />
             </div>
           </div>
 
