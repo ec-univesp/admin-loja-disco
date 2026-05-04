@@ -14,7 +14,7 @@ interface CustomerAddressFormProps {
 
 interface FormState {
   nomeCliente: string;
-  sexo: 'M' | 'F' | 'Outro' | '';
+  sexo: 'M' | 'F' | 'O' | '';
   idade: number;
   logradouro: string;
   numero: string;
@@ -210,7 +210,7 @@ export default function CustomerAddressForm({
               <option value="">--</option>
               <option value="M">Masculino</option>
               <option value="F">Feminino</option>
-              <option value="Outro">Outro</option>
+              <option value="O">Outro</option>
             </select>
           </div>
           <div>
