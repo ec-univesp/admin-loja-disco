@@ -39,7 +39,7 @@ const generateCode = (index: number): string => {
 };
 
 export default function InventoryPage() {
-  const { list: recordsList, remove: removeRecord } = useRecordsModel();
+  const { listAvailable: recordsList, remove: removeRecord } = useRecordsModel();
   const { list: genresList, create: createGenre, remove: removeGenre } = useGenresModel();
   const { list: artistsList, create: createArtist, remove: removeArtist } = useArtistsModel();
   const records = useMemo(() => recordsList.data ?? [], [recordsList.data]);
