@@ -185,7 +185,7 @@ Configuração em [`poku.config.js`](./poku.config.js).
 
 ### Cobertura
 
-> Cobertura medida via `c8 --all` para incluir arquivos não importados. Há um [bug](./docs/issue-pokujs-c8-all-ignored.md) no `@pokujs/c8` que ignora `all: true` — o número global abaixo é o real obtido pelo CLI do `c8`.
+> Cobertura medida via `c8 --all` para incluir arquivos não importados. O plugin de cobertura do Poku (`@pokujs/c8`) atualmente ignora `all: true` e só conta arquivos efetivamente importados pelos testes — o número global abaixo é o real, obtido pelo CLI do `c8` (workaround na seção mais abaixo).
 
 | Área | Statements | Branches | Functions |
 |---|---:|---:|---:|
@@ -226,14 +226,6 @@ npx c8 report \
   --temp-directory=/tmp/cov
 ```
 
-### Bugs encontrados nas ferramentas (relatos prontos para abrir issue)
-
-A pasta [`docs/`](./docs/) (apenas local, fora do git) reúne os relatos detalhados:
-
-- [`issue-poku-mjs-config-not-discovered.md`](./docs/issue-poku-mjs-config-not-discovered.md) — `poku` não descobre `poku.config.mjs` no auto-discovery (somente `.js`/`.json`/`.jsonc`).
-- [`issue-poku-tests-not-sequential.md`](./docs/issue-poku-tests-not-sequential.md) — múltiplos `test()`/`it()` rodam em paralelo sem `await`, gerando race com `afterEach`.
-- [`issue-pokujs-c8-all-ignored.md`](./docs/issue-pokujs-c8-all-ignored.md) — opção `all: true` do `@pokujs/c8` é ignorada; CLI do `c8` funciona com os mesmos dados.
-
 ---
 
 ## Lint e formatação
@@ -264,7 +256,6 @@ npm run format:check      # apenas verifica
 - [x] Cobrir 100% dos services da API (todos os endpoints do Swagger)
 - [x] Cobrir 100% dos utils (`currency`, `notify`)
 - [x] Cobrir os modais novos (`SaleDetailsModal`, `PurchaseDetailsModal`) e o widget `StoreMetrics`
-- [x] Documentar bugs encontrados em `docs/` para abertura de issue nos repositórios do `poku`/`@pokujs/c8`
 - [ ] Cobrir páginas (`inventory`, `sales`, `purchases`, `deliveries`, `revenue`) — incluindo stub do `next/navigation`
 - [ ] Cobrir formulários (`AddRecordForm`, `SalesForm`, `PurchaseForm`, `CustomerAddressForm`, `SalesChannelForm`)
 - [ ] Cobrir `MultiSelect` e demais componentes de UI compartilhados
