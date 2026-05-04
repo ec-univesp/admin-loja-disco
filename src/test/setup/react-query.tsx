@@ -1,11 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import {
-  act,
-  cleanup,
-  renderHook,
-  type RenderHookOptions,
-  type RenderHookResult,
-} from '@pokujs/react/react-testing';
+import { act, cleanup, renderHook } from '@pokujs/react/react-testing';
 import type { ComponentType, PropsWithChildren, ReactElement } from 'react';
 import React from 'react';
 
@@ -26,13 +20,10 @@ export function withQueryClient(client: QueryClient): ComponentType<PropsWithChi
   };
 }
 
-export function renderHookWithQuery<Result>(
-  hook: () => Result,
-  options: RenderHookOptions = {}
-): RenderHookResult<Result> & { client: QueryClient } {
+export function renderHookWithQuery<Result>(hook: () => Result) {
   const client = createTestQueryClient();
-  const result = renderHook(hook, { ...options, wrapper: withQueryClient(client) });
-  return Object.assign(result, { client });
+  const result = renderHook(hook, { wrapper: withQueryClient(client) });
+  return { ...result, client };
 }
 
 export function renderWithQuery(
