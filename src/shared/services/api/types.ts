@@ -135,12 +135,14 @@ export interface RecordDTO {
 
 // ===== Purchases =====
 export interface PurchaseItemPayload {
+  id?: number;
   discoId?: number;
   nomeDisco?: string;
   nomeArtista?: string;
   custoDisco?: number;
 }
 export interface PurchaseItemDTO {
+  id?: number;
   discoId?: number;
   nomeDisco?: string;
   nomeArtista?: string;
@@ -163,12 +165,14 @@ export interface PurchaseDTO {
 
 // ===== Sales =====
 export interface SaleItemPayload {
+  id?: number;
   discoId?: number;
   nomeDisco?: string;
   nomeArtista?: string;
   precoVenda?: number;
 }
 export interface SaleItemDTO {
+  id?: number;
   discoId?: number;
   nomeDisco?: string;
   nomeArtista?: string;
