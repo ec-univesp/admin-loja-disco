@@ -115,7 +115,11 @@ export default function InventoryPage() {
         code: generateCode(index),
         title: record.album ?? '',
         artist: record.artista?.nomeArtista ?? 'Desconhecido',
-        genre: record.generosMusicais?.[0]?.nomeGenero ?? '',
+        genre:
+          record.generosMusicais
+            ?.map((g) => g.nomeGenero)
+            .filter(Boolean)
+            .join(', ') ?? '',
         nationality: record.nacionalidade ?? '',
         pressing: record.prensagem ?? '',
         insert: record.encarte ?? '',

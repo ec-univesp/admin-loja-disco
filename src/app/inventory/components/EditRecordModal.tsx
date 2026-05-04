@@ -20,7 +20,7 @@ interface FormState {
   album: string;
   artistaId: number | undefined;
   artistaNome: string;
-  generoMusicalId: string;
+  generosMusicaisIds: number[];
   nacionalidade: string;
   prensagem: string;
   encarte: string;
@@ -38,7 +38,7 @@ const initialForm: FormState = {
   album: '',
   artistaId: undefined,
   artistaNome: '',
-  generoMusicalId: '',
+  generosMusicaisIds: [],
   nacionalidade: '',
   prensagem: '',
   encarte: 'Ok',
@@ -70,7 +70,10 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
       album: record.album ?? '',
       artistaId: record.artista?.artistaId,
       artistaNome: record.artista?.nomeArtista ?? '',
-      generoMusicalId: String(record.generosMusicais?.[0]?.generoMusicalId ?? ''),
+      generosMusicaisIds:
+        record.generosMusicais
+          ?.map((g) => g.generoMusicalId)
+          .filter((id): id is number => id !== undefined) ?? [],
       nacionalidade: record.nacionalidade ?? '',
       prensagem: record.prensagem ?? '',
       encarte: record.encarte ?? 'Ok',
@@ -121,9 +124,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
         valorMercado: form.valorMercado,
         custoDisco: form.custoDisco,
         status: form.status,
-        generosMusicais: form.generoMusicalId
-          ? [{ generoMusicalId: Number(form.generoMusicalId) }]
-          : [],
+        generosMusicais: form.generosMusicaisIds.map((id) => ({ generoMusicalId: id })),
       });
       onClose();
     } finally {
@@ -146,7 +147,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
               Informações Básicas
             </h5>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
                 <Label htmlFor="edit-artista">Artista</Label>
                 <input
@@ -164,22 +165,6 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 </datalist>
               </div>
               <div>
-                <Label htmlFor="edit-genero">Gênero Musical</Label>
-                <select
-                  id="edit-genero"
-                  value={form.generoMusicalId}
-                  onChange={handleChange('generoMusicalId')}
-                  className={inputClass}
-                >
-                  <option value="">-- Selecione --</option>
-                  {genres.map((genre) => (
-                    <option key={genre.generoMusicalId} value={genre.generoMusicalId ?? ''}>
-                      {genre.nomeGenero}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
                 <Label htmlFor="edit-album">Álbum</Label>
                 <input
                   id="edit-album"
@@ -188,6 +173,43 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                   onChange={handleChange('album')}
                   className={inputClass}
                 />
+              </div>
+            </div>
+
+            <div className="mt-3">
+              <Label>Gêneros Musicais</Label>
+              <div className="flex flex-wrap gap-2 rounded-lg border border-gray-300 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
+                {genres.length === 0 && (
+                  <span className="text-sm text-gray-400 dark:text-gray-500">
+                    Nenhum gênero cadastrado.
+                  </span>
+                )}
+                {genres.map((genre) => {
+                  const id = genre.generoMusicalId;
+                  if (id === undefined) return null;
+                  const selected = form.generosMusicaisIds.includes(id);
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          generosMusicaisIds: selected
+                            ? prev.generosMusicaisIds.filter((v) => v !== id)
+                            : [...prev.generosMusicaisIds, id],
+                        }))
+                      }
+                      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                        selected
+                          ? 'border-brand-500 bg-brand-500 text-white'
+                          : 'border-gray-300 bg-white text-gray-600 hover:border-brand-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300'
+                      }`}
+                    >
+                      {genre.nomeGenero}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
