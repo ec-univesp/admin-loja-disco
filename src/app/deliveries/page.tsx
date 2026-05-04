@@ -8,6 +8,7 @@ import { useSalesModel } from '@/app/sales/model/salesModel';
 import { PaperPlaneIcon } from '@/shared/icons';
 
 const DELIVERY_STATUSES = [
+  OrderStatus.PENDING,
   OrderStatus.CONFIRMED,
   OrderStatus.SHIPPED,
   OrderStatus.DELIVERED,
@@ -18,10 +19,12 @@ const statusColor: Record<string, string> = {
   [OrderStatus.DELIVERED]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   [OrderStatus.SHIPPED]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   [OrderStatus.CONFIRMED]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  [OrderStatus.PENDING]: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
   [OrderStatus.CANCELLED]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
 const statusLabel: Record<string, string> = {
+  [OrderStatus.PENDING]: 'Pendente',
   [OrderStatus.CONFIRMED]: 'Confirmada',
   [OrderStatus.SHIPPED]: 'Enviada',
   [OrderStatus.DELIVERED]: 'Entregue',
@@ -89,7 +92,7 @@ export default function DeliveriesPage() {
     <div>
       <PageBreadcrumb pageTitle="Entregas" />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
         {DELIVERY_STATUSES.map((s) => {
           const count = deliveries.filter((v) => v.status === s).length;
           const active = statusFilter === s;
