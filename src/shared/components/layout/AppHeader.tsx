@@ -29,7 +29,7 @@ const AppHeader: React.FC = () => {
           <button
             className="z-99999 h-10 w-10 items-center justify-center rounded-lg border-gray-200 text-gray-500 lg:flex lg:h-11 lg:w-11 lg:border dark:border-gray-800 dark:text-gray-400"
             onClick={handleToggle}
-            aria-label="Toggle Sidebar"
+            aria-label="Alternar menu lateral"
           >
             {isMobileOpen ? (
               <svg
