@@ -171,21 +171,15 @@ npm run start
 
 ## Testes
 
-Stack: **Poku 4** + **@pokujs/react** + **happy-dom** + **MSW 2** (intercepta `fetch` no nível do Node) + **@pokujs/c8** (cobertura V8). Os testes vivem em pastas `__tests__/` ao lado do código que validam, e a infra fica em [`src/test/`](./src/test/).
-
-### Comandos
+Stack: **Poku 4** + **@pokujs/react** + **happy-dom** + **MSW 2** (intercepta `fetch` no nível do Node) + **c8** (cobertura V8). Os testes vivem em pastas `__tests__/` ao lado do código que validam, e a infra fica em [`src/test/`](./src/test/).
 
 ```bash
 npm test                  # roda toda a suíte
 npm run test:watch        # modo watch
-npm test -- --coverage    # com relatório de cobertura
+npm test -- --coverage    # com relatório de cobertura (c8)
 ```
 
-Configuração em [`poku.config.js`](./poku.config.js).
-
-### Cobertura
-
-> Cobertura medida via `c8 --all` para incluir arquivos não importados. O plugin de cobertura do Poku (`@pokujs/c8`) atualmente ignora `all: true` e só conta arquivos efetivamente importados pelos testes — o número global abaixo é o real, obtido pelo CLI do `c8` (workaround na seção mais abaixo).
+Configuração em [`poku.config.js`](./poku.config.js). 15 arquivos de teste · ~80 casos · execução total < 1.5s.
 
 | Área | Statements | Branches | Functions |
 |---|---:|---:|---:|
@@ -194,37 +188,6 @@ Configuração em [`poku.config.js`](./poku.config.js).
 | Modais de itens (`SaleDetailsModal`, `PurchaseDetailsModal`) | **100%** | **66.66%** | **100%** |
 | `_dashboard/StoreMetrics.tsx` | **100%** | **82.35%** | **100%** |
 | **Global do `src/`** | **11.26%** | **68.33%** | **34.65%** |
-
-15 arquivos de teste · ~80 casos · execução total < 1.5s.
-
-> A cobertura global é baixa porque ainda faltam testes para a maior parte das páginas e dos formulários (`AddRecordForm`, `SalesForm`, `PurchaseForm`, etc.). Os pontos críticos do contrato com o backend (todos os endpoints do Swagger) já estão **100% cobertos** pelos testes de integração que sobem o MSW e validam GET/POST/PUT/DELETE com respostas e erros (`ApiError`, 404, propagação de status).
-
-### O que é testado hoje
-
-- **Contrato com a API**: cada um dos 9 controllers do backend (artistas, gêneros, endereços, clientes, canais de venda, discos, vendas, compras, relatórios) tem teste validando lista, busca por id, criar, atualizar, remover e cenários de erro.
-- **Endpoint novo `discos/lista-filtrada/{tipo}`**: verifica que `tipo=1` retorna apenas `DISPONIVEL` e `tipo=2` apenas `VENDIDO`.
-- **Cliente HTTP**: `apiClient` (GET/POST/PUT/DELETE), serialização de query params, parsing JSON com fallback para texto, propagação de `ApiError` com `status` e `body`.
-- **Utils**: formatação BRL (positivos, negativos, zero, `null`/`undefined`/`NaN`) e parsing reverso, mais notificações via `sonner` (sucesso e erro com `ApiError`/`Error`/desconhecido).
-- **Modais de detalhe** (vendas e compras): render condicional, listagem de itens, total agregado, estados vazios, fechamento.
-- **Métricas do dashboard**: `StoreMetrics` calcula corretamente discos em estoque, receita do mês (apenas vendas concluídas), contagem de vendas no mês corrente.
-
-### Como medir cobertura honesta (workaround do `--all`)
-
-Por enquanto o `--coverage` do plugin não inclui arquivos não importados (ver bug acima). Para ver a cobertura real:
-
-```bash
-rm -rf /tmp/cov && mkdir /tmp/cov
-NODE_V8_COVERAGE=/tmp/cov npx poku
-npx c8 report \
-  --reporter=text-summary \
-  --include='src/**/*.ts' --include='src/**/*.tsx' \
-  --exclude='src/**/__tests__/**' --exclude='src/test/**' \
-  --exclude='src/**/*.d.ts' --exclude='src/app/layout.tsx' \
-  --exclude='src/app/not-found.tsx' --exclude='src/shared/icons/**' \
-  --extension=.ts --extension=.tsx \
-  --all --src=src \
-  --temp-directory=/tmp/cov
-```
 
 ---
 
