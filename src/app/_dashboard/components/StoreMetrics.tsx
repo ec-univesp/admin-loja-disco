@@ -4,7 +4,7 @@ import { ArrowUpIcon, BoxIconLine, DollarLineIcon, GroupIcon } from '@/shared/ic
 import { useSalesModel } from '@/app/sales/model/salesModel';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
-import { OrderStatus, RecordStatus } from '@/shared/types';
+import { OrderStatus } from '@/shared/types';
 import { formatBRL } from '@/shared/utils/currency';
 
 const COMPLETED = new Set<string>([
@@ -34,11 +34,11 @@ const MetricCard = ({ icon, label, value }: MetricCardProps) => (
 export const StoreMetrics = () => {
   const { list: salesList } = useSalesModel();
   const { list: customersList } = useCustomersModel();
-  const { list: recordsList } = useRecordsModel();
+  const { listAvailable: availableList } = useRecordsModel();
 
   const sales = useMemo(() => salesList.data ?? [], [salesList.data]);
   const customers = useMemo(() => customersList.data ?? [], [customersList.data]);
-  const records = useMemo(() => recordsList.data ?? [], [recordsList.data]);
+  const availableRecords = useMemo(() => availableList.data ?? [], [availableList.data]);
 
   const metrics = useMemo(() => {
     const now = new Date();
@@ -55,17 +55,13 @@ export const StoreMetrics = () => {
       .filter((s) => COMPLETED.has(s.statusPedido ?? ''))
       .reduce((acc, s) => acc + (s.valorTotal ?? 0), 0);
 
-    const inStock = records.filter(
-      (r) => (r.status ?? RecordStatus.AVAILABLE) === RecordStatus.AVAILABLE
-    ).length;
-
     return {
       customers: customers.length,
-      inStock,
+      inStock: availableRecords.length,
       salesThisMonth: salesThisMonth.length,
       revenue,
     };
-  }, [sales, customers, records]);
+  }, [sales, customers, availableRecords]);
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
