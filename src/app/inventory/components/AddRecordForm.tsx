@@ -10,11 +10,12 @@ import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
+import MultiSelect from '@/shared/components/form/MultiSelect';
 import { formatBRL } from '@/shared/utils/currency';
 
 interface AddRecordFormData {
   artistaNome: string;
-  generoMusicalId: string;
+  generosMusicaisIds: number[];
   album: string;
   nacionalidade: string;
   prensagem: string;
@@ -54,7 +55,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
   } = useForm<AddRecordFormData>({
     defaultValues: {
       artistaNome: '',
-      generoMusicalId: '',
+      generosMusicaisIds: [],
       album: '',
       nacionalidade: 'Brasil',
       prensagem: '',
@@ -105,9 +106,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
         valorMercado: Number(data.valorMercado),
         custoDisco: Number(data.custoDisco),
         status: data.status,
-        generosMusicais: data.generoMusicalId
-          ? [{ generoMusicalId: Number(data.generoMusicalId) }]
-          : [],
+        generosMusicais: data.generosMusicaisIds.map((id) => ({ generoMusicalId: id })),
       });
 
       setSuccessMessage('Disco adicionado com sucesso!');
@@ -161,7 +160,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900 dark:text-white">Informações Básicas</h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="artistaNome">Artista *</Label>
                 <input
@@ -188,25 +187,6 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               </div>
 
               <div>
-                <Label htmlFor="generoMusicalId">Gênero Musical</Label>
-                <select
-                  id="generoMusicalId"
-                  {...register('generoMusicalId')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
-                >
-                  <option value="">-- Selecione --</option>
-                  {genres.map((genre) => (
-                    <option
-                      key={genre.generoMusicalId}
-                      value={genre.generoMusicalId ?? ''}
-                    >
-                      {genre.nomeGenero}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
                 <Label htmlFor="album">Álbum *</Label>
                 <input
                   type="text"
@@ -223,6 +203,30 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
                   <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.album.message}</span>
                 )}
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="generosMusicaisIds">Gêneros Musicais</Label>
+              <Controller
+                control={control}
+                name="generosMusicaisIds"
+                render={({ field }) => (
+                  <MultiSelect
+                    id="generosMusicaisIds"
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={genres
+                      .filter((g) => g.generoMusicalId !== undefined)
+                      .map((g) => ({
+                        value: g.generoMusicalId as number,
+                        label: g.nomeGenero ?? '',
+                      }))}
+                    placeholder="Selecione um ou mais gêneros"
+                    searchPlaceholder="Buscar gênero..."
+                    emptyMessage="Nenhum gênero cadastrado."
+                  />
+                )}
+              />
             </div>
           </div>
 

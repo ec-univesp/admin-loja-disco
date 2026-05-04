@@ -37,6 +37,7 @@ export default function PendingDeliveriesPage() {
       sales
         .filter(
           (s) =>
+            s.statusPedido === OrderStatus.PENDING ||
             s.statusPedido === OrderStatus.CONFIRMED ||
             s.statusPedido === OrderStatus.SHIPPED
         )
@@ -46,7 +47,7 @@ export default function PendingDeliveriesPage() {
           customerName: s.cliente?.nomeCliente ?? '—',
           fullAddress: formatAddress(s.endereco),
           productsSummary: productsSummary(s.itens),
-          status: s.statusPedido ?? OrderStatus.CONFIRMED,
+          status: s.statusPedido ?? OrderStatus.PENDING,
         })),
     [sales]
   );
@@ -175,10 +176,16 @@ export default function PendingDeliveriesPage() {
                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                             delivery.status === OrderStatus.SHIPPED
                               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                              : delivery.status === OrderStatus.CONFIRMED
+                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                              : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
                           }`}
                         >
-                          {delivery.status === OrderStatus.SHIPPED ? 'Enviada' : 'Confirmada'}
+                          {delivery.status === OrderStatus.SHIPPED
+                            ? 'Enviada'
+                            : delivery.status === OrderStatus.CONFIRMED
+                            ? 'Confirmada'
+                            : 'Pendente'}
                         </span>
                       </td>
                     </tr>

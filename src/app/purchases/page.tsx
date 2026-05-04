@@ -5,10 +5,11 @@ import { Suspense, useMemo, useState } from 'react';
 import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import { Trash2 } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { exportTableToExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
 import NewPurchaseModal from '@/app/purchases/components/NewPurchaseModal';
+import PurchaseDetailsModal from '@/app/purchases/components/PurchaseDetailsModal';
 
 const iconPlus = (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,6 +40,11 @@ function PurchasesContent() {
   );
   const deletePurchaseModal = useModal();
   const [purchaseToDelete, setPurchaseToDelete] = useState<{ id: number; number: string } | null>(
+    null
+  );
+
+  const detailsModal = useModal();
+  const [purchaseDetails, setPurchaseDetails] = useState<{ number: string; purchaseId: number } | null>(
     null
   );
 
@@ -182,18 +188,32 @@ function PurchasesContent() {
                       R$ {purchase.total.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        type="button"
-                        aria-label={`Apagar compra ${purchase.number}`}
-                        title={`Apagar compra ${purchase.number}`}
-                        onClick={() => {
-                          setPurchaseToDelete({ id: purchase.id, number: purchase.number });
-                          deletePurchaseModal.openModal();
-                        }}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
-                      >
-                        <Trash2 size={15} strokeWidth={2.25} />
-                      </button>
+                      <div className="inline-flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          aria-label={`Ver itens da compra ${purchase.number}`}
+                          title={`Ver itens da compra ${purchase.number}`}
+                          onClick={() => {
+                            setPurchaseDetails({ number: purchase.number, purchaseId: purchase.id });
+                            detailsModal.openModal();
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gray-500 text-white shadow-sm transition-colors hover:bg-gray-600"
+                        >
+                          <Eye size={15} strokeWidth={2.25} />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Apagar compra ${purchase.number}`}
+                          title={`Apagar compra ${purchase.number}`}
+                          onClick={() => {
+                            setPurchaseToDelete({ id: purchase.id, number: purchase.number });
+                            deletePurchaseModal.openModal();
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
+                        >
+                          <Trash2 size={15} strokeWidth={2.25} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -206,6 +226,20 @@ function PurchasesContent() {
       <NewPurchaseModal
         isOpen={showNewPurchaseModal}
         onClose={() => setShowNewPurchaseModal(false)}
+      />
+
+      <PurchaseDetailsModal
+        isOpen={detailsModal.isOpen}
+        onClose={() => {
+          detailsModal.closeModal();
+          setPurchaseDetails(null);
+        }}
+        purchaseNumber={purchaseDetails?.number ?? ''}
+        purchase={
+          purchaseDetails
+            ? purchases.find((p) => p.compraId === purchaseDetails.purchaseId) ?? null
+            : null
+        }
       />
 
       <Modal

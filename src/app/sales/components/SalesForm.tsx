@@ -40,7 +40,7 @@ interface SalesFormProps {
 
 const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const { create: createSale } = useSalesModel();
-  const { update: updateRecord, list: recordsList } = useRecordsModel();
+  const { update: updateRecord, listAvailable: recordsList } = useRecordsModel();
   const { list: customersList } = useCustomersModel();
   const { list: salesChannelsList } = useSalesChannelsModel();
   const isSubmitting = createSale.isPending;

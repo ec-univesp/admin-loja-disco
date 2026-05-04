@@ -5,6 +5,7 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
+import MultiSelect from '@/shared/components/form/MultiSelect';
 import { RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
@@ -20,7 +21,7 @@ interface FormState {
   album: string;
   artistaId: number | undefined;
   artistaNome: string;
-  generoMusicalId: string;
+  generosMusicaisIds: number[];
   nacionalidade: string;
   prensagem: string;
   encarte: string;
@@ -38,7 +39,7 @@ const initialForm: FormState = {
   album: '',
   artistaId: undefined,
   artistaNome: '',
-  generoMusicalId: '',
+  generosMusicaisIds: [],
   nacionalidade: '',
   prensagem: '',
   encarte: 'Ok',
@@ -70,7 +71,10 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
       album: record.album ?? '',
       artistaId: record.artista?.artistaId,
       artistaNome: record.artista?.nomeArtista ?? '',
-      generoMusicalId: String(record.generosMusicais?.[0]?.generoMusicalId ?? ''),
+      generosMusicaisIds:
+        record.generosMusicais
+          ?.map((g) => g.generoMusicalId)
+          .filter((id): id is number => id !== undefined) ?? [],
       nacionalidade: record.nacionalidade ?? '',
       prensagem: record.prensagem ?? '',
       encarte: record.encarte ?? 'Ok',
@@ -121,9 +125,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
         valorMercado: form.valorMercado,
         custoDisco: form.custoDisco,
         status: form.status,
-        generosMusicais: form.generoMusicalId
-          ? [{ generoMusicalId: Number(form.generoMusicalId) }]
-          : [],
+        generosMusicais: form.generosMusicaisIds.map((id) => ({ generoMusicalId: id })),
       });
       onClose();
     } finally {
@@ -146,7 +148,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
             <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
               Informações Básicas
             </h5>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
                 <Label htmlFor="edit-artista">Artista</Label>
                 <input
@@ -164,22 +166,6 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 </datalist>
               </div>
               <div>
-                <Label htmlFor="edit-genero">Gênero Musical</Label>
-                <select
-                  id="edit-genero"
-                  value={form.generoMusicalId}
-                  onChange={handleChange('generoMusicalId')}
-                  className={inputClass}
-                >
-                  <option value="">-- Selecione --</option>
-                  {genres.map((genre) => (
-                    <option key={genre.generoMusicalId} value={genre.generoMusicalId ?? ''}>
-                      {genre.nomeGenero}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
                 <Label htmlFor="edit-album">Álbum</Label>
                 <input
                   id="edit-album"
@@ -189,6 +175,26 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                   className={inputClass}
                 />
               </div>
+            </div>
+
+            <div className="mt-3">
+              <Label htmlFor="edit-generos">Gêneros Musicais</Label>
+              <MultiSelect
+                id="edit-generos"
+                value={form.generosMusicaisIds}
+                onChange={(ids) =>
+                  setForm((prev) => ({ ...prev, generosMusicaisIds: ids }))
+                }
+                options={genres
+                  .filter((g) => g.generoMusicalId !== undefined)
+                  .map((g) => ({
+                    value: g.generoMusicalId as number,
+                    label: g.nomeGenero ?? '',
+                  }))}
+                placeholder="Selecione um ou mais gêneros"
+                searchPlaceholder="Buscar gênero..."
+                emptyMessage="Nenhum gênero cadastrado."
+              />
             </div>
           </div>
 
