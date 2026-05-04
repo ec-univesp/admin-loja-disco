@@ -413,7 +413,7 @@ export default function InventoryPage() {
                     type="text"
                     value={newGenre}
                     onChange={(e) => setNewGenre(e.target.value)}
-                    placeholder="e.g. MPB, Reggae, Samba..."
+                    placeholder="Ex: MPB, Reggae, Samba..."
                     className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleAddGenre();
@@ -438,8 +438,8 @@ export default function InventoryPage() {
                           </span>
                           <button
                             type="button"
-                            aria-label={`Delete genre ${genre.nomeGenero}`}
-                            title={`Delete genre ${genre.nomeGenero}`}
+                            aria-label={`Apagar gênero ${genre.nomeGenero}`}
+                            title={`Apagar gênero ${genre.nomeGenero}`}
                             onClick={() => {
                               if (genre.generoMusicalId === undefined) return;
                               setGenreToDelete({
@@ -484,7 +484,7 @@ export default function InventoryPage() {
                     type="text"
                     value={newArtist}
                     onChange={(e) => setNewArtist(e.target.value)}
-                    placeholder="e.g. The Beatles, Caetano Veloso..."
+                    placeholder="Ex: The Beatles, Caetano Veloso..."
                     className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleAddArtist();
@@ -509,8 +509,8 @@ export default function InventoryPage() {
                           </span>
                           <button
                             type="button"
-                            aria-label={`Delete artist ${artist.nomeArtista}`}
-                            title={`Delete artist ${artist.nomeArtista}`}
+                            aria-label={`Apagar artista ${artist.nomeArtista}`}
+                            title={`Apagar artista ${artist.nomeArtista}`}
                             onClick={() => {
                               if (artist.artistaId === undefined) return;
                               setArtistToDelete({
