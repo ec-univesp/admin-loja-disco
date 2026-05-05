@@ -55,7 +55,7 @@ export default function DeliveriesPage() {
   const { list } = useSalesModel();
   const sales = useMemo(() => list.data ?? [], [list.data]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('Todos');
+  const [statusFilter, setStatusFilter] = useState<string>(OrderStatus.PENDING);
 
   const deliveries = useMemo(
     () =>

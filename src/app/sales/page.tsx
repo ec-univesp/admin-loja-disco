@@ -3,7 +3,8 @@ import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import React, { Suspense, useMemo, useState } from 'react';
-import { OrderStatus } from '@/shared/types';
+import { OrderStatus, RecordStatus } from '@/shared/types';
+import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useSalesModel } from '@/app/sales/model/salesModel';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
 import CustomerAddressModal from '@/app/sales/components/CustomerAddressModal';
@@ -58,8 +59,10 @@ export default function SalesPage() {
 function SalesContent() {
   const { list: salesList, remove: removeSale, update: updateSale } = useSalesModel();
   const { list: customersList, remove: removeCustomer } = useCustomersModel();
+  const { update: updateRecord, list: recordsList } = useRecordsModel();
   const sales = useMemo(() => salesList.data ?? [], [salesList.data]);
   const customers = useMemo(() => customersList.data ?? [], [customersList.data]);
+  const allRecords = useMemo(() => recordsList.data ?? [], [recordsList.data]);
 
   const searchParams = useSearchParams();
   const openNewSaleOnLoad = searchParams.get('novo') === '1';
@@ -81,6 +84,16 @@ function SalesContent() {
 
   const handleConfirmDeleteSale = async () => {
     if (!saleToDelete) return;
+    const sale = sortedSales.find((s) => s.vendaId === saleToDelete.id);
+    if (sale?.itens?.length) {
+      await Promise.all(
+        sale.itens.map((item) => {
+          const record = allRecords.find((r) => r.discoId === item.discoId);
+          if (!record?.discoId) return Promise.resolve();
+          return updateRecord.mutateAsync({ ...record, discoId: record.discoId, status: RecordStatus.AVAILABLE });
+        })
+      );
+    }
     await removeSale.mutateAsync(saleToDelete.id);
     setSaleToDelete(null);
     deleteSaleModal.closeModal();
