@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import Form from '@/shared/components/form/Form';
 import Label from '@/shared/components/form/Label';
 import ControlledInput from '@/shared/components/form/ControlledInput';
-import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import Button from '@/shared/components/ui/button/Button';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
@@ -15,7 +14,6 @@ import AddRecordForm from '@/app/inventory/components/AddRecordForm';
 
 interface PurchaseItemForm {
   discoId: string;
-  custoDisco: number;
 }
 
 interface PurchaseFormData {
@@ -34,7 +32,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
   const isSubmitting = create.isPending;
   const records = recordsList.data ?? [];
   const [successMsg, setSuccessMsg] = useState('');
-  const [items, setItems] = useState<PurchaseItemForm[]>([{ discoId: '', custoDisco: 0 }]);
+  const [items, setItems] = useState<PurchaseItemForm[]>([{ discoId: '' }]);
   const addRecordModal = useModal();
   const [addingAtIndex, setAddingAtIndex] = useState<number | null>(null);
   const [recordIdsBefore, setRecordIdsBefore] = useState<Set<number>>(new Set());
@@ -51,9 +49,12 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
     },
   });
 
-  const itemsTotal = items.reduce((acc, item) => acc + Number(item.custoDisco || 0), 0);
+  const itemsTotal = items.reduce((acc, item) => {
+    const record = records.find((r) => String(r.discoId) === item.discoId);
+    return acc + Number(record?.custoDisco || 0);
+  }, 0);
 
-  const addItem = () => setItems((prev) => [...prev, { discoId: '', custoDisco: 0 }]);
+  const addItem = () => setItems((prev) => [...prev, { discoId: '' }]);
   const removeItem = (index: number) => setItems((prev) => prev.filter((_, i) => i !== index));
   const updateItem = (index: number, field: keyof PurchaseItemForm, value: string | number) =>
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
@@ -88,13 +89,13 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
           discoId: Number(item.discoId),
           nomeDisco: record?.album ?? '',
           nomeArtista: record?.artista?.nomeArtista ?? '',
-          custoDisco: Number(item.custoDisco),
+          custoDisco: record?.custoDisco ?? 0,
         };
       }),
     });
 
     reset();
-    setItems([{ discoId: '', custoDisco: 0 }]);
+    setItems([{ discoId: '' }]);
     setSuccessMsg('Compra registrada com sucesso!');
     setTimeout(() => setSuccessMsg(''), 3000);
     onSuccess?.();
@@ -179,32 +180,21 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                      <Label htmlFor={`disco-${index}`}>Selecione um Disco *</Label>
-                      <select
-                        id={`disco-${index}`}
-                        value={item.discoId}
-                        onChange={(e) => updateItem(index, 'discoId', e.target.value)}
-                        className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                      >
-                        <option value="">-- Selecione --</option>
-                        {records.map((record) => (
-                          <option key={record.discoId} value={record.discoId ?? ''}>
-                            {record.artista?.nomeArtista} - {record.album}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor={`custo-${index}`}>Custo do Disco *</Label>
-                      <CurrencyInput
-                        id={`custo-${index}`}
-                        value={item.custoDisco}
-                        onChange={(val) => updateItem(index, 'custoDisco', val)}
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor={`disco-${index}`}>Selecione um Disco *</Label>
+                    <select
+                      id={`disco-${index}`}
+                      value={item.discoId}
+                      onChange={(e) => updateItem(index, 'discoId', e.target.value)}
+                      className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                    >
+                      <option value="">-- Selecione --</option>
+                      {records.map((record) => (
+                        <option key={record.discoId} value={record.discoId ?? ''}>
+                          {record.artista?.nomeArtista} - {record.album}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {selectedRecord && (
@@ -248,7 +238,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
             fullWidth
             onClick={() => {
               reset();
-              setItems([{ discoId: '', custoDisco: 0 }]);
+              setItems([{ discoId: '' }]);
             }}
           >
             Limpar
