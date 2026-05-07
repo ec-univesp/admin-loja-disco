@@ -56,7 +56,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
 
   const addItem = () => setItems((prev) => [...prev, { discoId: '' }]);
   const removeItem = (index: number) => setItems((prev) => prev.filter((_, i) => i !== index));
-  const updateItem = (index: number, field: keyof PurchaseItemForm, value: string | number) =>
+  const updateItem = (index: number, field: keyof PurchaseItemForm, value: string) =>
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
 
   const openAddRecordModal = (index: number) => {
