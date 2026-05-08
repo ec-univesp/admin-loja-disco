@@ -31,10 +31,13 @@ export default defineConfig({
       requireFlag: true,
       all: { dir: ['src'] },
       entryFilter: {
+        '**/node_modules/**': false,
         '**/__tests__/**': false,
         '**/test/**': false,
         '**/*.d.ts': false,
         '**/*.types.ts': false,
+        '**/*.svg': false,
+        '**': true,
       },
       sourceFilter: {
         '**/__tests__/**': false,
