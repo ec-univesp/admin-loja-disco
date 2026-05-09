@@ -216,6 +216,7 @@ export interface DetailedRevenueDTO {
   nomeArtista?: string;
   nomeGenero?: string;
   receitaDisco?: number;
+  receitaGenero?: number;
 }
 export interface RevenueSummaryDTO {
   ano?: number;

@@ -134,7 +134,7 @@ export default function RevenuePage() {
     } else if (dimension === 'genero') {
       items.forEach((item) => {
         const nome = item.nomeGenero ?? 'Sem gênero';
-        map.set(nome, (map.get(nome) ?? 0) + (item.receitaDisco ?? 0));
+        map.set(nome, (map.get(nome) ?? 0) + (item.receitaGenero ?? 0));
       });
     } else if (dimension === 'artista') {
       items.forEach((item) => {
