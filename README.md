@@ -1,43 +1,35 @@
 <h1 align="center">Admin Loja de Discos</h1>
 
 <p align="center">
-  Painel administrativo para gestão de uma loja de discos de vinil —
-  controle de estoque, vendas, compras, clientes e relatório financeiro.
+  Painel administrativo para uma loja de discos de vinil — estoque, vendas, compras, clientes, entregas e relatórios financeiros.
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript 5.9" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS 4" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/Zustand-5-orange" alt="Zustand" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/react--hook--form-7-EC5990?logo=reacthookform&logoColor=white" alt="react-hook-form" />
+  <img src="https://img.shields.io/badge/TanStack_Query-5-FF4154?logo=reactquery&logoColor=white" alt="TanStack Query 5" />
+  <img src="https://img.shields.io/badge/Zod-4-3E67B1?logo=zod&logoColor=white" alt="Zod 4" />
+  <img src="https://img.shields.io/badge/react--hook--form-7-EC5990?logo=reacthookform&logoColor=white" alt="react-hook-form 7" />
+  <img src="https://img.shields.io/badge/MSW-2-FF6A33?logo=mockserviceworker&logoColor=white" alt="MSW 2" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/testes-Poku_4_+_%40pokujs%2Freact-9F4DCC" alt="Testes" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/integração-MSW_2-FF6A33?logo=mockserviceworker&logoColor=white" alt="MSW" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/services_API-100%25-2EA44F" alt="Cobertura services" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/utils-100%25-2EA44F" alt="Cobertura utils" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/cobertura_global-11.26%25-orange" alt="Cobertura global" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/linter-ESLint_9-4B32C3?logo=eslint&logoColor=white" alt="ESLint" />
+  <img src="https://img.shields.io/badge/tests-15_files_/_107_cases-2EA44F?logo=testinglibrary&logoColor=white" alt="Tests" />
+  <img src="https://img.shields.io/badge/statements-93%25-2EA44F" alt="Statements 93%" />
+  <img src="https://img.shields.io/badge/branches-96%25-2EA44F" alt="Branches 96%" />
+  <img src="https://img.shields.io/badge/functions-98%25-2EA44F" alt="Functions 98%" />
+  <img src="https://img.shields.io/badge/zero_any_/_zero_as-2EA44F" alt="Zero any / Zero as" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/licença-GPL--3.0-blue" alt="Licença GPL-3.0" />
-  &nbsp;&nbsp;
+  <img src="https://img.shields.io/badge/ESLint-9-4B32C3?logo=eslint&logoColor=white" alt="ESLint 9" />
+  <img src="https://img.shields.io/badge/Prettier-3-F7B93E?logo=prettier&logoColor=black" alt="Prettier 3" />
+  <img src="https://img.shields.io/badge/licença-GPL--3.0-blue" alt="GPL-3.0" />
   <img src="https://img.shields.io/badge/status-em_desenvolvimento-yellow" alt="Status" />
 </p>
 
