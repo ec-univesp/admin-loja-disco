@@ -126,49 +126,59 @@ Form (RHF + zodResolver)  →  useMutation/useQuery (TanStack)
 
 ### Pré-requisitos
 
-- Node.js >= 20
-- npm >= 9
-- Backend [`loja-discos-api`](https://github.com/ec-univesp/loja-discos-api) rodando localmente em `http://localhost:8080`
+- Node.js ≥ 20 e npm ≥ 9
+- Backend [`loja-discos-api`](https://github.com/ec-univesp/loja-discos-api) rodando em `http://localhost:8080`
+- MySQL 8 (usado pelo backend)
 
-### 1. Suba o backend
+### 1. Banco de dados (MySQL local)
 
-Em outro terminal, na raiz do repositório do backend:
+Suba um MySQL com Docker — schema `discosgranel` é criado automaticamente pelo backend (Flyway/JPA):
+
+```bash
+docker run -d --name discos-mysql \
+  -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_DATABASE=discosgranel \
+  -p 3306:3306 \
+  mysql:8
+```
+
+Verifique que está rodando:
+
+```bash
+docker logs discos-mysql | tail -5
+```
+
+> **Importante**: a view `vlucroporitem` (usada pelo endpoint `/relatorios/lucroporitem`) precisa estar criada no schema. Se aparecer erro `Table 'discosgranel.vlucroporitem' doesn't exist` ao exportar Excel, rode a migration correspondente do backend.
+
+### 2. Backend (Spring Boot)
+
+Em outro terminal, na raiz do repositório [`loja-discos-api`](https://github.com/ec-univesp/loja-discos-api):
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-Verifique se a documentação Swagger está disponível em [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html).
+Confirme em [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html).
 
-### 2. Instale as dependências do front
+### 3. Frontend
 
 ```bash
 git clone git@github.com:ec-univesp/admin-loja-disco.git
 cd admin-loja-disco
 npm install
-```
-
-### 3. (Opcional) Configure variáveis de ambiente
-
-Por padrão o front aponta para `http://localhost:8080`. Para usar outro endereço, crie um arquivo `.env.local` na raiz:
-
-```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
-```
-
-### 4. Rode o servidor de desenvolvimento
-
-```bash
 npm run dev
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000).
+Abra [http://localhost:3000](http://localhost:3000).
 
-### Build de produção
+> O `dev` usa Webpack (`next dev --webpack`) porque o binário nativo do Turbopack não está disponível em todas as plataformas. Build de produção também usa Webpack.
+
+### Variável de ambiente (opcional)
+
+Por padrão o front aponta para `http://localhost:8080`. Para mudar, crie `.env.local`:
 
 ```bash
-npm run build
-npm run start
+NEXT_PUBLIC_API_BASE_URL=https://api.exemplo.com
 ```
 
 ---
