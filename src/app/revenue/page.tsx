@@ -5,10 +5,18 @@ import React, { useMemo, useState } from 'react';
 import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
+import { useQuery } from '@tanstack/react-query';
 import { useSalesModel } from '@/app/sales/model/salesModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
-import { useAppStore } from '@/shared/store/appStore';
 import { useReportsModel } from '@/app/revenue/model/reportsModel';
+import {
+  artistsService,
+  customersService,
+  addressesService,
+  salesChannelsService,
+  recordsService,
+  purchasesService,
+} from '@/shared/services/api';
 import {
   exportFullBackup,
   exportFinancialReport,
@@ -53,9 +61,33 @@ function groupBy(
 export default function RevenuePage() {
   const { list: salesQuery } = useSalesModel();
   const { list: genresQuery } = useGenresModel();
-  const fullState = useAppStore();
   const sales = useMemo(() => salesQuery.data ?? [], [salesQuery.data]);
   const genres = useMemo(() => genresQuery.data ?? [], [genresQuery.data]);
+
+  const artistsQuery = useQuery({
+    queryKey: ['artists', 'list'],
+    queryFn: ({ signal }) => artistsService.list(signal),
+  });
+  const recordsQuery = useQuery({
+    queryKey: ['records', 'list'],
+    queryFn: ({ signal }) => recordsService.list(signal),
+  });
+  const customersQuery = useQuery({
+    queryKey: ['customers', 'list'],
+    queryFn: ({ signal }) => customersService.list(signal),
+  });
+  const addressesQuery = useQuery({
+    queryKey: ['addresses', 'list'],
+    queryFn: ({ signal }) => addressesService.list(signal),
+  });
+  const channelsQuery = useQuery({
+    queryKey: ['sales-channels', 'list'],
+    queryFn: ({ signal }) => salesChannelsService.list(signal),
+  });
+  const purchasesQuery = useQuery({
+    queryKey: ['purchases', 'list'],
+    queryFn: ({ signal }) => purchasesService.list(signal),
+  });
 
   const [yearFilter, setYearFilter] = useState<number>(CURRENT_YEAR);
   const [monthFilter, setMonthFilter] = useState<number>(0);
@@ -176,7 +208,37 @@ export default function RevenuePage() {
   const handleExportCSV = () =>
     exportFinancialReportCSV({ monthlySummary: monthlyRevenue, salesDetails });
 
-  const handleFullBackup = () => exportFullBackup(fullState, genres);
+  const handleFullBackup = () => {
+    const customers = customersQuery.data ?? [];
+    const purchases = purchasesQuery.data ?? [];
+
+    const customerAddresses = customers.flatMap((customer) =>
+      (customer.enderecos ?? []).map((address) => ({
+        clienteId: customer.clienteId,
+        enderecoId: address.enderecoId,
+      }))
+    );
+    const saleItems = sales.flatMap((sale) =>
+      (sale.itens ?? []).map((item) => ({ vendaId: sale.vendaId, ...item }))
+    );
+    const purchaseItems = purchases.flatMap((purchase) =>
+      (purchase.itens ?? []).map((item) => ({ compraId: purchase.compraId, ...item }))
+    );
+
+    exportFullBackup({
+      genres,
+      artists: artistsQuery.data ?? [],
+      records: recordsQuery.data ?? [],
+      customers,
+      addresses: addressesQuery.data ?? [],
+      customerAddresses,
+      sales,
+      saleItems,
+      purchases,
+      purchaseItems,
+      salesChannels: channelsQuery.data ?? [],
+    });
+  };
 
   return (
     <div>
