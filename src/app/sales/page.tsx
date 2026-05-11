@@ -14,6 +14,32 @@ import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { exportTableToExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
+import { reportsService, type ProfitPerItemDTO } from '@/shared/services/api';
+
+const MONTHS_IN_YEAR = 12;
+const monthOptions = Array.from({ length: MONTHS_IN_YEAR }, (_unused, monthIndex) => monthIndex + 1);
+
+const formatCurrency = (value?: number) => value?.toFixed(2) ?? '';
+
+const buildProfitPerItemExcelRow = (profitItem: ProfitPerItemDTO) => ({
+  'Venda ID': profitItem.vendaId ?? '',
+  Data: profitItem.dataVenda ? formatDateBR(profitItem.dataVenda) : '',
+  Ano: profitItem.ano ?? '',
+  Mês: profitItem.mes ?? '',
+  'Disco ID': profitItem.discoId ?? '',
+  Disco: profitItem.nomeDisco ?? '',
+  'Cliente ID': profitItem.clienteId ?? '',
+  Cliente: profitItem.nomeCliente ?? '',
+  'Forma Pagamento': profitItem.formaPagamento ?? '',
+  'Canal ID': profitItem.canalVendaId ?? '',
+  Canal: profitItem.nomeCanal ?? '',
+  'Preço Venda (R$)': formatCurrency(profitItem.precoVenda),
+  'Custo Disco (R$)': formatCurrency(profitItem.custoDisco),
+  'Custos Adicionais (R$)': formatCurrency(profitItem.custosAdicionais),
+  'Frete Disco (R$)': formatCurrency(profitItem.freteDisco),
+  'Total Despesa (R$)': formatCurrency(profitItem.totalDespesa),
+  'Lucro (R$)': formatCurrency(profitItem.lucro),
+});
 
 const iconPlus = (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,13 +108,20 @@ function SalesContent() {
   const deleteCustomerModal = useModal();
   const [customerToDelete, setCustomerToDelete] = useState<{ id: number; name: string } | null>(null);
 
+  const exportModal = useModal();
+  const now = new Date();
+  const [exportYear, setExportYear] = useState<number>(now.getFullYear());
+  const [exportMonth, setExportMonth] = useState<number>(now.getMonth() + 1);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+
   const handleConfirmDeleteSale = async () => {
     if (!saleToDelete) return;
-    const sale = sortedSales.find((s) => s.vendaId === saleToDelete.id);
+    const sale = sortedSales.find((candidateSale) => candidateSale.vendaId === saleToDelete.id);
     if (sale?.itens?.length) {
       await Promise.all(
         sale.itens.map((item) => {
-          const record = allRecords.find((r) => r.discoId === item.discoId);
+          const record = allRecords.find((candidateRecord) => candidateRecord.discoId === item.discoId);
           if (!record?.discoId) return Promise.resolve();
           return updateRecord.mutateAsync({ ...record, discoId: record.discoId, status: RecordStatus.AVAILABLE });
         })
@@ -107,7 +140,10 @@ function SalesContent() {
   };
 
   const sortedSales = useMemo(
-    () => [...sales].sort((a, b) => ((a.dataVenda ?? '') < (b.dataVenda ?? '') ? 1 : -1)),
+    () =>
+      [...sales].sort((firstSale, secondSale) =>
+        (firstSale.dataVenda ?? '') < (secondSale.dataVenda ?? '') ? 1 : -1
+      ),
     [sales]
   );
 
@@ -166,25 +202,37 @@ function SalesContent() {
     .filter((row) => (COMPLETED_STATUSES as string[]).includes(row.status))
     .reduce((acc, row) => acc + row.total, 0);
 
-  const buildExportRows = () =>
-    filteredRows.map(({ number, customer, date, items, total, payment, salesChannel, status }) => ({
-      'Nº Venda': number,
-      Cliente: customer,
-      Data: formatDateBR(date),
-      Itens: items,
-      'Total (R$)': total.toFixed(2),
-      Pagamento: payment,
-      'Canal de Venda': salesChannel,
-      Status: status,
-    }));
+  const handleOpenExportModal = () => {
+    setExportError(null);
+    exportModal.openModal();
+  };
 
-  const handleExportToExcel = () => {
-    const stamp = new Date().toISOString().slice(0, 10);
-    exportTableToExcel(
-      'Vendas',
-      buildExportRows() as Array<Record<string, unknown>>,
-      `vendas-${stamp}.xlsx`
-    );
+  const handleConfirmExport = async () => {
+    setExportError(null);
+    setIsExporting(true);
+    try {
+      const profitReport = await reportsService.profitPerItem({
+        ano: exportYear,
+        mes: exportMonth,
+      });
+      if (!profitReport.length) {
+        setExportError('Nenhum dado encontrado para o período selecionado.');
+        return;
+      }
+      const spreadsheetRows = profitReport.map(buildProfitPerItemExcelRow);
+      const monthLabel = String(exportMonth).padStart(2, '0');
+      await exportTableToExcel(
+        'Lucro por Item',
+        spreadsheetRows,
+        `vendas-lucro-por-item-${exportYear}-${monthLabel}.xlsx`
+      );
+      exportModal.closeModal();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao exportar relatório.';
+      setExportError(message);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -231,7 +279,7 @@ function SalesContent() {
             </Button>
             <button
               type="button"
-              onClick={handleExportToExcel}
+              onClick={handleOpenExportModal}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               Exportar Excel
@@ -485,6 +533,80 @@ function SalesContent() {
               className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
             >
               Apagar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={exportModal.isOpen}
+        onClose={() => {
+          if (!isExporting) exportModal.closeModal();
+        }}
+        className="m-4 max-w-110"
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Exportar Excel
+          </h4>
+          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            Selecione o período do relatório de lucro por item.
+          </p>
+          <div className="mb-4 grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                Mês
+              </span>
+              <select
+                value={exportMonth}
+                onChange={(monthChangeEvent) =>
+                  setExportMonth(Number(monthChangeEvent.target.value))
+                }
+                disabled={isExporting}
+                className="focus:border-brand-500 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+              >
+                {monthOptions.map((monthNumber) => (
+                  <option key={monthNumber} value={monthNumber}>
+                    {String(monthNumber).padStart(2, '0')}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                Ano
+              </span>
+              <input
+                type="number"
+                value={exportYear}
+                onChange={(event) => setExportYear(Number(event.target.value))}
+                disabled={isExporting}
+                min={2000}
+                max={2100}
+                className="focus:border-brand-500 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+              />
+            </label>
+          </div>
+          {exportError && (
+            <p className="mb-4 text-sm text-red-600 dark:text-red-400">{exportError}</p>
+          )}
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={exportModal.closeModal}
+              disabled={isExporting}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-white/3 dark:text-gray-300 dark:hover:bg-white/5"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmExport}
+              disabled={isExporting}
+              className="bg-brand-500 hover:bg-brand-600 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
+            >
+              {isExporting ? 'Exportando...' : 'Exportar'}
             </button>
           </div>
         </div>
