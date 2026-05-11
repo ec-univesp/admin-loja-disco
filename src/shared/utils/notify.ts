@@ -17,7 +17,7 @@ export function notifyError(context: string, error: unknown) {
       ? `${error.status}: ${formatErrorBody(error.body)}`
       : error instanceof Error
         ? error.message
-        : 'Unknown error';
+        : 'Erro desconhecido';
 
   toast.error(context, { description: detail });
 }
@@ -28,5 +28,5 @@ function formatErrorBody(body: unknown): string {
   const extractedMessage = parsed.success
     ? parsed.data.message ?? parsed.data.error
     : undefined;
-  return extractedMessage ?? 'Check the data and try again.';
+  return extractedMessage ?? 'Verifique os dados e tente novamente.';
 }

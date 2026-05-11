@@ -88,7 +88,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
         artistaId = existingArtist.artistaId;
       } else {
         const newArtist = await createArtist.mutateAsync({ nomeArtista });
-        if (newArtist.artistaId === undefined) throw new Error('Failed to create artist');
+        if (newArtist.artistaId === undefined) throw new Error('Falha ao cadastrar artista.');
         artistaId = newArtist.artistaId;
       }
 

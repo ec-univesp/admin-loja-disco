@@ -35,7 +35,10 @@ runSequentialTests(async () => {
     await test('notifyError com ApiError sem message ou error usa fallback', () => {
       toastSpy.clear();
       notifyError('Falha', new ApiError('m', 500, {}));
-      assert.strictEqual(toastSpy.last().description, '500: Check the data and try again.');
+      assert.strictEqual(
+        toastSpy.last().description,
+        '500: Verifique os dados e tente novamente.'
+      );
     });
 
     await test('notifyError com Error generico usa message', () => {
@@ -44,10 +47,10 @@ runSequentialTests(async () => {
       assert.strictEqual(toastSpy.last().description, 'boom');
     });
 
-    await test('notifyError com tipo desconhecido usa "Unknown error"', () => {
+    await test('notifyError com tipo desconhecido usa "Erro desconhecido"', () => {
       toastSpy.clear();
       notifyError('Falha', 'string-solta');
-      assert.strictEqual(toastSpy.last().description, 'Unknown error');
+      assert.strictEqual(toastSpy.last().description, 'Erro desconhecido');
     });
   } finally {
     toastSpy.restore();

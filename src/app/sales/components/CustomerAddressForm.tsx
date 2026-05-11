@@ -114,7 +114,7 @@ export default function CustomerAddressForm({
         estado: data.state ?? prev.estado,
       }));
     } catch (err) {
-      setCepError(err instanceof Error ? err.message : 'Error fetching ZIP code');
+      setCepError(err instanceof Error ? err.message : 'Erro ao consultar o CEP.');
     } finally {
       setCepLoading(false);
     }

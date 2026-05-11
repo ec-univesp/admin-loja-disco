@@ -19,7 +19,7 @@ export function useSalesChannelsModel(id?: number) {
   const byId = useQuery({
     queryKey: keys.detail(id ?? 0),
     queryFn: ({ signal }) => {
-      if (id === undefined) throw new Error('id is required');
+      if (id === undefined) throw new Error('Identificador obrigatório.');
       return salesChannelsService.getById(id, signal);
     },
     enabled: id !== undefined,
