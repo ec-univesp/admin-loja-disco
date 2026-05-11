@@ -50,15 +50,18 @@ Aplicação **Next.js 16 + TypeScript** com App Router que consome o backend Jav
 
 ## Stack
 
-- **Framework:** Next.js 16 (App Router)
-- **Linguagem:** TypeScript 5.9
-- **Estilo:** Tailwind CSS 4
-- **Data fetching:** TanStack React Query 5
-- **Formulários:** react-hook-form 7 + react-number-format
-- **Gráficos:** ApexCharts via react-apexcharts
-- **Exportação:** ExcelJS
-- **Testes:** Poku 4 + `@pokujs/react` + happy-dom + MSW 2 (mock de rede) + `@pokujs/c8`/`@pokujs/monocart` (cobertura)
-- **Linter / Formatter:** ESLint 9 + Prettier 3
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js 16 (App Router, Webpack) |
+| Linguagem | TypeScript 5.9 (strict) |
+| UI | Tailwind CSS 4, lucide-react, ApexCharts |
+| Data fetching | TanStack Query 5 |
+| Forms | react-hook-form 7 + `@hookform/resolvers` |
+| Validação | **Zod 4** (DTOs, enums, forms, responses no boundary) |
+| Mocks de rede (tests) | MSW 2 |
+| Testes | Poku 4 + `@pokujs/react` + happy-dom |
+| Cobertura | monocart-coverage-reports (V8) |
+| Lint / Format | ESLint 9 + Prettier 3 |
 
 ---
 
