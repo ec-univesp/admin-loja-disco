@@ -198,8 +198,11 @@ function SalesContent() {
     return matchesSearch && matchesStatus;
   });
 
+  const isCompletedStatus = (status: string): boolean =>
+    COMPLETED_STATUSES.some((completed) => completed === status);
+
   const totalRevenue = filteredRows
-    .filter((row) => (COMPLETED_STATUSES as string[]).includes(row.status))
+    .filter((row) => isCompletedStatus(row.status))
     .reduce((acc, row) => acc + row.total, 0);
 
   const handleOpenExportModal = () => {

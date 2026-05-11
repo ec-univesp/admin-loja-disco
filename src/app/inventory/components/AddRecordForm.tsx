@@ -215,12 +215,11 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
                     id="generosMusicaisIds"
                     value={field.value}
                     onChange={field.onChange}
-                    options={genres
-                      .filter((g) => g.generoMusicalId !== undefined)
-                      .map((g) => ({
-                        value: g.generoMusicalId as number,
-                        label: g.nomeGenero ?? '',
-                      }))}
+                    options={genres.flatMap((genre) =>
+                      genre.generoMusicalId === undefined
+                        ? []
+                        : [{ value: genre.generoMusicalId, label: genre.nomeGenero ?? '' }]
+                    )}
                     placeholder="Selecione um ou mais gêneros"
                     searchPlaceholder="Buscar gênero..."
                     emptyMessage="Nenhum gênero cadastrado."

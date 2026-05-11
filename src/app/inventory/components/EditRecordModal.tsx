@@ -185,12 +185,11 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 onChange={(ids) =>
                   setForm((prev) => ({ ...prev, generosMusicaisIds: ids }))
                 }
-                options={genres
-                  .filter((g) => g.generoMusicalId !== undefined)
-                  .map((g) => ({
-                    value: g.generoMusicalId as number,
-                    label: g.nomeGenero ?? '',
-                  }))}
+                options={genres.flatMap((genre) =>
+                  genre.generoMusicalId === undefined
+                    ? []
+                    : [{ value: genre.generoMusicalId, label: genre.nomeGenero ?? '' }]
+                )}
                 placeholder="Selecione um ou mais gêneros"
                 searchPlaceholder="Buscar gênero..."
                 emptyMessage="Nenhum gênero cadastrado."

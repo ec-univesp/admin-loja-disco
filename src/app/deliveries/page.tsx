@@ -60,7 +60,9 @@ export default function DeliveriesPage() {
   const deliveries = useMemo(
     () =>
       sales
-        .filter((s) => (DELIVERY_STATUSES as string[]).includes(s.statusPedido ?? ''))
+        .filter((sale) =>
+          DELIVERY_STATUSES.some((deliveryStatus) => deliveryStatus === (sale.statusPedido ?? ''))
+        )
         .map((s) => ({
           id: s.vendaId,
           number: formatSaleNumber(s.vendaId),

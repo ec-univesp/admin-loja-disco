@@ -18,7 +18,10 @@ export function useGenresModel(id?: number) {
 
   const byId = useQuery({
     queryKey: keys.detail(id ?? 0),
-    queryFn: ({ signal }) => genresService.getById(id as number, signal),
+    queryFn: ({ signal }) => {
+      if (id === undefined) throw new Error('id is required');
+      return genresService.getById(id, signal);
+    },
     enabled: id !== undefined,
   });
 

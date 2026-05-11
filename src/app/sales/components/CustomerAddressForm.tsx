@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { z } from 'zod';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
@@ -12,9 +13,17 @@ interface CustomerAddressFormProps {
   showTitle?: boolean;
 }
 
+const sexoSchema = z.enum(['M', 'F', 'O', '']);
+type SexoOption = z.infer<typeof sexoSchema>;
+
+const parseSexo = (rawSexo: string | undefined): SexoOption => {
+  const parsed = sexoSchema.safeParse(rawSexo ?? '');
+  return parsed.success ? parsed.data : '';
+};
+
 interface FormState {
   nomeCliente: string;
-  sexo: 'M' | 'F' | 'O' | '';
+  sexo: SexoOption;
   idade: number;
   logradouro: string;
   numero: string;
@@ -63,7 +72,7 @@ export default function CustomerAddressForm({
     const primaryAddress = customer?.enderecos?.[0];
     setForm({
       nomeCliente: customer?.nomeCliente ?? '',
-      sexo: (customer?.sexo as FormState['sexo']) ?? '',
+      sexo: parseSexo(customer?.sexo),
       idade: customer?.idade ?? 0,
       logradouro: primaryAddress?.logradouro ?? '',
       numero: primaryAddress?.numero !== undefined ? String(primaryAddress.numero) : '',
