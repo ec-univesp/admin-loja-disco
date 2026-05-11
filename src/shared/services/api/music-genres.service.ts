@@ -1,21 +1,25 @@
+import { z } from 'zod';
 import { apiClient } from './client';
-import type { MusicGenrePayload, MusicGenreDTO } from './types';
+import { musicGenreSchema } from './schemas';
+import type { MusicGenrePayload } from './types';
 
 const BASE = '/generos-musicais';
+const messageSchema = z.string();
+const genreListSchema = z.array(musicGenreSchema);
 
 export const genresService = {
   list: (signal?: AbortSignal) =>
-    apiClient.get<MusicGenreDTO[]>(`${BASE}/lista`, undefined, signal),
+    apiClient.get(`${BASE}/lista`, genreListSchema, undefined, signal),
 
   getById: (id: number, signal?: AbortSignal) =>
-    apiClient.get<MusicGenreDTO>(`${BASE}/${id}`, undefined, signal),
+    apiClient.get(`${BASE}/${id}`, musicGenreSchema, undefined, signal),
 
   create: (payload: MusicGenrePayload, signal?: AbortSignal) =>
-    apiClient.post<MusicGenreDTO>(`${BASE}/criar`, payload, signal),
+    apiClient.post(`${BASE}/criar`, messageSchema, payload, signal),
 
   update: (payload: MusicGenrePayload, signal?: AbortSignal) =>
-    apiClient.put<MusicGenreDTO>(`${BASE}/atualizar`, payload, signal),
+    apiClient.put(`${BASE}/atualizar`, musicGenreSchema, payload, signal),
 
   delete: (id: number, signal?: AbortSignal) =>
-    apiClient.delete<void>(`${BASE}/${id}`, signal),
+    apiClient.delete(`${BASE}/${id}`, messageSchema, signal),
 };

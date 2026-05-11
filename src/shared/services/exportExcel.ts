@@ -86,13 +86,13 @@ function downloadCSV(content: string, filename: string) {
 
 export async function exportTableToExcel(
   sheetName: string,
-  rows: Array<Record<string, unknown>>,
+  rows: ReadonlyArray<object>,
   filename: string
 ) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'Admin Loja de Disco';
   workbook.created = new Date();
-  appendSheet(workbook, sheetName, rows);
+  appendSheet(workbook, sheetName, rows.map(objectToRecord));
   await downloadWorkbook(workbook, filename);
 }
 

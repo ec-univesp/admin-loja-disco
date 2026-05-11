@@ -1,12 +1,18 @@
+import { z } from 'zod';
 import { apiClient } from './client';
-import type {
-  ChannelRevenueDTO,
-  RevenueSummaryDTO,
-  DetailedRevenueDTO,
-  ProfitPerItemDTO,
-} from './types';
+import {
+  channelRevenueSchema,
+  detailedRevenueSchema,
+  profitPerItemSchema,
+  revenueSummarySchema,
+} from './schemas';
 
 const BASE = '/relatorios';
+
+const detailedRevenueListSchema = z.array(detailedRevenueSchema);
+const revenueSummaryListSchema = z.array(revenueSummarySchema);
+const channelRevenueListSchema = z.array(channelRevenueSchema);
+const profitPerItemListSchema = z.array(profitPerItemSchema);
 
 export type ReportFilters = {
   ano?: number;
@@ -15,30 +21,14 @@ export type ReportFilters = {
 
 export const reportsService = {
   detailedRevenue: (filters?: ReportFilters, signal?: AbortSignal) =>
-    apiClient.get<DetailedRevenueDTO[]>(
-      `${BASE}/receita-detalhada`,
-      filters,
-      signal
-    ),
+    apiClient.get(`${BASE}/receita-detalhada`, detailedRevenueListSchema, filters, signal),
 
   revenueSummary: (filters?: ReportFilters, signal?: AbortSignal) =>
-    apiClient.get<RevenueSummaryDTO[]>(
-      `${BASE}/receita-despesa`,
-      filters,
-      signal
-    ),
+    apiClient.get(`${BASE}/receita-despesa`, revenueSummaryListSchema, filters, signal),
 
   channelRevenue: (filters?: ReportFilters, signal?: AbortSignal) =>
-    apiClient.get<ChannelRevenueDTO[]>(
-      `${BASE}/receita-canal`,
-      filters,
-      signal
-    ),
+    apiClient.get(`${BASE}/receita-canal`, channelRevenueListSchema, filters, signal),
 
   profitPerItem: (filters: ReportFilters, signal?: AbortSignal) =>
-    apiClient.get<ProfitPerItemDTO[]>(
-      `${BASE}/lucroporitem`,
-      filters,
-      signal
-    ),
+    apiClient.get(`${BASE}/lucroporitem`, profitPerItemListSchema, filters, signal),
 };

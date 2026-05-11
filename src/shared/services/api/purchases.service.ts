@@ -1,21 +1,25 @@
+import { z } from 'zod';
 import { apiClient } from './client';
-import type { PurchasePayload, PurchaseDTO } from './types';
+import { purchaseSchema } from './schemas';
+import type { PurchasePayload } from './types';
 
 const BASE = '/compras';
+const messageSchema = z.string();
+const purchaseListSchema = z.array(purchaseSchema);
 
 export const purchasesService = {
   list: (signal?: AbortSignal) =>
-    apiClient.get<PurchaseDTO[]>(`${BASE}/lista`, undefined, signal),
+    apiClient.get(`${BASE}/lista`, purchaseListSchema, undefined, signal),
 
   getById: (id: number, signal?: AbortSignal) =>
-    apiClient.get<PurchaseDTO>(`${BASE}/${id}`, undefined, signal),
+    apiClient.get(`${BASE}/${id}`, purchaseSchema, undefined, signal),
 
   create: (payload: PurchasePayload, signal?: AbortSignal) =>
-    apiClient.post<PurchaseDTO>(`${BASE}/criar`, payload, signal),
+    apiClient.post(`${BASE}/criar`, messageSchema, payload, signal),
 
   update: (payload: PurchasePayload, signal?: AbortSignal) =>
-    apiClient.put<PurchaseDTO>(`${BASE}/atualizar`, payload, signal),
+    apiClient.put(`${BASE}/atualizar`, purchaseSchema, payload, signal),
 
   delete: (id: number, signal?: AbortSignal) =>
-    apiClient.delete<void>(`${BASE}/${id}`, signal),
+    apiClient.delete(`${BASE}/${id}`, messageSchema, signal),
 };

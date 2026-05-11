@@ -1,11 +1,15 @@
 import { test, assert } from 'poku';
 import { runSequentialTests } from '@/test/setup/run';
 import { http, HttpResponse } from 'msw';
+import { z } from 'zod';
 import { setupApiMock } from '@/test/setup/lifecycle';
 import { server } from '@/test/setup/server';
 import { apiClient, ApiError, request } from '@/shared/services/api/client';
 
 setupApiMock();
+
+const okSchema = z.object({ ok: z.boolean() });
+const textSchema = z.string();
 
 runSequentialTests(async () => {
   await test('ApiError carrega status e body', async () => {
@@ -15,29 +19,37 @@ runSequentialTests(async () => {
       )
     );
     try {
-      await apiClient.get('/teste-erro');
+      await apiClient.get('/teste-erro', okSchema);
       assert.fail('deveria ter lancado');
-    } catch (err) {
-      assert.ok(err instanceof ApiError);
-      assert.strictEqual((err as ApiError).status, 422);
-      assert.deepStrictEqual((err as ApiError).body, { msg: 'invalido' });
+    } catch (caughtError) {
+      assert.ok(caughtError instanceof ApiError);
+      if (caughtError instanceof ApiError) {
+        assert.strictEqual(caughtError.status, 422);
+        assert.deepStrictEqual(caughtError.body, { msg: 'invalido' });
+      }
     }
   });
 
   await test('apiClient.get serializa query params na URL', async () => {
-    let captured = '';
+    let capturedUrl = '';
     server.use(
       http.get('http://localhost:8080/q', ({ request }) => {
-        captured = request.url;
+        capturedUrl = request.url;
         return HttpResponse.json({ ok: true });
       })
     );
-    await apiClient.get('/q', { foo: 'bar', n: 10, b: true, skip: undefined, nullable: null });
-    assert.match(captured, /foo=bar/);
-    assert.match(captured, /n=10/);
-    assert.match(captured, /b=true/);
-    assert.ok(!captured.includes('skip='));
-    assert.ok(!captured.includes('nullable='));
+    await apiClient.get('/q', okSchema, {
+      foo: 'bar',
+      n: 10,
+      b: true,
+      skip: undefined,
+      nullable: null,
+    });
+    assert.match(capturedUrl, /foo=bar/);
+    assert.match(capturedUrl, /n=10/);
+    assert.match(capturedUrl, /b=true/);
+    assert.ok(!capturedUrl.includes('skip='));
+    assert.ok(!capturedUrl.includes('nullable='));
   });
 
   await test('apiClient.post envia body em JSON', async () => {
@@ -48,7 +60,7 @@ runSequentialTests(async () => {
         return HttpResponse.json({ ok: true });
       })
     );
-    await apiClient.post('/echo', { a: 1, b: 'x' });
+    await apiClient.post('/echo', okSchema, { a: 1, b: 'x' });
     assert.deepStrictEqual(receivedBody, { a: 1, b: 'x' });
   });
 
@@ -60,35 +72,42 @@ runSequentialTests(async () => {
         return HttpResponse.json({ ok: true });
       })
     );
-    await apiClient.put('/echo', { id: 1 });
+    await apiClient.put('/echo', okSchema, { id: 1 });
     assert.deepStrictEqual(receivedBody, { id: 1 });
   });
 
   await test('apiClient.delete usa metodo DELETE', async () => {
-    let method = '';
+    let methodUsed = '';
     server.use(
       http.delete('http://localhost:8080/x', ({ request }) => {
-        method = request.method;
+        methodUsed = request.method;
         return HttpResponse.json('ok');
       })
     );
-    await apiClient.delete('/x');
-    assert.strictEqual(method, 'DELETE');
+    await apiClient.delete('/x', textSchema);
+    assert.strictEqual(methodUsed, 'DELETE');
   });
 
   await test('request retorna texto bruto quando resposta nao e JSON', async () => {
     server.use(
       http.get('http://localhost:8080/raw', () => new HttpResponse('texto-puro', { status: 200 }))
     );
-    const result = await request<string>('/raw');
-    assert.strictEqual(result, 'texto-puro');
+    const rawResult = await request('/raw', textSchema);
+    assert.strictEqual(rawResult, 'texto-puro');
   });
 
   await test('request lida com path sem barra inicial', async () => {
     server.use(
       http.get('http://localhost:8080/sem-barra', () => HttpResponse.json({ ok: true }))
     );
-    const r = await request<{ ok: boolean }>('sem-barra');
-    assert.strictEqual(r.ok, true);
+    const response = await request('sem-barra', okSchema);
+    assert.strictEqual(response.ok, true);
+  });
+
+  await test('request rejeita payload que nao bate com o schema', async () => {
+    server.use(
+      http.get('http://localhost:8080/invalido', () => HttpResponse.json({ outra: 'coisa' }))
+    );
+    await assert.rejects(() => apiClient.get('/invalido', okSchema));
   });
 });

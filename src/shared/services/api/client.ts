@@ -1,4 +1,6 @@
-const BASE_URL =
+import { z } from 'zod';
+
+const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? 'http://localhost:8080';
 
 export class ApiError extends Error {
@@ -19,8 +21,8 @@ type RequestOptions = {
   signal?: AbortSignal;
 };
 
-function buildUrl(path: string, query?: RequestOptions['query']): string {
-  const url = new URL(path.startsWith('/') ? path : `/${path}`, BASE_URL);
+const buildUrl = (path: string, query?: RequestOptions['query']): string => {
+  const url = new URL(path.startsWith('/') ? path : `/${path}`, API_BASE_URL);
   if (query) {
     for (const [key, value] of Object.entries(query)) {
       if (value !== undefined && value !== null) {
@@ -29,9 +31,21 @@ function buildUrl(path: string, query?: RequestOptions['query']): string {
     }
   }
   return url.toString();
-}
+};
 
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+const safeJson = (text: string): unknown => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+export async function request<Schema extends z.ZodTypeAny>(
+  path: string,
+  schema: Schema,
+  options: RequestOptions = {}
+): Promise<z.infer<Schema>> {
   const { method = 'GET', body, query, signal } = options;
 
   const response = await fetch(buildUrl(path, query), {
@@ -42,34 +56,44 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   });
 
   const text = await response.text();
-  const parsed = text ? safeJson(text) : (undefined as unknown as T);
+  const rawPayload = text ? safeJson(text) : undefined;
 
   if (!response.ok) {
     throw new ApiError(
       `Request failed (${response.status}) for ${method} ${path}`,
       response.status,
-      parsed
+      rawPayload
     );
   }
 
-  return parsed as T;
-}
-
-function safeJson(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
+  return schema.parse(rawPayload);
 }
 
 export const apiClient = {
-  get: <T>(path: string, query?: RequestOptions['query'], signal?: AbortSignal) =>
-    request<T>(path, { method: 'GET', query, signal }),
-  post: <T>(path: string, body?: unknown, signal?: AbortSignal) =>
-    request<T>(path, { method: 'POST', body, signal }),
-  put: <T>(path: string, body?: unknown, signal?: AbortSignal) =>
-    request<T>(path, { method: 'PUT', body, signal }),
-  delete: <T = void>(path: string, signal?: AbortSignal) =>
-    request<T>(path, { method: 'DELETE', signal }),
+  get: <Schema extends z.ZodTypeAny>(
+    path: string,
+    schema: Schema,
+    query?: RequestOptions['query'],
+    signal?: AbortSignal
+  ) => request(path, schema, { method: 'GET', query, signal }),
+
+  post: <Schema extends z.ZodTypeAny>(
+    path: string,
+    schema: Schema,
+    body?: unknown,
+    signal?: AbortSignal
+  ) => request(path, schema, { method: 'POST', body, signal }),
+
+  put: <Schema extends z.ZodTypeAny>(
+    path: string,
+    schema: Schema,
+    body?: unknown,
+    signal?: AbortSignal
+  ) => request(path, schema, { method: 'PUT', body, signal }),
+
+  delete: <Schema extends z.ZodTypeAny>(
+    path: string,
+    schema: Schema,
+    signal?: AbortSignal
+  ) => request(path, schema, { method: 'DELETE', signal }),
 };

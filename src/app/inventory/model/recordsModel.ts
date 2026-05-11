@@ -34,14 +34,18 @@ export function useRecordsModel(id?: number, searchFilters?: RecordSearchParams)
 
   const byId = useQuery({
     queryKey: keys.detail(id ?? 0),
-    queryFn: ({ signal }) => recordsService.getById(id as number, signal),
+    queryFn: ({ signal }) => {
+      if (id === undefined) throw new Error('id is required');
+      return recordsService.getById(id, signal);
+    },
     enabled: id !== undefined,
   });
 
+  const searchTerm = searchFilters?.termo ?? '';
   const search = useQuery({
-    queryKey: keys.search(searchFilters ?? { termo: '' }),
-    queryFn: ({ signal }) => recordsService.search(searchFilters as RecordSearchParams, signal),
-    enabled: Boolean(searchFilters?.termo),
+    queryKey: keys.search({ termo: searchTerm }),
+    queryFn: ({ signal }) => recordsService.search({ termo: searchTerm }, signal),
+    enabled: searchTerm.length > 0,
   });
 
   const create = useMutation({

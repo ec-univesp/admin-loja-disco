@@ -90,11 +90,7 @@ function PurchasesContent() {
 
   const handleExportToExcel = () => {
     const stamp = new Date().toISOString().slice(0, 10);
-    exportTableToExcel(
-      'Purchases',
-      rowsToExport() as Array<Record<string, unknown>>,
-      `purchases-${stamp}.xlsx`
-    );
+    exportTableToExcel('Purchases', rowsToExport(), `purchases-${stamp}.xlsx`);
   };
 
   return (
