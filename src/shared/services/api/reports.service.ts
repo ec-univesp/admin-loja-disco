@@ -3,6 +3,7 @@ import type {
   ChannelRevenueDTO,
   RevenueSummaryDTO,
   DetailedRevenueDTO,
+  ProfitPerItemDTO,
 } from './types';
 
 const BASE = '/relatorios';
@@ -30,6 +31,13 @@ export const reportsService = {
   channelRevenue: (filters?: ReportFilters, signal?: AbortSignal) =>
     apiClient.get<ChannelRevenueDTO[]>(
       `${BASE}/receita-canal`,
+      filters,
+      signal
+    ),
+
+  profitPerItem: (filters: ReportFilters, signal?: AbortSignal) =>
+    apiClient.get<ProfitPerItemDTO[]>(
+      `${BASE}/lucroporitem`,
       filters,
       signal
     ),
