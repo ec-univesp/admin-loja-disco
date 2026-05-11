@@ -1,7 +1,7 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
@@ -38,20 +38,46 @@ const generateCode = (index: number): string => {
   return `DISC-${String(index + 1).padStart(4, '0')}`;
 };
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 export default function InventoryPage() {
-  const { listAvailable: recordsList, remove: removeRecord } = useRecordsModel();
-  const { list: genresList, create: createGenre, remove: removeGenre } = useGenresModel();
-  const { list: artistsList, create: createArtist, remove: removeArtist } = useArtistsModel();
-  const records = useMemo(() => recordsList.data ?? [], [recordsList.data]);
-  const loading = recordsList.isLoading;
-  const genres = useMemo(() => genresList.data ?? [], [genresList.data]);
-  const artists = useMemo(() => artistsList.data ?? [], [artistsList.data]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [hideSoldRecords, setHideSoldRecords] = useState(false);
   const [newGenre, setNewGenre] = useState('');
   const [newArtist, setNewArtist] = useState('');
   const [editRecordId, setEditRecordId] = useState<number | null>(null);
   const addModal = useModal();
   const [addOption, setAddOption] = useState<AddOption>('menu');
+
+  useEffect(() => {
+    const timeoutId = setTimeout(
+      () => setDebouncedSearchTerm(searchTerm.trim()),
+      SEARCH_DEBOUNCE_MS
+    );
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  const searchFilters = debouncedSearchTerm
+    ? { termo: debouncedSearchTerm }
+    : undefined;
+
+  const {
+    list: recordsList,
+    search: searchResults,
+    remove: removeRecord,
+  } = useRecordsModel(undefined, searchFilters);
+  const { list: genresList, create: createGenre, remove: removeGenre } = useGenresModel();
+  const { list: artistsList, create: createArtist, remove: removeArtist } = useArtistsModel();
+
+  const isSearching = Boolean(debouncedSearchTerm);
+  const records = useMemo(() => {
+    if (isSearching) return searchResults.data ?? [];
+    return recordsList.data ?? [];
+  }, [isSearching, searchResults.data, recordsList.data]);
+  const loading = isSearching ? searchResults.isLoading : recordsList.isLoading;
+  const genres = useMemo(() => genresList.data ?? [], [genresList.data]);
+  const artists = useMemo(() => artistsList.data ?? [], [artistsList.data]);
 
   const closeAddModal = () => {
     addModal.closeModal();
@@ -136,15 +162,11 @@ export default function InventoryPage() {
     [records]
   );
 
-  const filteredRows = rows.filter((row) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return (
-      row.title.toLowerCase().includes(term) ||
-      row.artist.toLowerCase().includes(term) ||
-      row.code.toLowerCase().includes(term)
-    );
-  });
+  const filteredRows = hideSoldRecords
+    ? rows.filter((row) => row.status !== RecordStatus.SOLD)
+    : rows;
+
+  const soldCount = rows.filter((row) => row.status === RecordStatus.SOLD).length;
 
   const iconPlus = (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,15 +186,34 @@ export default function InventoryPage() {
                 Meu Estoque
               </h3>
               <p className="mt-1 text-sm text-brand-700/70 dark:text-brand-200/60">
-                {filteredRows.length} disco(s) disponível(is)
+                {filteredRows.length} disco(s){' '}
+                {isSearching
+                  ? 'encontrado(s)'
+                  : hideSoldRecords
+                    ? 'disponível(is)'
+                    : 'cadastrado(s)'}
+                {soldCount > 0 && hideSoldRecords && !isSearching && (
+                  <span className="ml-1 text-brand-600/70 dark:text-brand-300/60">
+                    · {soldCount} vendido(s) ocultos
+                  </span>
+                )}
               </p>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm text-gray-700 dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200">
+                <input
+                  type="checkbox"
+                  checked={hideSoldRecords}
+                  onChange={(toggleEvent) => setHideSoldRecords(toggleEvent.target.checked)}
+                  className="h-4 w-4 cursor-pointer accent-brand-600"
+                />
+                Ocultar vendidos
+              </label>
               <input
                 type="text"
-                placeholder="Buscar álbum, artista ou código..."
+                placeholder="Buscar álbum ou artista..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(searchChangeEvent) => setSearchTerm(searchChangeEvent.target.value)}
                 className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
               />
               <Button
@@ -206,13 +247,14 @@ export default function InventoryPage() {
                   <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cond. Disco</th>
                   <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Valor de Mercado</th>
                   <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Custo</th>
+                  <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">Status</th>
                   <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
                 {filteredRows.length === 0 ? (
                   <tr>
-                    <td colSpan={15} className="px-6 py-12 text-center">
+                    <td colSpan={16} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <svg className="h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -275,6 +317,17 @@ export default function InventoryPage() {
                       </td>
                       <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
                         R$ {row.recordCost.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            row.status === RecordStatus.SOLD
+                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                              : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          }`}
+                        >
+                          {row.status === RecordStatus.SOLD ? 'Vendido' : 'Disponível'}
+                        </span>
                       </td>
                       <td className="px-4 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
