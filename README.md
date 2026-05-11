@@ -200,21 +200,6 @@ npm run format:check      # apenas verifica
 ```
 ---
 
-## Próximos passos
-
-### Testes
-- [x] Configurar suíte de integração (Poku + `@pokujs/react` + MSW)
-- [x] Cobrir 100% dos services da API (todos os endpoints do Swagger)
-- [x] Cobrir 100% dos utils (`currency`, `notify`)
-- [x] Cobrir os modais novos (`SaleDetailsModal`, `PurchaseDetailsModal`) e o widget `StoreMetrics`
-- [ ] Cobrir páginas (`inventory`, `sales`, `purchases`, `deliveries`, `revenue`) — incluindo stub do `next/navigation`
-- [ ] Cobrir formulários (`AddRecordForm`, `SalesForm`, `PurchaseForm`, `CustomerAddressForm`, `SalesChannelForm`)
-- [ ] Cobrir `MultiSelect` e demais componentes de UI compartilhados
-- [ ] Atingir **80%** de cobertura global (atual: 11.26%)
-- [ ] Configurar pipeline de CI publicando o relatório de cobertura
-- [ ] 
----
-
 ## Licença
 
 Distribuído sob a licença **GNU GPL v3.0**. Veja [LICENSE](LICENSE) para o texto completo.
