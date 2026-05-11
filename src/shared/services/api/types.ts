@@ -234,3 +234,22 @@ export interface ChannelRevenueDTO {
   nomeCanal?: string;
   receita?: number;
 }
+export interface ProfitPerItemDTO {
+  vendaId?: number;
+  dataVenda?: string;
+  ano?: number;
+  mes?: number;
+  discoId?: number;
+  nomeDisco?: string;
+  clienteId?: number;
+  nomeCliente?: string;
+  formaPagamento?: string;
+  canalVendaId?: number;
+  nomeCanal?: string;
+  precoVenda?: number;
+  custoDisco?: number;
+  custosAdicionais?: number;
+  freteDisco?: number;
+  totalDespesa?: number;
+  lucro?: number;
+}
