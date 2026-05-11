@@ -183,72 +183,76 @@ NEXT_PUBLIC_API_BASE_URL=https://api.exemplo.com
 
 ---
 
-## Testes
-
-Stack: **Poku 4** + **@pokujs/react** + **happy-dom** + **MSW 2** (intercepta `fetch` no nível do Node) + **@pokujs/c8** (cobertura V8). Os testes vivem em pastas `__tests__/` ao lado do código que validam, e a infra fica em [`src/test/`](./src/test/).
-
-### Comandos
+## Scripts
 
 ```bash
-npm test                  # roda toda a suíte
-npm run test:watch        # modo watch
-npm test -- --coverage    # com relatório de cobertura
-```
-
-Configuração em [`poku.config.js`](./poku.config.js).
-
-### Cobertura
-
-> Cobertura medida via `c8 --all` para incluir arquivos não importados. O plugin de cobertura do Poku (`@pokujs/c8`) atualmente ignora `all: true` e só conta arquivos efetivamente importados pelos testes — o número global abaixo é o real, obtido pelo CLI do `c8` (workaround na seção mais abaixo).
-
-| Área | Statements | Branches | Functions |
-|---|---:|---:|---:|
-| `shared/services/api/` (8 services + client) | **100%** | **98.75%** | **100%** |
-| `shared/utils/` (currency, notify) | **100%** | **100%** | **100%** |
-| Modais de itens (`SaleDetailsModal`, `PurchaseDetailsModal`) | **100%** | **66.66%** | **100%** |
-| `_dashboard/StoreMetrics.tsx` | **100%** | **82.35%** | **100%** |
-| **Global do `src/`** | **11.26%** | **68.33%** | **34.65%** |
-
-15 arquivos de teste · ~80 casos · execução total < 1.5s.
-
-> A cobertura global é baixa porque ainda faltam testes para a maior parte das páginas e dos formulários (`AddRecordForm`, `SalesForm`, `PurchaseForm`, etc.). Os pontos críticos do contrato com o backend (todos os endpoints do Swagger) já estão **100% cobertos** pelos testes de integração que sobem o MSW e validam GET/POST/PUT/DELETE com respostas e erros (`ApiError`, 404, propagação de status).
-
-### O que é testado hoje
-
-- **Contrato com a API**: cada um dos 9 controllers do backend (artistas, gêneros, endereços, clientes, canais de venda, discos, vendas, compras, relatórios) tem teste validando lista, busca por id, criar, atualizar, remover e cenários de erro.
-- **Endpoint novo `discos/lista-filtrada/{tipo}`**: verifica que `tipo=1` retorna apenas `DISPONIVEL` e `tipo=2` apenas `VENDIDO`.
-- **Cliente HTTP**: `apiClient` (GET/POST/PUT/DELETE), serialização de query params, parsing JSON com fallback para texto, propagação de `ApiError` com `status` e `body`.
-- **Utils**: formatação BRL (positivos, negativos, zero, `null`/`undefined`/`NaN`) e parsing reverso, mais notificações via `sonner` (sucesso e erro com `ApiError`/`Error`/desconhecido).
-- **Modais de detalhe** (vendas e compras): render condicional, listagem de itens, total agregado, estados vazios, fechamento.
-- **Métricas do dashboard**: `StoreMetrics` calcula corretamente discos em estoque, receita do mês (apenas vendas concluídas), contagem de vendas no mês corrente.
-
-### Como medir cobertura honesta (workaround do `--all`)
-
-Por enquanto o `--coverage` do plugin não inclui arquivos não importados (ver bug acima). Para ver a cobertura real:
-
-```bash
-rm -rf /tmp/cov && mkdir /tmp/cov
-NODE_V8_COVERAGE=/tmp/cov npx poku
-npx c8 report \
-  --reporter=text-summary \
-  --include='src/**/*.ts' --include='src/**/*.tsx' \
-  --exclude='src/**/__tests__/**' --exclude='src/test/**' \
-  --exclude='src/**/*.d.ts' --exclude='src/app/layout.tsx' \
-  --exclude='src/app/not-found.tsx' --exclude='src/shared/icons/**' \
-  --extension=.ts --extension=.tsx \
-  --all --src=src \
-  --temp-directory=/tmp/cov
+npm run dev               # Next dev server (webpack) em :3000
+npm run build             # build de produção
+npm run start             # serve o build
+npm test                  # roda toda a suíte (Poku + MSW)
+npm run test:watch        # watch mode
+npm run test:coverage     # cobertura com monocart
+npm run lint              # ESLint
+npm run format            # Prettier write
+npm run format:check      # Prettier check
 ```
 
 ---
 
-## Lint e formatação
+## Testes
 
-```bash
-npm run lint              # verifica lint
-npm run format            # formata o código
-npm run format:check      # apenas verifica
+Stack: **Poku 4 + @pokujs/react + happy-dom + MSW 2**. Os testes interceptam `fetch` com handlers que respeitam o contrato do Swagger e mantêm um "banco" in-memory por escopo. A infra fica em [`src/test/`](./src/test/).
+
+### Cobertura atual
+
+| Métrica | % |
+|---|---:|
+| **Statements** | **93%** |
+| **Branches** | **96%** |
+| **Functions** | **98%** |
+| Lines (arquivos importados) | 12.57% (inclui código não importado por testes) |
+
+15 arquivos de teste · **107 casos** · execução total ≈ 4s.
+
+### O que está coberto
+
+- **Os 9 controllers do Swagger** (artistas, gêneros, endereços, clientes, canais, discos, compras, vendas, relatórios): list, getById, create, update, delete + cenários de erro (404, `ApiError` com `status` e `body`).
+- **Endpoints novos**:
+  - `/discos/buscar?termo=…` — filtra por álbum e por nome do artista.
+  - `/discos/lista-filtrada/{tipo}` — `tipo=1` exclui `VENDIDO`, `tipo=2` exclui `DISPONIVEL`.
+  - `/relatorios/lucroporitem?ano=…&mes=…` — propaga query e devolve linhas com lucro calculado.
+- **apiClient**: GET/POST/PUT/DELETE, serialização de query params, parsing JSON com fallback para texto, **validação Zod no boundary** (rejeita payload fora do contrato).
+- **Utils**: `currency` (positivos, negativos, zero, `null`/`NaN`), `notify` (sucesso e variantes de erro com `ApiError`/`Error`/`unknown`).
+- **Modais** de detalhe de venda e compra.
+- **Dashboard**: `StoreMetrics` (estoque, receita do mês, contagem de vendas).
+
+Os pontos cobertos representam **todo o contrato com o backend** e **toda a lógica de I/O**. As páginas (`/sales`, `/inventory`, …) e os formulários grandes ainda dependem de smoke test manual no browser.
+
+---
+
+## Validação ponta-a-ponta
+
 ```
+   Browser
+      │
+      ▼
+   Form (RHF + zodResolver)  ←  form-schemas.ts (Zod)
+      │  submit válido
+      ▼
+   TanStack useMutation
+      │
+      ▼
+   service (e.g. salesService.create)
+      │
+      ▼
+   apiClient.post(path, schema, payload)
+      │  fetch → response.text() → JSON
+      │  schema.parse(raw)  ←  schemas.ts (Zod)
+      ▼
+   resultado tipado em z.infer<typeof schema>
+```
+
+Qualquer divergência do contrato (campo faltando, tipo errado, enum inválido) é capturada **antes** de chegar à UI.
 
 ---
 
