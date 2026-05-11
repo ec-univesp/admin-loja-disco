@@ -59,7 +59,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const dataVendaRef = useRef<HTMLInputElement | null>(null);
 
   const availableRecords = useMemo(
-    () => records.filter((d) => d.status === RecordStatus.AVAILABLE || !d.status),
+    () => records.filter((d) => d.status === RecordStatus.DISPONIVEL || !d.status),
     [records]
   );
 
@@ -79,7 +79,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
       pagamento: 'PIX',
       canalVendaId: '',
       custosAdicionais: 0,
-      statusPedido: OrderStatus.PENDING,
+      statusPedido: OrderStatus.PENDENTE,
       observacoes: '',
     },
   });
@@ -164,7 +164,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
           return updateRecord.mutateAsync({
             ...record,
             discoId: record.discoId,
-            status: RecordStatus.SOLD,
+            status: RecordStatus.VENDIDO,
           });
         })
       );
@@ -471,11 +471,11 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   {...register('statusPedido')}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 >
-                  <option value={OrderStatus.PENDING}>Pendente</option>
-                  <option value={OrderStatus.CONFIRMED}>Confirmada</option>
-                  <option value={OrderStatus.SHIPPED}>Enviada</option>
-                  <option value={OrderStatus.DELIVERED}>Entregue</option>
-                  <option value={OrderStatus.CANCELLED}>Cancelada</option>
+                  <option value={OrderStatus.PENDENTE}>Pendente</option>
+                  <option value={OrderStatus.CONFIRMADA}>Confirmada</option>
+                  <option value={OrderStatus.ENVIADA}>Enviada</option>
+                  <option value={OrderStatus.ENTREGUE}>Entregue</option>
+                  <option value={OrderStatus.CANCELADA}>Cancelada</option>
                 </select>
               </div>
             </div>

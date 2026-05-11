@@ -6,19 +6,19 @@ import { useSalesModel } from '@/app/sales/model/salesModel';
 import { OrderStatus } from '@/shared/types';
 
 const statusColor: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
-  [OrderStatus.DELIVERED]: 'success',
-  [OrderStatus.PENDING]: 'warning',
-  [OrderStatus.CANCELLED]: 'error',
-  [OrderStatus.CONFIRMED]: 'info',
-  [OrderStatus.SHIPPED]: 'info',
+  [OrderStatus.ENTREGUE]: 'success',
+  [OrderStatus.PENDENTE]: 'warning',
+  [OrderStatus.CANCELADA]: 'error',
+  [OrderStatus.CONFIRMADA]: 'info',
+  [OrderStatus.ENVIADA]: 'info',
 };
 
 const statusLabel: Record<string, string> = {
-  [OrderStatus.PENDING]: 'Pendente',
-  [OrderStatus.CONFIRMED]: 'Confirmada',
-  [OrderStatus.SHIPPED]: 'Enviada',
-  [OrderStatus.DELIVERED]: 'Entregue',
-  [OrderStatus.CANCELLED]: 'Cancelada',
+  [OrderStatus.PENDENTE]: 'Pendente',
+  [OrderStatus.CONFIRMADA]: 'Confirmada',
+  [OrderStatus.ENVIADA]: 'Enviada',
+  [OrderStatus.ENTREGUE]: 'Entregue',
+  [OrderStatus.CANCELADA]: 'Cancelada',
 };
 
 const formatSaleNumber = (index: number): string =>
@@ -43,7 +43,7 @@ export default function RecentSales() {
         record: firstItem?.nomeDisco ?? '—',
         quantity: sale.itens?.length ?? 0,
         amount: sale.valorTotal ?? 0,
-        status: sale.statusPedido ?? OrderStatus.PENDING,
+        status: sale.statusPedido ?? OrderStatus.PENDENTE,
         customer: sale.cliente?.nomeCliente ?? '',
       };
     });

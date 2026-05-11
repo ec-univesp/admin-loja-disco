@@ -50,7 +50,7 @@ const initialForm: FormState = {
   condicaoDisco: '',
   valorMercado: 0,
   custoDisco: 0,
-  status: RecordStatus.AVAILABLE,
+  status: RecordStatus.DISPONIVEL,
 };
 
 export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecordModalProps) {
@@ -85,7 +85,7 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
       condicaoDisco: record.condicaoDisco ?? '',
       valorMercado: record.valorMercado ?? 0,
       custoDisco: record.custoDisco ?? 0,
-      status: record.status ?? RecordStatus.AVAILABLE,
+      status: record.status ?? RecordStatus.DISPONIVEL,
     });
   }, [isOpen, record]);
 
@@ -330,8 +330,8 @@ export default function EditRecordModal({ isOpen, onClose, recordId }: EditRecor
                 onChange={handleChange('status')}
                 className={inputClass}
               >
-                <option value={RecordStatus.AVAILABLE}>Disponível</option>
-                <option value={RecordStatus.SOLD}>Vendido</option>
+                <option value={RecordStatus.DISPONIVEL}>Disponível</option>
+                <option value={RecordStatus.VENDIDO}>Vendido</option>
               </select>
             </div>
           </div>

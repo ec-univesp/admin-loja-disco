@@ -8,9 +8,9 @@ import { OrderStatus } from '@/shared/types';
 import { formatBRL } from '@/shared/utils/currency';
 
 const COMPLETED = new Set<string>([
-  OrderStatus.DELIVERED,
-  OrderStatus.CONFIRMED,
-  OrderStatus.SHIPPED,
+  OrderStatus.ENTREGUE,
+  OrderStatus.CONFIRMADA,
+  OrderStatus.ENVIADA,
 ]);
 
 type MetricCardProps = {

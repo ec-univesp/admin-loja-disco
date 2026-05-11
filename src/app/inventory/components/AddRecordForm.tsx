@@ -67,7 +67,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
       condicaoDisco: '',
       valorMercado: 0,
       custoDisco: 0,
-      status: RecordStatus.AVAILABLE,
+      status: RecordStatus.DISPONIVEL,
     },
   });
 

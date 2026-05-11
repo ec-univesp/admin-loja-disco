@@ -157,16 +157,16 @@ export default function InventoryPage() {
         marketValue: record.valorMercado ?? 0,
         recordCost: record.custoDisco ?? 0,
         price: record.valorMercado ?? 0,
-        status: record.status ?? RecordStatus.AVAILABLE,
+        status: record.status ?? RecordStatus.DISPONIVEL,
       })),
     [records]
   );
 
   const filteredRows = hideSoldRecords
-    ? rows.filter((row) => row.status !== RecordStatus.SOLD)
+    ? rows.filter((row) => row.status !== RecordStatus.VENDIDO)
     : rows;
 
-  const soldCount = rows.filter((row) => row.status === RecordStatus.SOLD).length;
+  const soldCount = rows.filter((row) => row.status === RecordStatus.VENDIDO).length;
 
   const iconPlus = (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -321,12 +321,12 @@ export default function InventoryPage() {
                       <td className="px-4 py-4 text-center">
                         <span
                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            row.status === RecordStatus.SOLD
+                            row.status === RecordStatus.VENDIDO
                               ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                               : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                           }`}
                         >
-                          {row.status === RecordStatus.SOLD ? 'Vendido' : 'Disponível'}
+                          {row.status === RecordStatus.VENDIDO ? 'Vendido' : 'Disponível'}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">
