@@ -256,41 +256,6 @@ Qualquer divergência do contrato (campo faltando, tipo errado, enum inválido) 
 
 ---
 
-## Próximos passos
-
-### Backend e dados
-- [ ] Substituir o `localStorage` por uma API real (NestJS / Express / Fastify a definir)
-- [ ] Migrar `src/shared/services/api.ts` para chamadas HTTP reais
-- [ ] Adicionar variáveis de ambiente (`.env`) para `NEXT_PUBLIC_API_URL`
-- [ ] Mover `src/features/faturamento/mocks/` para o BE assim que houver dados reais
-
-### Conteúdo do domínio
-- [ ] Atualizar opções dos `<select>` em `AddDiscoForm`: **Prensagem**, **Encarte**, **Condição da Capa**, **Condição do Disco** (lista a definir com o time)
-- [ ] Permitir upload de capa do disco
-- [ ] Adicionar filtro por artista/álbum no estoque
-
-### Testes
-- [x] Configurar suíte de integração (Poku + `@pokujs/react` + MSW)
-- [x] Cobrir 100% dos services da API (todos os endpoints do Swagger)
-- [x] Cobrir 100% dos utils (`currency`, `notify`)
-- [x] Cobrir os modais novos (`SaleDetailsModal`, `PurchaseDetailsModal`) e o widget `StoreMetrics`
-- [ ] Cobrir páginas (`inventory`, `sales`, `purchases`, `deliveries`, `revenue`) — incluindo stub do `next/navigation`
-- [ ] Cobrir formulários (`AddRecordForm`, `SalesForm`, `PurchaseForm`, `CustomerAddressForm`, `SalesChannelForm`)
-- [ ] Cobrir `MultiSelect` e demais componentes de UI compartilhados
-- [ ] Atingir **80%** de cobertura global (atual: 11.26%)
-- [ ] Configurar pipeline de CI publicando o relatório de cobertura
-
-### Refatorações pendentes
-- [ ] Mover modelos de domínio de `shared/types/` para a feature correspondente quando fizer sentido (ex.: `Venda` → `features/vendas/types/`)
-- [ ] Avaliar substituir `react-hook-form` + `useWatch` por `Controller` em `SalesForm` para eliminar o aviso do React Compiler de forma definitiva
-
-### Deploy / DX
-- [ ] Configurar pipeline de CI (lint + build em PRs)
-- [ ] Adicionar pre-commit hook (`husky` + `lint-staged`) para rodar prettier/eslint antes do commit
-- [ ] Habilitar `next/image` para otimização de assets quando houver imagens reais
-
----
-
 ## Licença
 
-Distribuído sob a licença **GNU GPL v3.0**. Veja [LICENSE](LICENSE) para o texto completo.
+Distribuído sob **GNU GPL v3.0**. Veja [LICENSE](LICENSE).
