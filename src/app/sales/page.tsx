@@ -19,7 +19,8 @@ import { reportsService, type ProfitPerItemDTO } from '@/shared/services/api';
 const MONTHS_IN_YEAR = 12;
 const monthOptions = Array.from({ length: MONTHS_IN_YEAR }, (_unused, monthIndex) => monthIndex + 1);
 
-const formatCurrency = (value?: number) => value?.toFixed(2) ?? '';
+const toCurrencyNumber = (value?: number): number | null =>
+  typeof value === 'number' ? value : null;
 
 const buildProfitPerItemExcelRow = (profitItem: ProfitPerItemDTO) => ({
   'Venda ID': profitItem.vendaId ?? '',
@@ -33,12 +34,12 @@ const buildProfitPerItemExcelRow = (profitItem: ProfitPerItemDTO) => ({
   'Forma Pagamento': profitItem.formaPagamento ?? '',
   'Canal ID': profitItem.canalVendaId ?? '',
   Canal: profitItem.nomeCanal ?? '',
-  'Preço Venda (R$)': formatCurrency(profitItem.precoVenda),
-  'Custo Disco (R$)': formatCurrency(profitItem.custoDisco),
-  'Custos Adicionais (R$)': formatCurrency(profitItem.custosAdicionais),
-  'Frete Disco (R$)': formatCurrency(profitItem.freteDisco),
-  'Total Despesa (R$)': formatCurrency(profitItem.totalDespesa),
-  'Lucro (R$)': formatCurrency(profitItem.lucro),
+  'Preço Venda (R$)': toCurrencyNumber(profitItem.precoVenda),
+  'Custo Disco (R$)': toCurrencyNumber(profitItem.custoDisco),
+  'Custos Adicionais (R$)': toCurrencyNumber(profitItem.custosAdicionais),
+  'Frete Disco (R$)': toCurrencyNumber(profitItem.freteDisco),
+  'Total Despesa (R$)': toCurrencyNumber(profitItem.totalDespesa),
+  'Lucro (R$)': toCurrencyNumber(profitItem.lucro),
 });
 
 const iconPlus = (

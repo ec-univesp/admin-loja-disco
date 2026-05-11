@@ -35,6 +35,9 @@ async function downloadWorkbook(workbook: ExcelJS.Workbook, filename: string) {
 }
 
 const MIN_COLUMN_WIDTH = 12;
+const CURRENCY_NUM_FMT = 'R$ #,##0.00';
+
+const isCurrencyHeader = (header: string) => /R\$/.test(header);
 
 function appendSheet(
   workbook: ExcelJS.Workbook,
@@ -51,6 +54,7 @@ function appendSheet(
     header,
     key: header,
     width: Math.max(MIN_COLUMN_WIDTH, header.length + 2),
+    style: isCurrencyHeader(header) ? { numFmt: CURRENCY_NUM_FMT } : undefined,
   }));
   sheet.getRow(1).font = { bold: true };
   rows.forEach((row) => sheet.addRow(row));

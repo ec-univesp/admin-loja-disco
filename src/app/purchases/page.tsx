@@ -85,7 +85,7 @@ function PurchasesContent() {
       Fornecedor: supplier,
       Data: date,
       Itens: items,
-      'Total (R$)': total.toFixed(2),
+      'Total (R$)': total,
     }));
 
   const handleExportToExcel = () => {
