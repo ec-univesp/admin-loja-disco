@@ -67,36 +67,58 @@ Aplicação **Next.js 16 + TypeScript** com App Router que consome o backend Jav
 
 ## Arquitetura
 
-O projeto segue uma arquitetura por **features** (domínios de negócio) com infraestrutura compartilhada em **shared**:
+Organização por **feature** (pasta da rota) com uma camada `shared/` para infraestrutura. Cada feature tem:
+
+- `page.tsx` — a rota (Next App Router)
+- `components/` — UI específica
+- `model/` — hooks que combinam TanStack Query + service
 
 ```
 src/
-├── app/                          # Rotas Next.js (page.tsx + layout root)
-│   ├── compras/ · entregas/ · estoque/ · faturamento/
-│   ├── nova-compra/ · nova-venda/ · vendas/
-│   ├── layout.tsx                # Root layout (providers + AppShell)
-│   └── page.tsx                  # Dashboard
+├── app/                         # Rotas Next.js (App Router)
+│   ├── inventory/               # Estoque (discos, artistas, gêneros)
+│   ├── sales/                   # Vendas + clientes + canais
+│   ├── purchases/               # Compras + fornecedores
+│   ├── deliveries/              # Entregas (por status)
+│   ├── revenue/                 # Relatórios + Backup
+│   └── _dashboard/              # Widgets do dashboard
 │
-├── features/                     # Módulos de negócio (componentes e mocks por domínio)
-│   ├── dashboard/components/     # MetricasLoja, VendasMensaisChart, VendasRecentes
-│   ├── estoque/components/       # AddDiscoForm, EditDiscoModal
-│   ├── vendas/components/        # SalesForm, ClienteEnderecoModal, CanalVendaModal
-│   ├── compras/components/       # PurchaseForm
-│   └── faturamento/{components,mocks}/
+├── shared/
+│   ├── services/api/
+│   │   ├── client.ts            # apiClient (fetch + zod.parse no response)
+│   │   ├── schemas.ts           # Zod schemas dos DTOs do Swagger
+│   │   ├── form-schemas.ts      # Zod schemas dos forms
+│   │   ├── types.ts             # Types derivados via z.infer
+│   │   └── *.service.ts         # 8 services (artistas, gêneros, …)
+│   ├── components/{ui,form,layout}
+│   ├── context/                 # ThemeContext, SidebarContext
+│   ├── hooks/                   # useModal, useGoBack
+│   ├── utils/                   # currency, notify (toast com Zod fallback)
+│   └── types/enums.ts           # OrderStatus, RecordStatus (Zod enums)
 │
-└── shared/                       # Tudo reutilizável entre features
-    ├── components/
-    │   ├── ui/                   # Button, Badge, Modal, Dropdown, Table
-    │   ├── form/                 # Form, Label, ControlledInput, CurrencyInput, TextArea
-    │   └── layout/               # AppShell, AppHeader, AppSidebar, Logo, etc.
-    ├── context/                  # SidebarContext, ThemeContext
-    ├── hooks/                    # useModal, useGoBack
-    ├── icons/                    # SVGs como componentes React
-    ├── services/                 # api.ts (localStorage), exportExcel.ts
-    ├── store/                    # appStore (Zustand) + useStore (selectors) + AppStoreInitializer
-    ├── types/                    # Modelos do domínio (Disco, Venda, Cliente...)
-    └── utils/                    # currency.ts (formatBRL, parseBRL)
+└── test/
+    ├── setup/                   # MSW server, db in-memory, lifecycle, toast spy
+    └── factories/               # Builders para os DTOs
 ```
+
+### Fluxo de dados (request → render)
+
+```
+Form (RHF + zodResolver)  →  useMutation/useQuery (TanStack)
+                                     │
+                                     ▼
+                             apiClient.{get|post|put|delete}
+                                     │   ↓ schema.parse() no boundary
+                                     ▼
+                             backend Spring (Swagger contract)
+```
+
+### Princípios
+
+- **Zero `as`**: sem type assertions em `src/`. Onde houve necessidade, foi substituído por `instanceof`, `z.parse`, ou guard explícito.
+- **Validação no boundary**: toda resposta da API é validada via Zod antes de chegar à UI. Resposta inesperada → `ApiError`.
+- **Forms = schema-driven**: o mesmo schema Zod define a validação do form *e* o tipo do input.
+- **PT-BR no domínio**: nomes de campos e enums seguem o backend (`OrderStatus.ENTREGUE`, `RecordStatus.DISPONIVEL`).
 
 ---
 
