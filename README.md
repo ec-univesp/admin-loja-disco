@@ -35,29 +35,16 @@
 
 ---
 
-## Sobre o projeto
+## Sobre
 
-Aplicação **Next.js 16 + TypeScript** com App Router, integrada ao backend Java/Spring [`loja-discos-api`](https://github.com/ec-univesp/loja-discos-api). Desenvolvida como projeto de estudo para a UNIVESP, cobrindo os principais fluxos de uma loja de discos de vinil:
+Aplicação **Next.js 16 + TypeScript** com App Router que consome o backend Java/Spring [`loja-discos-api`](https://github.com/ec-univesp/loja-discos-api). Projeto da UNIVESP cobrindo o fluxo completo de uma loja de vinil:
 
-- Cadastro e gerenciamento de discos (estoque)
-- Registro de vendas e compras com suporte a múltiplos discos por transação
-- Controle de clientes e endereços de entrega
+- Cadastro e edição de discos, artistas, gêneros musicais
+- Registro de **vendas** e **compras** com múltiplos itens por transação
+- Cadastro de clientes com CEP via [BrasilAPI](https://brasilapi.com.br)
 - Acompanhamento de entregas por status
-- Relatório financeiro com filtros por Ano e Mês
-
----
-
-## Funcionalidades
-
-| Módulo | Descrição |
-|---|---|
-| **Dashboard** | Métricas de vendas, gráficos e resumo de atividades |
-| **Estoque** | CRUD de discos, gêneros musicais e artistas |
-| **Nova Venda** | Formulário com múltiplos discos, canal de venda e cálculo automático do total |
-| **Nova Compra** | Formulário com múltiplos discos e custo por disco; cadastro inline de novo disco |
-| **Lista de Vendas** | Histórico de vendas com gestão de canais e clientes |
-| **Entregas** | Listagem por status (todas / pendentes / concluídas) |
-| **Relatório Financeiro** | Receita, despesas, lucro e análise por dimensão — filtráveis por Ano e Mês |
+- Relatório financeiro com filtros por ano/mês (4 views: receita detalhada, receita × despesa, receita por canal, lucro por item)
+- Exportação para Excel (vendas, compras, lucro por item, backup completo)
 
 ---
 
