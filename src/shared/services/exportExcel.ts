@@ -1,8 +1,23 @@
 'use client';
 
 import ExcelJS from 'exceljs';
-import type { AppState } from '@/shared/types/index';
-import type { MusicGenreDTO } from '@/shared/services/api';
+
+export interface FullBackupData {
+  genres: ReadonlyArray<object>;
+  artists: ReadonlyArray<object>;
+  records: ReadonlyArray<object>;
+  customers: ReadonlyArray<object>;
+  addresses: ReadonlyArray<object>;
+  customerAddresses: ReadonlyArray<object>;
+  sales: ReadonlyArray<object>;
+  saleItems: ReadonlyArray<object>;
+  purchases: ReadonlyArray<object>;
+  purchaseItems: ReadonlyArray<object>;
+  salesChannels: ReadonlyArray<object>;
+}
+
+const objectToRecord = (item: object): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(item));
 
 async function downloadWorkbook(workbook: ExcelJS.Workbook, filename: string) {
   const buffer = await workbook.xlsx.writeBuffer();
@@ -81,31 +96,28 @@ export async function exportTableToExcel(
   await downloadWorkbook(workbook, filename);
 }
 
-export async function exportFullBackup(
-  state: Partial<AppState>,
-  genres: MusicGenreDTO[] = []
-) {
+export async function exportFullBackup(backupData: FullBackupData) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'Admin Loja de Disco';
   workbook.created = new Date();
 
-  const toRows = (collection: unknown) => (collection ?? []) as Array<Record<string, unknown>>;
-
-  const sheets: Array<[string, Array<Record<string, unknown>>]> = [
-    ['Genres', toRows(genres)],
-    ['Artists', toRows(state.artists)],
-    ['Records', toRows(state.records)],
-    ['Customers', toRows(state.customers)],
-    ['Addresses', toRows(state.addresses)],
-    ['CustomerAddresses', toRows(state.customerAddresses)],
-    ['Sales', toRows(state.sales)],
-    ['SaleItems', toRows(state.saleItems)],
-    ['Purchases', toRows(state.purchases)],
-    ['PurchaseItems', toRows(state.purchaseItems)],
-    ['SalesChannels', toRows(state.salesChannels)],
+  const sheets: Array<[string, ReadonlyArray<object>]> = [
+    ['Genres', backupData.genres],
+    ['Artists', backupData.artists],
+    ['Records', backupData.records],
+    ['Customers', backupData.customers],
+    ['Addresses', backupData.addresses],
+    ['CustomerAddresses', backupData.customerAddresses],
+    ['Sales', backupData.sales],
+    ['SaleItems', backupData.saleItems],
+    ['Purchases', backupData.purchases],
+    ['PurchaseItems', backupData.purchaseItems],
+    ['SalesChannels', backupData.salesChannels],
   ];
 
-  sheets.forEach(([name, rows]) => appendSheet(workbook, name, rows));
+  sheets.forEach(([sheetName, sheetRows]) =>
+    appendSheet(workbook, sheetName, sheetRows.map(objectToRecord))
+  );
 
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
   await downloadWorkbook(workbook, `vinyl-store-backup-${stamp}.xlsx`);
