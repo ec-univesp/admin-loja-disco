@@ -1,21 +1,25 @@
+import { z } from 'zod';
 import { apiClient } from './client';
-import type { SalesChannelEntity, SalesChannelPayload, SalesChannelDTO } from './types';
+import { salesChannelSchema } from './schemas';
+import type { SalesChannelPayload } from './types';
 
 const BASE = '/canais-venda';
+const messageSchema = z.string();
+const channelListSchema = z.array(salesChannelSchema);
 
 export const salesChannelsService = {
   list: (signal?: AbortSignal) =>
-    apiClient.get<SalesChannelEntity[]>(`${BASE}/lista`, undefined, signal),
+    apiClient.get(`${BASE}/lista`, channelListSchema, undefined, signal),
 
   getById: (id: number, signal?: AbortSignal) =>
-    apiClient.get<SalesChannelDTO>(`${BASE}/${id}`, undefined, signal),
+    apiClient.get(`${BASE}/${id}`, salesChannelSchema, undefined, signal),
 
   create: (payload: SalesChannelPayload, signal?: AbortSignal) =>
-    apiClient.post<SalesChannelDTO>(`${BASE}/criar`, payload, signal),
+    apiClient.post(`${BASE}/criar`, messageSchema, payload, signal),
 
   update: (payload: SalesChannelPayload, signal?: AbortSignal) =>
-    apiClient.put<SalesChannelDTO>(`${BASE}/atualizar`, payload, signal),
+    apiClient.put(`${BASE}/atualizar`, salesChannelSchema, payload, signal),
 
   delete: (id: number, signal?: AbortSignal) =>
-    apiClient.delete<void>(`${BASE}/${id}`, signal),
+    apiClient.delete(`${BASE}/${id}`, messageSchema, signal),
 };

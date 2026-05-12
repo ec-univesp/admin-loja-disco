@@ -38,8 +38,12 @@ export default function MultiSelect({
 
   useEffect(() => {
     if (!open) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      const clickedNode = event.target instanceof Node ? event.target : null;
+      const isInsideWrapper = clickedNode
+        ? Boolean(wrapperRef.current?.contains(clickedNode))
+        : false;
+      if (!isInsideWrapper) {
         setOpen(false);
         setSearch('');
       }
@@ -81,9 +85,8 @@ export default function MultiSelect({
     );
   };
 
-  const removeChip = (optionValue: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    onChange(value.filter((v) => v !== optionValue));
+  const removeChipValue = (optionValue: number) => {
+    onChange(value.filter((selectedValue) => selectedValue !== optionValue));
   };
 
   const triggerBase =
@@ -118,11 +121,15 @@ export default function MultiSelect({
                 <span
                   role="button"
                   tabIndex={0}
-                  onClick={(e) => removeChip(opt.value, e)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      removeChip(opt.value, e as unknown as React.MouseEvent);
+                  onClick={(chipClickEvent) => {
+                    chipClickEvent.stopPropagation();
+                    removeChipValue(opt.value);
+                  }}
+                  onKeyDown={(chipKeyEvent) => {
+                    if (chipKeyEvent.key === 'Enter' || chipKeyEvent.key === ' ') {
+                      chipKeyEvent.preventDefault();
+                      chipKeyEvent.stopPropagation();
+                      removeChipValue(opt.value);
                     }
                   }}
                   aria-label={`Remover ${opt.label}`}

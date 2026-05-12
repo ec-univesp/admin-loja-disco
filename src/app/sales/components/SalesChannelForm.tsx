@@ -1,26 +1,50 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Trash2 } from 'lucide-react';
 import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import { useSalesChannelsModel } from '@/app/sales/model/salesChannelsModel';
+import {
+  salesChannelFormSchema,
+  type SalesChannelFormInput,
+} from '@/shared/services/api/form-schemas';
 
 interface SalesChannelFormProps {
   onClose: () => void;
   onCreated?: (id: number) => void;
 }
 
+interface ChannelToDelete {
+  idCanalVenda: number;
+  nomeCanalVenda: string;
+}
+
 export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFormProps) {
   const { list, create, remove } = useSalesChannelsModel();
   const salesChannels = list.data ?? [];
   const isSubmitting = create.isPending;
-  const [channelName, setChannelName] = useState('');
-  const [channelToDelete, setChannelToDelete] = useState<{
-    idCanalVenda: number;
-    nomeCanalVenda: string;
-  } | null>(null);
+  const [channelToDelete, setChannelToDelete] = useState<ChannelToDelete | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SalesChannelFormInput>({
+    resolver: zodResolver(salesChannelFormSchema),
+    defaultValues: { nomeCanalVenda: '' },
+  });
+
+  const onSubmit = async (formInput: SalesChannelFormInput) => {
+    const created = await create.mutateAsync({ nomeCanalVenda: formInput.nomeCanalVenda });
+    if (created.canalVendaId !== undefined) onCreated?.(created.canalVendaId);
+    reset();
+    onClose();
+  };
 
   const handleConfirmDelete = async () => {
     if (!channelToDelete) return;
@@ -28,30 +52,22 @@ export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFor
     setChannelToDelete(null);
   };
 
-  const handleSave = async () => {
-    const nomeCanalVenda = channelName.trim();
-    if (!nomeCanalVenda) {
-      alert('Nome do canal é obrigatório');
-      return;
-    }
-    const created = await create.mutateAsync({ nomeCanalVenda });
-    if (created.canalVendaId !== undefined) onCreated?.(created.canalVendaId);
-    setChannelName('');
-    onClose();
-  };
-
   return (
-    <div className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <Label htmlFor="canal-nome">Nome do Canal *</Label>
         <input
           id="canal-nome"
           type="text"
-          value={channelName}
-          onChange={(e) => setChannelName(e.target.value)}
+          {...register('nomeCanalVenda')}
           placeholder="Ex: Mercado Livre, Shopee, Loja Física..."
           className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
         />
+        {errors.nomeCanalVenda && (
+          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+            {errors.nomeCanalVenda.message}
+          </p>
+        )}
       </div>
 
       {salesChannels.length > 0 && (
@@ -93,7 +109,7 @@ export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFor
         <Button size="sm" variant="outline" onClick={onClose} disabled={isSubmitting}>
           Cancelar
         </Button>
-        <Button size="sm" variant="primary" onClick={handleSave} isLoading={isSubmitting}>
+        <Button size="sm" variant="primary" isLoading={isSubmitting}>
           Salvar
         </Button>
       </div>
@@ -133,6 +149,6 @@ export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFor
           </div>
         </div>
       </Modal>
-    </div>
+    </form>
   );
 }

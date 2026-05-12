@@ -8,27 +8,27 @@ import { useSalesModel } from '@/app/sales/model/salesModel';
 import { PaperPlaneIcon } from '@/shared/icons';
 
 const DELIVERY_STATUSES = [
-  OrderStatus.PENDING,
-  OrderStatus.CONFIRMED,
-  OrderStatus.SHIPPED,
-  OrderStatus.DELIVERED,
-  OrderStatus.CANCELLED,
+  OrderStatus.PENDENTE,
+  OrderStatus.CONFIRMADA,
+  OrderStatus.ENVIADA,
+  OrderStatus.ENTREGUE,
+  OrderStatus.CANCELADA,
 ];
 
 const statusColor: Record<string, string> = {
-  [OrderStatus.DELIVERED]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  [OrderStatus.SHIPPED]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  [OrderStatus.CONFIRMED]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  [OrderStatus.PENDING]: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-  [OrderStatus.CANCELLED]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  [OrderStatus.ENTREGUE]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  [OrderStatus.ENVIADA]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  [OrderStatus.CONFIRMADA]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  [OrderStatus.PENDENTE]: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  [OrderStatus.CANCELADA]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
 const statusLabel: Record<string, string> = {
-  [OrderStatus.PENDING]: 'Pendente',
-  [OrderStatus.CONFIRMED]: 'Confirmada',
-  [OrderStatus.SHIPPED]: 'Enviada',
-  [OrderStatus.DELIVERED]: 'Entregue',
-  [OrderStatus.CANCELLED]: 'Cancelada',
+  [OrderStatus.PENDENTE]: 'Pendente',
+  [OrderStatus.CONFIRMADA]: 'Confirmada',
+  [OrderStatus.ENVIADA]: 'Enviada',
+  [OrderStatus.ENTREGUE]: 'Entregue',
+  [OrderStatus.CANCELADA]: 'Cancelada',
 };
 
 const formatSaleNumber = (id?: number) =>
@@ -55,19 +55,21 @@ export default function DeliveriesPage() {
   const { list } = useSalesModel();
   const sales = useMemo(() => list.data ?? [], [list.data]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>(OrderStatus.PENDING);
+  const [statusFilter, setStatusFilter] = useState<string>(OrderStatus.PENDENTE);
 
   const deliveries = useMemo(
     () =>
       sales
-        .filter((s) => (DELIVERY_STATUSES as string[]).includes(s.statusPedido ?? ''))
+        .filter((sale) =>
+          DELIVERY_STATUSES.some((deliveryStatus) => deliveryStatus === (sale.statusPedido ?? ''))
+        )
         .map((s) => ({
           id: s.vendaId,
           number: formatSaleNumber(s.vendaId),
           customerName: s.cliente?.nomeCliente ?? '—',
           fullAddress: formatAddress(s.endereco),
           productsSummary: productsSummary(s.itens),
-          status: s.statusPedido ?? OrderStatus.PENDING,
+          status: s.statusPedido ?? OrderStatus.PENDENTE,
         })),
     [sales]
   );

@@ -1,9 +1,16 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
+import {
+  customerAddressFormSchema,
+  type CustomerAddressFormInput,
+} from '@/shared/services/api/form-schemas';
 
 interface CustomerAddressFormProps {
   onClose: () => void;
@@ -12,20 +19,21 @@ interface CustomerAddressFormProps {
   showTitle?: boolean;
 }
 
-interface FormState {
-  nomeCliente: string;
-  sexo: 'M' | 'F' | 'O' | '';
-  idade: number;
-  logradouro: string;
-  numero: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-}
+const sexoFromDb = z.enum(['M', 'F', 'O']);
+const parseSexo = (rawSexo: string | undefined): CustomerAddressFormInput['sexo'] | '' => {
+  const parsed = sexoFromDb.safeParse(rawSexo ?? '');
+  return parsed.success ? parsed.data : '';
+};
 
-const initialFormState: FormState = {
+const cepResponseSchema = z.object({
+  street: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+});
+
+const emptyFormValues: CustomerAddressFormInput = {
   nomeCliente: '',
-  sexo: '',
+  sexo: 'M',
   idade: 0,
   logradouro: '',
   numero: '',
@@ -33,6 +41,10 @@ const initialFormState: FormState = {
   estado: '',
   cep: '',
 };
+
+const inputClass =
+  'h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white';
+const errorClass = 'mt-1 block text-xs text-red-600 dark:text-red-400';
 
 export default function CustomerAddressForm({
   onClose,
@@ -44,26 +56,39 @@ export default function CustomerAddressForm({
   const customers = useMemo(() => list.data ?? [], [list.data]);
   const isCreating = create.isPending;
   const isUpdating = update.isPending;
+  const isMutating = isCreating || isUpdating;
+  const isEditing = customerId !== undefined;
 
-  const [form, setForm] = useState<FormState>(initialFormState);
   const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
   const [cepLoading, setCepLoading] = useState(false);
   const [cepError, setCepError] = useState<string | null>(null);
 
-  const isSubmitting = isCreating || isUpdating;
-  const isEditing = customerId !== undefined;
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<CustomerAddressFormInput>({
+    resolver: zodResolver(customerAddressFormSchema),
+    defaultValues: emptyFormValues,
+  });
+
+  const currentCep = watch('cep');
 
   useEffect(() => {
     if (customerId === undefined) {
-      setForm(initialFormState);
+      reset(emptyFormValues);
       setEditingAddressId(null);
       return;
     }
     const customer = customers.find((item) => item.clienteId === customerId);
     const primaryAddress = customer?.enderecos?.[0];
-    setForm({
+    const sexo = parseSexo(customer?.sexo);
+    reset({
       nomeCliente: customer?.nomeCliente ?? '',
-      sexo: (customer?.sexo as FormState['sexo']) ?? '',
+      sexo: sexo === '' ? 'M' : sexo,
       idade: customer?.idade ?? 0,
       logradouro: primaryAddress?.logradouro ?? '',
       numero: primaryAddress?.numero !== undefined ? String(primaryAddress.numero) : '',
@@ -72,14 +97,7 @@ export default function CustomerAddressForm({
       cep: primaryAddress?.cep ?? '',
     });
     setEditingAddressId(primaryAddress?.enderecoId ?? null);
-  }, [customerId, customers]);
-
-  const handleChange =
-    (field: keyof FormState) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const value = field === 'idade' ? Number(e.target.value || 0) : (e.target.value as never);
-      setForm((prev) => ({ ...prev, [field]: value }));
-    };
+  }, [customerId, customers, reset]);
 
   const fetchZipCode = async (rawZip: string) => {
     const cleanZip = rawZip.replace(/\D/g, '');
@@ -89,78 +107,47 @@ export default function CustomerAddressForm({
     setCepError(null);
     try {
       const response = await fetch(`https://brasilapi.com.br/api/cep/v1/${cleanZip}`);
-      if (!response.ok) {
-        throw new Error('CEP não encontrado');
-      }
-      const data: {
-        street?: string;
-        city?: string;
-        state?: string;
-      } = await response.json();
-      setForm((prev) => ({
-        ...prev,
-        cep: cleanZip,
-        logradouro: data.street ?? prev.logradouro,
-        cidade: data.city ?? prev.cidade,
-        estado: data.state ?? prev.estado,
-      }));
-    } catch (err) {
-      setCepError(err instanceof Error ? err.message : 'Error fetching ZIP code');
+      if (!response.ok) throw new Error('CEP não encontrado.');
+      const data = cepResponseSchema.parse(await response.json());
+      setValue('cep', cleanZip);
+      if (data.street) setValue('logradouro', data.street);
+      if (data.city) setValue('cidade', data.city);
+      if (data.state) setValue('estado', data.state);
+    } catch (cepFetchError) {
+      setCepError(
+        cepFetchError instanceof Error ? cepFetchError.message : 'Erro ao consultar o CEP.'
+      );
     } finally {
       setCepLoading(false);
     }
   };
 
-  const handleZipCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 8);
-    if (cepError) setCepError(null);
-    if (value.length === 0) {
-      setForm((prev) => ({
-        ...prev,
-        cep: '',
-        logradouro: '',
-        numero: '',
-        cidade: '',
-        estado: '',
-      }));
-      return;
-    }
-    setForm((prev) => ({ ...prev, cep: value }));
-  };
-
   const handleZipCodeSearch = () => {
-    if (form.cep.length === 8) {
-      void fetchZipCode(form.cep);
+    const cleanedCep = (currentCep ?? '').replace(/\D/g, '');
+    if (cleanedCep.length === 8) {
+      void fetchZipCode(cleanedCep);
     } else {
-      setCepError('Digite o CEP completo (8 dígitos)');
+      setCepError('Digite o CEP completo (8 dígitos).');
     }
   };
 
-  const hasAddress = Boolean(form.logradouro || form.cidade || form.cep);
-
-  const handleSave = async () => {
-    if (!form.nomeCliente.trim()) {
-      alert('Customer name is required');
-      return;
-    }
-
-    const addressPayload = hasAddress
-      ? {
-          enderecoId: editingAddressId ?? undefined,
-          logradouro: form.logradouro,
-          numero: form.numero ? Number(form.numero) : undefined,
-          cidade: form.cidade,
-          estado: form.estado,
-          cep: form.cep,
-        }
-      : null;
+  const onSubmit = async (formInput: CustomerAddressFormInput) => {
+    const numericNumero = Number(formInput.numero);
+    const addressPayload = {
+      enderecoId: editingAddressId ?? undefined,
+      logradouro: formInput.logradouro,
+      numero: Number.isFinite(numericNumero) ? numericNumero : undefined,
+      cidade: formInput.cidade,
+      estado: formInput.estado,
+      cep: formInput.cep,
+    };
 
     const payload = {
       clienteId: customerId,
-      nomeCliente: form.nomeCliente,
-      sexo: form.sexo || undefined,
-      idade: form.idade,
-      enderecos: addressPayload ? [addressPayload] : [],
+      nomeCliente: formInput.nomeCliente,
+      sexo: formInput.sexo,
+      idade: formInput.idade,
+      enderecos: [addressPayload],
     };
 
     const savedCustomer = isEditing
@@ -169,15 +156,14 @@ export default function CustomerAddressForm({
 
     const resolvedClienteId = savedCustomer.clienteId ?? customerId;
     if (resolvedClienteId === undefined) return;
-
     const resolvedEnderecoId = savedCustomer.enderecos?.[0]?.enderecoId ?? null;
     onSaved?.(resolvedClienteId, resolvedEnderecoId);
+    reset(emptyFormValues);
     onClose();
-    setForm(initialFormState);
   };
 
   return (
-    <div className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {showTitle && (
         <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           {isEditing ? 'Editar Cliente / Endereço' : 'Cadastrar Novo Cliente'}
@@ -191,37 +177,27 @@ export default function CustomerAddressForm({
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="md:col-span-2">
             <Label htmlFor="cli-nome">Nome *</Label>
-            <input
-              id="cli-nome"
-              type="text"
-              value={form.nomeCliente}
-              onChange={handleChange('nomeCliente')}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-            />
+            <input id="cli-nome" type="text" {...register('nomeCliente')} className={inputClass} />
+            {errors.nomeCliente && <span className={errorClass}>{errors.nomeCliente.message}</span>}
           </div>
           <div>
-            <Label htmlFor="cli-genero">Gênero</Label>
-            <select
-              id="cli-genero"
-              value={form.sexo}
-              onChange={handleChange('sexo')}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-            >
-              <option value="">--</option>
+            <Label htmlFor="cli-genero">Gênero *</Label>
+            <select id="cli-genero" {...register('sexo')} className={inputClass}>
               <option value="M">Masculino</option>
               <option value="F">Feminino</option>
               <option value="O">Outro</option>
             </select>
+            {errors.sexo && <span className={errorClass}>{errors.sexo.message}</span>}
           </div>
           <div>
-            <Label htmlFor="cli-idade">Idade</Label>
+            <Label htmlFor="cli-idade">Idade *</Label>
             <input
               id="cli-idade"
               type="number"
-              value={form.idade || ''}
-              onChange={handleChange('idade')}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              {...register('idade', { valueAsNumber: true })}
+              className={inputClass}
             />
+            {errors.idade && <span className={errorClass}>{errors.idade.message}</span>}
           </div>
         </div>
       </div>
@@ -230,23 +206,22 @@ export default function CustomerAddressForm({
         <h5 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Endereço</h5>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div>
-            <Label htmlFor="end-cep">CEP</Label>
+            <Label htmlFor="end-cep">CEP *</Label>
             <div className="flex items-center">
               <input
                 id="end-cep"
                 type="text"
                 inputMode="numeric"
-                maxLength={8}
-                placeholder="Apenas números"
-                value={form.cep}
-                onChange={handleZipCodeChange}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
+                maxLength={9}
+                placeholder="00000-000"
+                {...register('cep')}
+                onKeyDown={(keyEvent) => {
+                  if (keyEvent.key === 'Enter') {
+                    keyEvent.preventDefault();
                     handleZipCodeSearch();
                   }
                 }}
-                className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                className={inputClass}
               />
               <button
                 type="button"
@@ -294,66 +269,59 @@ export default function CustomerAddressForm({
                 )}
               </button>
             </div>
-            {cepError && (
-              <span className="text-error-600 dark:text-error-400 mt-1 block text-xs">
-                {cepError}
-              </span>
-            )}
+            {cepError && <span className={errorClass}>{cepError}</span>}
+            {errors.cep && !cepError && <span className={errorClass}>{errors.cep.message}</span>}
           </div>
           <div className="md:col-span-2">
-            <Label htmlFor="end-log">Logradouro</Label>
+            <Label htmlFor="end-log">Logradouro *</Label>
             <input
               id="end-log"
               type="text"
-              value={form.logradouro}
-              onChange={handleChange('logradouro')}
+              {...register('logradouro')}
               disabled={cepLoading}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              className={`${inputClass} disabled:opacity-60`}
             />
+            {errors.logradouro && <span className={errorClass}>{errors.logradouro.message}</span>}
           </div>
           <div>
             <Label htmlFor="end-num">Número *</Label>
-            <input
-              id="end-num"
-              type="text"
-              value={form.numero}
-              onChange={handleChange('numero')}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-            />
+            <input id="end-num" type="text" {...register('numero')} className={inputClass} />
+            {errors.numero && <span className={errorClass}>{errors.numero.message}</span>}
           </div>
           <div>
-            <Label htmlFor="end-cid">Cidade</Label>
+            <Label htmlFor="end-cid">Cidade *</Label>
             <input
               id="end-cid"
               type="text"
-              value={form.cidade}
-              onChange={handleChange('cidade')}
+              {...register('cidade')}
               disabled={cepLoading}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              className={`${inputClass} disabled:opacity-60`}
             />
+            {errors.cidade && <span className={errorClass}>{errors.cidade.message}</span>}
           </div>
           <div>
-            <Label htmlFor="end-est">Estado</Label>
+            <Label htmlFor="end-est">Estado (UF) *</Label>
             <input
               id="end-est"
               type="text"
-              value={form.estado}
-              onChange={handleChange('estado')}
+              maxLength={2}
+              {...register('estado')}
               disabled={cepLoading}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              className={`${inputClass} disabled:opacity-60`}
             />
+            {errors.estado && <span className={errorClass}>{errors.estado.message}</span>}
           </div>
         </div>
       </div>
 
       <div className="flex justify-end gap-3">
-        <Button size="sm" variant="outline" onClick={onClose} disabled={isSubmitting}>
+        <Button size="sm" variant="outline" onClick={onClose} disabled={isMutating || isSubmitting}>
           Cancelar
         </Button>
-        <Button size="sm" variant="primary" onClick={handleSave} isLoading={isSubmitting}>
+        <Button size="sm" variant="primary" isLoading={isMutating || isSubmitting}>
           {isEditing ? 'Salvar alterações' : 'Cadastrar cliente'}
         </Button>
       </div>
-    </div>
+    </form>
   );
 }

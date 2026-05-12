@@ -1,31 +1,35 @@
+import { z } from 'zod';
 import { apiClient } from './client';
-import type { RecordPayload, RecordDTO } from './types';
+import { recordSchema, recordSearchParamsSchema } from './schemas';
+import type { RecordPayload, RecordSearchParams } from './types';
 
 const BASE = '/discos';
+const messageSchema = z.string();
+const recordListSchema = z.array(recordSchema);
 
-export type RecordSearchParams = {
-  termo: string;
-};
+export type { RecordSearchParams };
 
 export const recordsService = {
   list: (signal?: AbortSignal) =>
-    apiClient.get<RecordDTO[]>(`${BASE}/lista`, undefined, signal),
+    apiClient.get(`${BASE}/lista`, recordListSchema, undefined, signal),
 
   listFiltered: (tipo: 1 | 2, signal?: AbortSignal) =>
-    apiClient.get<RecordDTO[]>(`${BASE}/lista-filtrada/${tipo}`, undefined, signal),
+    apiClient.get(`${BASE}/lista-filtrada/${tipo}`, recordListSchema, undefined, signal),
 
   getById: (id: number, signal?: AbortSignal) =>
-    apiClient.get<RecordDTO>(`${BASE}/${id}`, undefined, signal),
+    apiClient.get(`${BASE}/${id}`, recordSchema, undefined, signal),
 
-  search: (params: RecordSearchParams, signal?: AbortSignal) =>
-    apiClient.get<RecordDTO[]>(`${BASE}/buscar`, params, signal),
+  search: (params: RecordSearchParams, signal?: AbortSignal) => {
+    const validated = recordSearchParamsSchema.parse(params);
+    return apiClient.get(`${BASE}/buscar`, recordListSchema, validated, signal);
+  },
 
   create: (payload: RecordPayload, signal?: AbortSignal) =>
-    apiClient.post<RecordDTO>(`${BASE}/criar`, payload, signal),
+    apiClient.post(`${BASE}/criar`, messageSchema, payload, signal),
 
   update: (payload: RecordPayload, signal?: AbortSignal) =>
-    apiClient.put<RecordDTO>(`${BASE}/atualizar`, payload, signal),
+    apiClient.put(`${BASE}/atualizar`, recordSchema, payload, signal),
 
   delete: (id: number, signal?: AbortSignal) =>
-    apiClient.delete<void>(`${BASE}/${id}`, signal),
+    apiClient.delete(`${BASE}/${id}`, messageSchema, signal),
 };

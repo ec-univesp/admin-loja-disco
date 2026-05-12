@@ -18,7 +18,10 @@ export function useSalesModel(id?: number) {
 
   const byId = useQuery({
     queryKey: keys.detail(id ?? 0),
-    queryFn: ({ signal }) => salesService.getById(id as number, signal),
+    queryFn: ({ signal }) => {
+      if (id === undefined) throw new Error('Identificador obrigatório.');
+      return salesService.getById(id, signal);
+    },
     enabled: id !== undefined,
   });
 

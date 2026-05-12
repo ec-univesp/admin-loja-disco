@@ -2,8 +2,10 @@
 
 import type React from 'react';
 import { createContext, useState, useContext, useEffect } from 'react';
+import { z } from 'zod';
 
-type Theme = 'light' | 'dark';
+const themeSchema = z.enum(['light', 'dark']);
+type Theme = z.infer<typeof themeSchema>;
 
 type ThemeContextType = {
   theme: Theme;
@@ -12,14 +14,14 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const readStoredTheme = (): Theme => {
+  if (typeof window === 'undefined') return 'light';
+  const parsed = themeSchema.safeParse(localStorage.getItem('theme'));
+  return parsed.success ? parsed.data : 'light';
+};
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') {
-      return 'light';
-    }
-    const savedTheme = localStorage.getItem('theme') as Theme | null;
-    return savedTheme || 'light';
-  });
+  const [theme, setTheme] = useState<Theme>(readStoredTheme);
 
   useEffect(() => {
     localStorage.setItem('theme', theme);

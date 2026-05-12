@@ -1,7 +1,8 @@
 'use client';
 
 import React, { FC, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Form from '@/shared/components/form/Form';
 import Label from '@/shared/components/form/Label';
 import ControlledInput from '@/shared/components/form/ControlledInput';
@@ -11,28 +12,31 @@ import { useModal } from '@/shared/hooks/useModal';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
 import AddRecordForm from '@/app/inventory/components/AddRecordForm';
-
-interface PurchaseItemForm {
-  discoId: string;
-}
-
-interface PurchaseFormData {
-  fornecedor: string;
-  dataCompra: string;
-}
+import {
+  purchaseFormSchema,
+  type PurchaseFormInput,
+} from '@/shared/services/api/form-schemas';
 
 interface PurchaseFormProps {
   onSuccess?: () => void;
 }
 
+const selectClass =
+  'h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white';
+const errorClass = 'mt-1 block text-sm text-red-500';
+
+const buildDefaultValues = (): PurchaseFormInput => ({
+  fornecedor: '',
+  dataCompra: new Date().toISOString().slice(0, 10),
+  itens: [{ discoId: '', custoDisco: 0 }],
+});
+
 const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
   const { create } = usePurchasesModel();
   const { list: recordsList } = useRecordsModel();
-  const createPurchase = create.mutateAsync.bind(create);
-  const isSubmitting = create.isPending;
+  const isMutating = create.isPending;
   const records = recordsList.data ?? [];
   const [successMsg, setSuccessMsg] = useState('');
-  const [items, setItems] = useState<PurchaseItemForm[]>([{ discoId: '' }]);
   const addRecordModal = useModal();
   const [addingAtIndex, setAddingAtIndex] = useState<number | null>(null);
   const [recordIdsBefore, setRecordIdsBefore] = useState<Set<number>>(new Set());
@@ -41,61 +45,58 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
-  } = useForm<PurchaseFormData>({
-    defaultValues: {
-      fornecedor: '',
-      dataCompra: new Date().toISOString().split('T')[0],
-    },
+    control,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<PurchaseFormInput>({
+    resolver: zodResolver(purchaseFormSchema),
+    defaultValues: buildDefaultValues(),
   });
 
-  const itemsTotal = items.reduce((acc, item) => {
-    const record = records.find((r) => String(r.discoId) === item.discoId);
-    return acc + Number(record?.custoDisco || 0);
-  }, 0);
+  const { fields, append, remove } = useFieldArray({ control, name: 'itens' });
+  const watchedItems = useWatch({ control, name: 'itens' });
 
-  const addItem = () => setItems((prev) => [...prev, { discoId: '' }]);
-  const removeItem = (index: number) => setItems((prev) => prev.filter((_, i) => i !== index));
-  const updateItem = (index: number, field: keyof PurchaseItemForm, value: string) =>
-    setItems((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
+  const itemsTotal = (watchedItems ?? []).reduce(
+    (acc, item) => acc + Number(item?.custoDisco ?? 0),
+    0
+  );
 
   const openAddRecordModal = (index: number) => {
     setAddingAtIndex(index);
-    setRecordIdsBefore(new Set(records.map((r) => r.discoId ?? 0)));
+    setRecordIdsBefore(new Set(records.map((record) => record.discoId ?? 0)));
     addRecordModal.openModal();
   };
 
   const handleRecordAdded = () => {
-    const newRecord = records.find((r) => !recordIdsBefore.has(r.discoId ?? 0));
+    const newRecord = records.find((record) => !recordIdsBefore.has(record.discoId ?? 0));
     if (addingAtIndex !== null && newRecord?.discoId) {
-      updateItem(addingAtIndex, 'discoId', String(newRecord.discoId));
+      setValue(`itens.${addingAtIndex}.discoId`, String(newRecord.discoId));
+      setValue(`itens.${addingAtIndex}.custoDisco`, newRecord.custoDisco ?? 0);
     }
     setAddingAtIndex(null);
     setRecordIdsBefore(new Set());
     addRecordModal.closeModal();
   };
 
-  const handleFormSubmit = async (formData: PurchaseFormData) => {
-    const validItems = items.filter((item) => item.discoId);
-    if (validItems.length === 0) return;
-
-    await createPurchase({
-      dataCompra: formData.dataCompra,
-      fornecedor: formData.fornecedor,
+  const onSubmit = async (formInput: PurchaseFormInput) => {
+    await create.mutateAsync({
+      dataCompra: formInput.dataCompra,
+      fornecedor: formInput.fornecedor,
       valorTotal: itemsTotal,
-      itens: validItems.map((item) => {
-        const record = records.find((r) => String(r.discoId) === item.discoId);
+      itens: formInput.itens.map((item) => {
+        const sourceRecord = records.find(
+          (record) => String(record.discoId) === item.discoId
+        );
         return {
           discoId: Number(item.discoId),
-          nomeDisco: record?.album ?? '',
-          nomeArtista: record?.artista?.nomeArtista ?? '',
-          custoDisco: record?.custoDisco ?? 0,
+          nomeDisco: sourceRecord?.album ?? '',
+          nomeArtista: sourceRecord?.artista?.nomeArtista ?? '',
+          custoDisco: item.custoDisco,
         };
       }),
     });
 
-    reset();
-    setItems([{ discoId: '' }]);
+    reset(buildDefaultValues());
     setSuccessMsg('Compra registrada com sucesso!');
     setTimeout(() => setSuccessMsg(''), 3000);
     onSuccess?.();
@@ -109,7 +110,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
         </div>
       )}
 
-      <Form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      <Form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
             Detalhes da Compra
@@ -121,11 +122,11 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                 type="text"
                 id="fornecedor"
                 placeholder="Nome do fornecedor"
-                {...register('fornecedor', { required: 'Fornecedor é obrigatório' })}
-                error={!!errors.fornecedor}
+                {...register('fornecedor')}
+                error={Boolean(errors.fornecedor)}
               />
               {errors.fornecedor && (
-                <span className="mt-1 text-sm text-red-500">{errors.fornecedor.message}</span>
+                <span className={errorClass}>{errors.fornecedor.message}</span>
               )}
             </div>
             <div>
@@ -133,9 +134,12 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
               <ControlledInput
                 type="date"
                 id="dataCompra"
-                {...register('dataCompra', { required: 'Data é obrigatória' })}
-                error={!!errors.dataCompra}
+                {...register('dataCompra')}
+                error={Boolean(errors.dataCompra)}
               />
+              {errors.dataCompra && (
+                <span className={errorClass}>{errors.dataCompra.message}</span>
+              )}
             </div>
           </div>
         </div>
@@ -143,17 +147,25 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Discos</h3>
-            <Button size="sm" variant="primary" type="button" onClick={addItem}>
+            <Button
+              size="sm"
+              variant="primary"
+              type="button"
+              onClick={() => append({ discoId: '', custoDisco: 0 })}
+            >
               + Adicionar Disco
             </Button>
           </div>
 
           <div className="space-y-4">
-            {items.map((item, index) => {
-              const selectedRecord = records.find((r) => String(r.discoId) === item.discoId);
+            {fields.map((fieldItem, index) => {
+              const currentDiscoId = watchedItems?.[index]?.discoId ?? '';
+              const selectedRecord = records.find(
+                (record) => String(record.discoId) === currentDiscoId
+              );
               return (
                 <div
-                  key={index}
+                  key={fieldItem.id}
                   className="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900"
                 >
                   <div className="mb-3 flex items-center justify-between">
@@ -168,10 +180,10 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                       >
                         + Cadastrar novo disco
                       </button>
-                      {items.length > 1 && (
+                      {fields.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => removeItem(index)}
+                          onClick={() => remove(index)}
                           className="text-sm text-red-500 hover:text-red-700"
                         >
                           Remover
@@ -184,9 +196,18 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                     <Label htmlFor={`disco-${index}`}>Selecione um Disco *</Label>
                     <select
                       id={`disco-${index}`}
-                      value={item.discoId}
-                      onChange={(e) => updateItem(index, 'discoId', e.target.value)}
-                      className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                      {...register(`itens.${index}.discoId`, {
+                        onChange: (changeEvent) => {
+                          const targetRecord = records.find(
+                            (record) => String(record.discoId) === changeEvent.target.value
+                          );
+                          setValue(
+                            `itens.${index}.custoDisco`,
+                            targetRecord?.custoDisco ?? 0
+                          );
+                        },
+                      })}
+                      className={selectClass}
                     >
                       <option value="">-- Selecione --</option>
                       {records.map((record) => (
@@ -195,6 +216,9 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                         </option>
                       ))}
                     </select>
+                    {errors.itens?.[index]?.discoId && (
+                      <span className={errorClass}>{errors.itens[index]?.discoId?.message}</span>
+                    )}
                   </div>
 
                   {selectedRecord && (
@@ -216,6 +240,9 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
                 </div>
               );
             })}
+            {errors.itens?.root && (
+              <span className={errorClass}>{errors.itens.root.message}</span>
+            )}
           </div>
         </div>
 
@@ -229,17 +256,19 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
         </div>
 
         <div className="flex gap-4">
-          <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            isLoading={isMutating || isSubmitting}
+          >
             Registrar Compra
           </Button>
           <Button
             type="reset"
             variant="outline"
             fullWidth
-            onClick={() => {
-              reset();
-              setItems([{ discoId: '' }]);
-            }}
+            onClick={() => reset(buildDefaultValues())}
           >
             Limpar
           </Button>

@@ -1,21 +1,25 @@
+import { z } from 'zod';
 import { apiClient } from './client';
-import type { CustomerPayload, CustomerDTO } from './types';
+import { customerSchema } from './schemas';
+import type { CustomerPayload } from './types';
 
 const BASE = '/clientes';
+const messageSchema = z.string();
+const customerListSchema = z.array(customerSchema);
 
 export const customersService = {
   list: (signal?: AbortSignal) =>
-    apiClient.get<CustomerDTO[]>(`${BASE}/lista`, undefined, signal),
+    apiClient.get(`${BASE}/lista`, customerListSchema, undefined, signal),
 
   getById: (id: number, signal?: AbortSignal) =>
-    apiClient.get<CustomerDTO>(`${BASE}/${id}`, undefined, signal),
+    apiClient.get(`${BASE}/${id}`, customerSchema, undefined, signal),
 
   create: (payload: CustomerPayload, signal?: AbortSignal) =>
-    apiClient.post<CustomerDTO>(`${BASE}/criar`, payload, signal),
+    apiClient.post(`${BASE}/criar`, messageSchema, payload, signal),
 
   update: (payload: CustomerPayload, signal?: AbortSignal) =>
-    apiClient.put<CustomerDTO>(`${BASE}/atualizar`, payload, signal),
+    apiClient.put(`${BASE}/atualizar`, customerSchema, payload, signal),
 
   delete: (id: number, signal?: AbortSignal) =>
-    apiClient.delete<void>(`${BASE}/${id}`, signal),
+    apiClient.delete(`${BASE}/${id}`, messageSchema, signal),
 };

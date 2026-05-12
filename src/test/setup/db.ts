@@ -20,6 +20,8 @@ export interface TestDB {
   purchases: PurchaseDTO[];
 }
 
+type TableName = keyof TestDB;
+
 const empty = (): TestDB => ({
   artists: [],
   genres: [],
@@ -33,21 +35,31 @@ const empty = (): TestDB => ({
 
 export const db: TestDB = empty();
 
+const isTableName = (key: string): key is TableName =>
+  key === 'artists' ||
+  key === 'genres' ||
+  key === 'addresses' ||
+  key === 'customers' ||
+  key === 'channels' ||
+  key === 'records' ||
+  key === 'sales' ||
+  key === 'purchases';
+
 export function resetDb(seed?: Partial<TestDB>) {
-  const fresh = empty();
-  Object.assign(db, fresh);
-  if (seed) {
-    for (const [key, value] of Object.entries(seed)) {
-      (db as unknown as Record<string, unknown>)[key] = value;
+  Object.assign(db, empty());
+  if (!seed) return;
+  for (const [key, value] of Object.entries(seed)) {
+    if (isTableName(key) && Array.isArray(value)) {
+      Object.assign(db, { [key]: value });
     }
   }
 }
 
-export function nextId(table: keyof TestDB, idField: string): number {
-  const items = db[table] as unknown as Array<Record<string, unknown>>;
-  const max = items.reduce((acc, item) => {
-    const v = item[idField];
-    return typeof v === 'number' && v > acc ? v : acc;
+export function nextId(table: TableName, idField: string): number {
+  const records: ReadonlyArray<Record<string, unknown>> = db[table];
+  const highestId = records.reduce((maxSoFar, item) => {
+    const candidate = item[idField];
+    return typeof candidate === 'number' && candidate > maxSoFar ? candidate : maxSoFar;
   }, 0);
-  return max + 1;
+  return highestId + 1;
 }

@@ -36,7 +36,7 @@ export default function CompletedDeliveriesPage() {
   const completedDeliveries = useMemo(
     () =>
       sales
-        .filter((s) => s.statusPedido === OrderStatus.DELIVERED)
+        .filter((s) => s.statusPedido === OrderStatus.ENTREGUE)
         .map((s) => ({
           id: s.vendaId,
           number: formatSaleNumber(s.vendaId),

@@ -1,5 +1,11 @@
 import { toast } from 'sonner';
+import { z } from 'zod';
 import { ApiError } from '@/shared/services/api';
+
+const errorBodySchema = z.object({
+  message: z.string().optional(),
+  error: z.string().optional(),
+});
 
 export function notifySuccess(message: string) {
   toast.success(message);
@@ -11,18 +17,16 @@ export function notifyError(context: string, error: unknown) {
       ? `${error.status}: ${formatErrorBody(error.body)}`
       : error instanceof Error
         ? error.message
-        : 'Unknown error';
+        : 'Erro desconhecido';
 
   toast.error(context, { description: detail });
 }
 
 function formatErrorBody(body: unknown): string {
   if (typeof body === 'string') return body;
-  if (body && typeof body === 'object') {
-    const msg =
-      (body as { message?: string; error?: string }).message ??
-      (body as { message?: string; error?: string }).error;
-    if (msg) return msg;
-  }
-  return 'Check the data and try again.';
+  const parsed = errorBodySchema.safeParse(body);
+  const extractedMessage = parsed.success
+    ? parsed.data.message ?? parsed.data.error
+    : undefined;
+  return extractedMessage ?? 'Verifique os dados e tente novamente.';
 }

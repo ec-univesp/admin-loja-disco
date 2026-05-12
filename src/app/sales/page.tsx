@@ -19,7 +19,8 @@ import { reportsService, type ProfitPerItemDTO } from '@/shared/services/api';
 const MONTHS_IN_YEAR = 12;
 const monthOptions = Array.from({ length: MONTHS_IN_YEAR }, (_unused, monthIndex) => monthIndex + 1);
 
-const formatCurrency = (value?: number) => value?.toFixed(2) ?? '';
+const toCurrencyNumber = (value?: number): number | null =>
+  typeof value === 'number' ? value : null;
 
 const buildProfitPerItemExcelRow = (profitItem: ProfitPerItemDTO) => ({
   'Venda ID': profitItem.vendaId ?? '',
@@ -33,12 +34,12 @@ const buildProfitPerItemExcelRow = (profitItem: ProfitPerItemDTO) => ({
   'Forma Pagamento': profitItem.formaPagamento ?? '',
   'Canal ID': profitItem.canalVendaId ?? '',
   Canal: profitItem.nomeCanal ?? '',
-  'Preço Venda (R$)': formatCurrency(profitItem.precoVenda),
-  'Custo Disco (R$)': formatCurrency(profitItem.custoDisco),
-  'Custos Adicionais (R$)': formatCurrency(profitItem.custosAdicionais),
-  'Frete Disco (R$)': formatCurrency(profitItem.freteDisco),
-  'Total Despesa (R$)': formatCurrency(profitItem.totalDespesa),
-  'Lucro (R$)': formatCurrency(profitItem.lucro),
+  'Preço Venda (R$)': toCurrencyNumber(profitItem.precoVenda),
+  'Custo Disco (R$)': toCurrencyNumber(profitItem.custoDisco),
+  'Custos Adicionais (R$)': toCurrencyNumber(profitItem.custosAdicionais),
+  'Frete Disco (R$)': toCurrencyNumber(profitItem.freteDisco),
+  'Total Despesa (R$)': toCurrencyNumber(profitItem.totalDespesa),
+  'Lucro (R$)': toCurrencyNumber(profitItem.lucro),
 });
 
 const iconPlus = (
@@ -48,19 +49,19 @@ const iconPlus = (
 );
 
 const statusColor: Record<string, string> = {
-  [OrderStatus.DELIVERED]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  [OrderStatus.CONFIRMED]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  [OrderStatus.SHIPPED]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  [OrderStatus.PENDING]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  [OrderStatus.CANCELLED]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  [OrderStatus.ENTREGUE]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  [OrderStatus.CONFIRMADA]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  [OrderStatus.ENVIADA]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  [OrderStatus.PENDENTE]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  [OrderStatus.CANCELADA]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
 const statusLabel: Record<string, string> = {
-  [OrderStatus.PENDING]: 'Pendente',
-  [OrderStatus.CONFIRMED]: 'Confirmada',
-  [OrderStatus.SHIPPED]: 'Enviada',
-  [OrderStatus.DELIVERED]: 'Entregue',
-  [OrderStatus.CANCELLED]: 'Cancelada',
+  [OrderStatus.PENDENTE]: 'Pendente',
+  [OrderStatus.CONFIRMADA]: 'Confirmada',
+  [OrderStatus.ENVIADA]: 'Enviada',
+  [OrderStatus.ENTREGUE]: 'Entregue',
+  [OrderStatus.CANCELADA]: 'Cancelada',
 };
 
 const formatSaleNumber = (index: number) =>
@@ -72,7 +73,7 @@ const formatDateBR = (isoDate: string) => {
   return `${day}/${month}/${year}`;
 };
 
-const COMPLETED_STATUSES = [OrderStatus.DELIVERED];
+const COMPLETED_STATUSES = [OrderStatus.ENTREGUE];
 
 export default function SalesPage() {
   return (
@@ -123,7 +124,7 @@ function SalesContent() {
         sale.itens.map((item) => {
           const record = allRecords.find((candidateRecord) => candidateRecord.discoId === item.discoId);
           if (!record?.discoId) return Promise.resolve();
-          return updateRecord.mutateAsync({ ...record, discoId: record.discoId, status: RecordStatus.AVAILABLE });
+          return updateRecord.mutateAsync({ ...record, discoId: record.discoId, status: RecordStatus.DISPONIVEL });
         })
       );
     }
@@ -159,7 +160,7 @@ function SalesContent() {
         total: sale.valorTotal ?? 0,
         payment: sale.pagamento ?? '—',
         salesChannel: sale.canalVenda?.nomeCanalVenda ?? '—',
-        status: sale.statusPedido ?? OrderStatus.PENDING,
+        status: sale.statusPedido ?? OrderStatus.PENDENTE,
         rawIdx: index,
       })),
     [sortedSales]
@@ -168,7 +169,7 @@ function SalesContent() {
   const handleToggleDelivered = async (saleIndex: number, currentStatus: string) => {
     const sale = sortedSales[saleIndex];
     if (!sale?.vendaId) return;
-    const newStatus = currentStatus === OrderStatus.DELIVERED ? OrderStatus.PENDING : OrderStatus.DELIVERED;
+    const newStatus = currentStatus === OrderStatus.ENTREGUE ? OrderStatus.PENDENTE : OrderStatus.ENTREGUE;
     await updateSale.mutateAsync({
       vendasId: sale.vendaId,
       cliente: sale.cliente,
@@ -198,8 +199,11 @@ function SalesContent() {
     return matchesSearch && matchesStatus;
   });
 
+  const isCompletedStatus = (status: string): boolean =>
+    COMPLETED_STATUSES.some((completed) => completed === status);
+
   const totalRevenue = filteredRows
-    .filter((row) => (COMPLETED_STATUSES as string[]).includes(row.status))
+    .filter((row) => isCompletedStatus(row.status))
     .reduce((acc, row) => acc + row.total, 0);
 
   const handleOpenExportModal = () => {
@@ -256,11 +260,11 @@ function SalesContent() {
               className="focus:border-brand-500 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             >
               <option value="Todos">Todos os Status</option>
-              <option value={OrderStatus.PENDING}>Pendente</option>
-              <option value={OrderStatus.CONFIRMED}>Confirmada</option>
-              <option value={OrderStatus.SHIPPED}>Enviada</option>
-              <option value={OrderStatus.DELIVERED}>Entregue</option>
-              <option value={OrderStatus.CANCELLED}>Cancelada</option>
+              <option value={OrderStatus.PENDENTE}>Pendente</option>
+              <option value={OrderStatus.CONFIRMADA}>Confirmada</option>
+              <option value={OrderStatus.ENVIADA}>Enviada</option>
+              <option value={OrderStatus.ENTREGUE}>Entregue</option>
+              <option value={OrderStatus.CANCELADA}>Cancelada</option>
             </select>
             <input
               type="text"
@@ -408,7 +412,7 @@ function SalesContent() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[row.status] || statusColor[OrderStatus.PENDING]}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[row.status] || statusColor[OrderStatus.PENDENTE]}`}
                       >
                         {statusLabel[row.status] ?? row.status}
                       </span>
@@ -417,7 +421,7 @@ function SalesContent() {
                       <div className="inline-flex items-center justify-center gap-2">
                         <label
                           title={
-                            row.status === OrderStatus.DELIVERED
+                            row.status === OrderStatus.ENTREGUE
                               ? 'Marcar como não entregue'
                               : 'Marcar como entregue'
                           }
@@ -425,7 +429,7 @@ function SalesContent() {
                         >
                           <input
                             type="checkbox"
-                            checked={row.status === OrderStatus.DELIVERED}
+                            checked={row.status === OrderStatus.ENTREGUE}
                             onChange={() => handleToggleDelivered(row.rawIdx, row.status)}
                             aria-label={`Marcar venda ${row.number} como entregue`}
                             className="h-4 w-4 cursor-pointer accent-green-600"

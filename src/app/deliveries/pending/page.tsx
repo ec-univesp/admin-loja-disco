@@ -37,9 +37,9 @@ export default function PendingDeliveriesPage() {
       sales
         .filter(
           (s) =>
-            s.statusPedido === OrderStatus.PENDING ||
-            s.statusPedido === OrderStatus.CONFIRMED ||
-            s.statusPedido === OrderStatus.SHIPPED
+            s.statusPedido === OrderStatus.PENDENTE ||
+            s.statusPedido === OrderStatus.CONFIRMADA ||
+            s.statusPedido === OrderStatus.ENVIADA
         )
         .map((s) => ({
           id: s.vendaId,
@@ -47,7 +47,7 @@ export default function PendingDeliveriesPage() {
           customerName: s.cliente?.nomeCliente ?? '—',
           fullAddress: formatAddress(s.endereco),
           productsSummary: productsSummary(s.itens),
-          status: s.statusPedido ?? OrderStatus.PENDING,
+          status: s.statusPedido ?? OrderStatus.PENDENTE,
         })),
     [sales]
   );
@@ -174,16 +174,16 @@ export default function PendingDeliveriesPage() {
                       <td className="px-6 py-4 text-center">
                         <span
                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            delivery.status === OrderStatus.SHIPPED
+                            delivery.status === OrderStatus.ENVIADA
                               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                              : delivery.status === OrderStatus.CONFIRMED
+                              : delivery.status === OrderStatus.CONFIRMADA
                               ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                               : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
                           }`}
                         >
-                          {delivery.status === OrderStatus.SHIPPED
+                          {delivery.status === OrderStatus.ENVIADA
                             ? 'Enviada'
-                            : delivery.status === OrderStatus.CONFIRMED
+                            : delivery.status === OrderStatus.CONFIRMADA
                             ? 'Confirmada'
                             : 'Pendente'}
                         </span>

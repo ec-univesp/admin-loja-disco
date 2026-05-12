@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { RecordStatus } from '@/shared/types';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
 import { useArtistsModel } from '@/app/inventory/model/artistsModel';
@@ -12,23 +13,10 @@ import Label from '@/shared/components/form/Label';
 import CurrencyInput from '@/shared/components/form/CurrencyInput';
 import MultiSelect from '@/shared/components/form/MultiSelect';
 import { formatBRL } from '@/shared/utils/currency';
-
-interface AddRecordFormData {
-  artistaNome: string;
-  generosMusicaisIds: number[];
-  album: string;
-  nacionalidade: string;
-  prensagem: string;
-  encarte: string;
-  gravadora: string;
-  anoLancamento: number;
-  anoPrensagem: number;
-  condicaoCapa: string;
-  condicaoDisco: string;
-  valorMercado: number;
-  custoDisco: number;
-  status: string;
-}
+import {
+  addRecordFormSchema,
+  type AddRecordFormInput,
+} from '@/shared/services/api/form-schemas';
 
 interface AddRecordFormProps {
   onSuccess?: () => void;
@@ -52,7 +40,8 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
     watch,
     control,
     formState: { errors },
-  } = useForm<AddRecordFormData>({
+  } = useForm<AddRecordFormInput>({
+    resolver: zodResolver(addRecordFormSchema),
     defaultValues: {
       artistaNome: '',
       generosMusicaisIds: [],
@@ -67,7 +56,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
       condicaoDisco: '',
       valorMercado: 0,
       custoDisco: 0,
-      status: RecordStatus.AVAILABLE,
+      status: RecordStatus.DISPONIVEL,
     },
   });
 
@@ -76,7 +65,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
   const margin = valorMercado - custoDisco;
   const marginPct = custoDisco > 0 ? ((margin / custoDisco) * 100).toFixed(1) : '0';
 
-  const onSubmit = async (data: AddRecordFormData) => {
+  const onSubmit = async (data: AddRecordFormInput) => {
     try {
       const nomeArtista = data.artistaNome.trim();
       const existingArtist = artists.find(
@@ -88,7 +77,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
         artistaId = existingArtist.artistaId;
       } else {
         const newArtist = await createArtist.mutateAsync({ nomeArtista });
-        if (newArtist.artistaId === undefined) throw new Error('Failed to create artist');
+        if (newArtist.artistaId === undefined) throw new Error('Falha ao cadastrar artista.');
         artistaId = newArtist.artistaId;
       }
 
@@ -215,12 +204,11 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
                     id="generosMusicaisIds"
                     value={field.value}
                     onChange={field.onChange}
-                    options={genres
-                      .filter((g) => g.generoMusicalId !== undefined)
-                      .map((g) => ({
-                        value: g.generoMusicalId as number,
-                        label: g.nomeGenero ?? '',
-                      }))}
+                    options={genres.flatMap((genre) =>
+                      genre.generoMusicalId === undefined
+                        ? []
+                        : [{ value: genre.generoMusicalId, label: genre.nomeGenero ?? '' }]
+                    )}
                     placeholder="Selecione um ou mais gêneros"
                     searchPlaceholder="Buscar gênero..."
                     emptyMessage="Nenhum gênero cadastrado."

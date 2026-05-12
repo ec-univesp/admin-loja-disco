@@ -85,16 +85,12 @@ function PurchasesContent() {
       Fornecedor: supplier,
       Data: date,
       Itens: items,
-      'Total (R$)': total.toFixed(2),
+      'Total (R$)': total,
     }));
 
   const handleExportToExcel = () => {
     const stamp = new Date().toISOString().slice(0, 10);
-    exportTableToExcel(
-      'Purchases',
-      rowsToExport() as Array<Record<string, unknown>>,
-      `purchases-${stamp}.xlsx`
-    );
+    exportTableToExcel('Purchases', rowsToExport(), `purchases-${stamp}.xlsx`);
   };
 
   return (

@@ -6,20 +6,29 @@ export interface ToastCall {
   description?: string;
 }
 
+type ToastSuccessFn = typeof toast.success;
+type ToastErrorFn = typeof toast.error;
+
 export function spyToast() {
   const calls: ToastCall[] = [];
   const originalSuccess = toast.success;
   const originalError = toast.error;
 
-  toast.success = ((message: string) => {
+  const successSpy: ToastSuccessFn = (...args) => {
+    const [message] = args;
     calls.push({ type: 'success', message: String(message) });
-    return 0 as unknown as ReturnType<typeof toast.success>;
-  }) as typeof toast.success;
+    return originalSuccess(...args);
+  };
 
-  toast.error = ((message: string, options?: { description?: string }) => {
-    calls.push({ type: 'error', message: String(message), description: options?.description });
-    return 0 as unknown as ReturnType<typeof toast.error>;
-  }) as typeof toast.error;
+  const errorSpy: ToastErrorFn = (...args) => {
+    const [message, options] = args;
+    const rawDescription = options?.description;
+    const description = typeof rawDescription === 'string' ? rawDescription : undefined;
+    calls.push({ type: 'error', message: String(message), description });
+    return originalError(...args);
+  };
+
+  Object.assign(toast, { success: successSpy, error: errorSpy });
 
   return {
     calls,
@@ -28,8 +37,7 @@ export function spyToast() {
       calls.length = 0;
     },
     restore: () => {
-      toast.success = originalSuccess;
-      toast.error = originalError;
+      Object.assign(toast, { success: originalSuccess, error: originalError });
     },
   };
 }

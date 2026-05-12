@@ -1,12 +1,7 @@
-export enum RecordStatus {
-  AVAILABLE = 'DISPONIVEL',
-  SOLD = 'VENDIDO',
-}
+import { orderStatusSchema, recordStatusSchema } from '@/shared/services/api/schemas';
 
-export enum OrderStatus {
-  PENDING = 'PENDENTE',
-  CONFIRMED = 'CONFIRMADA',
-  SHIPPED = 'ENVIADA',
-  DELIVERED = 'ENTREGUE',
-  CANCELLED = 'CANCELADA',
-}
+export const RecordStatus = recordStatusSchema.enum;
+export const OrderStatus = orderStatusSchema.enum;
+
+export type RecordStatus = (typeof RecordStatus)[keyof typeof RecordStatus];
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];

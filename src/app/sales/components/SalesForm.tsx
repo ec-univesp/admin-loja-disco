@@ -1,7 +1,8 @@
 'use client';
 
 import React, { FC, useMemo, useRef, useState } from 'react';
-import { useForm, Controller, useWatch } from 'react-hook-form';
+import { useForm, Controller, useWatch, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Calendar } from 'lucide-react';
 import Form from '@/shared/components/form/Form';
 import Label from '@/shared/components/form/Label';
@@ -14,36 +15,37 @@ import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useSalesChannelsModel } from '@/app/sales/model/salesChannelsModel';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
 import { useSalesModel } from '@/app/sales/model/salesModel';
+import { saleFormSchema, type SaleFormInput } from '@/shared/services/api/form-schemas';
 import CustomerAddressModal from './CustomerAddressModal';
 import SalesChannelModal from './SalesChannelModal';
-
-interface SaleItemForm {
-  discoId: string;
-  precoVenda: number;
-}
-
-interface SalesFormData {
-  clienteId: string;
-  enderecoId: string;
-  dataVenda: string;
-  frete: number;
-  pagamento: string;
-  canalVendaId: string;
-  custosAdicionais: number;
-  statusPedido: string;
-  observacoes: string;
-}
 
 interface SalesFormProps {
   onSuccess?: () => void;
 }
+
+const errorClass = 'mt-1 block text-sm text-red-500';
+const selectClass =
+  'h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white';
+
+const buildDefaultValues = (): SaleFormInput => ({
+  clienteId: '',
+  enderecoId: '',
+  dataVenda: new Date().toISOString().slice(0, 10),
+  frete: 0,
+  pagamento: 'PIX',
+  canalVendaId: '',
+  custosAdicionais: 0,
+  statusPedido: OrderStatus.PENDENTE,
+  observacoes: '',
+  itens: [{ discoId: '', precoVenda: 0 }],
+});
 
 const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const { create: createSale } = useSalesModel();
   const { update: updateRecord, listAvailable: recordsList } = useRecordsModel();
   const { list: customersList } = useCustomersModel();
   const { list: salesChannelsList } = useSalesChannelsModel();
-  const isSubmitting = createSale.isPending;
+  const isMutating = createSale.isPending;
   const records = useMemo(() => recordsList.data ?? [], [recordsList.data]);
   const customers = useMemo(() => customersList.data ?? [], [customersList.data]);
   const salesChannels = useMemo(
@@ -55,11 +57,10 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
   const [editCustomerId, setEditCustomerId] = useState<number | undefined>();
   const [showChannelModal, setShowChannelModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [items, setItems] = useState<SaleItemForm[]>([{ discoId: '', precoVenda: 0 }]);
   const dataVendaRef = useRef<HTMLInputElement | null>(null);
 
   const availableRecords = useMemo(
-    () => records.filter((d) => d.status === RecordStatus.AVAILABLE || !d.status),
+    () => records.filter((record) => record.status === RecordStatus.DISPONIVEL || !record.status),
     [records]
   );
 
@@ -69,125 +70,117 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
     handleSubmit,
     reset,
     setValue,
-    formState: { errors },
-  } = useForm<SalesFormData>({
-    defaultValues: {
-      clienteId: '',
-      enderecoId: '',
-      dataVenda: new Date().toISOString().split('T')[0],
-      frete: 0,
-      pagamento: 'PIX',
-      canalVendaId: '',
-      custosAdicionais: 0,
-      statusPedido: OrderStatus.PENDING,
-      observacoes: '',
-    },
+    formState: { errors, isSubmitting },
+  } = useForm<SaleFormInput>({
+    resolver: zodResolver(saleFormSchema),
+    defaultValues: buildDefaultValues(),
   });
+
+  const { fields, append, remove } = useFieldArray({ control, name: 'itens' });
 
   const clienteId = useWatch({ control, name: 'clienteId' });
   const frete = useWatch({ control, name: 'frete' });
   const custosAdicionais = useWatch({ control, name: 'custosAdicionais' });
+  const watchedItems = useWatch({ control, name: 'itens' });
 
   const customerAddresses = useMemo(() => {
     if (!clienteId) return [];
-    const selectedCustomer = customers.find((c) => String(c.clienteId) === clienteId);
+    const selectedCustomer = customers.find((customer) => String(customer.clienteId) === clienteId);
     return selectedCustomer?.enderecos ?? [];
   }, [clienteId, customers]);
 
-  const itemsTotal = items.reduce((acc, item) => acc + Number(item.precoVenda || 0), 0);
+  const itemsTotal = (watchedItems ?? []).reduce(
+    (acc, item) => acc + Number(item?.precoVenda ?? 0),
+    0
+  );
   const totalValue = itemsTotal + Number(frete || 0) + Number(custosAdicionais || 0);
 
-  const addItem = () => setItems((prev) => [...prev, { discoId: '', precoVenda: 0 }]);
-  const removeItem = (index: number) => setItems((prev) => prev.filter((_, i) => i !== index));
-  const updateItem = (index: number, field: keyof SaleItemForm, value: string | number) =>
-    setItems((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
-
-  const handleFormSubmit = async (data: SalesFormData) => {
-    const validItems = items.filter((item) => item.discoId);
-    if (validItems.length === 0) return;
-
-    const selectedCustomer = customers.find((c) => String(c.clienteId) === data.clienteId);
+  const onSubmit = async (formInput: SaleFormInput) => {
+    const selectedCustomer = customers.find(
+      (customer) => String(customer.clienteId) === formInput.clienteId
+    );
     const selectedAddress = customerAddresses.find(
-      (e) => String(e.enderecoId) === data.enderecoId
+      (address) => String(address.enderecoId) === formInput.enderecoId
     );
     const selectedChannel = salesChannels.find(
-      (c) => String(c.idCanalVenda) === data.canalVendaId
+      (channel) => String(channel.idCanalVenda) === formInput.canalVendaId
     );
 
-    try {
-      await createSale.mutateAsync({
-        cliente: selectedCustomer
-          ? {
-              clienteId: selectedCustomer.clienteId,
-              nomeCliente: selectedCustomer.nomeCliente,
-              idade: selectedCustomer.idade,
-              sexo: selectedCustomer.sexo,
-            }
-          : undefined,
-        endereco: selectedAddress
-          ? {
-              enderecoId: selectedAddress.enderecoId,
-              logradouro: selectedAddress.logradouro,
-              numero: selectedAddress.numero,
-              cidade: selectedAddress.cidade,
-              estado: selectedAddress.estado,
-              cep: selectedAddress.cep,
-            }
-          : undefined,
-        dataVenda: data.dataVenda,
-        frete: Number(data.frete),
-        valorTotal: totalValue,
-        pagamento: data.pagamento,
-        canalVenda: selectedChannel
-          ? {
-              idCanalVenda: selectedChannel.idCanalVenda,
-              nomeCanalVenda: selectedChannel.nomeCanalVenda,
-            }
-          : undefined,
-        custosAdicionais: Number(data.custosAdicionais),
-        statusPedido: data.statusPedido,
-        itens: validItems.map((item) => {
-          const record = records.find((d) => String(d.discoId) === item.discoId);
-          return {
-            discoId: Number(item.discoId),
-            nomeDisco: record?.album ?? '',
-            nomeArtista: record?.artista?.nomeArtista ?? '',
-            precoVenda: Number(item.precoVenda),
-          };
-        }),
-      });
+    await createSale.mutateAsync({
+      cliente: selectedCustomer
+        ? {
+            clienteId: selectedCustomer.clienteId,
+            nomeCliente: selectedCustomer.nomeCliente,
+            idade: selectedCustomer.idade,
+            sexo: selectedCustomer.sexo,
+          }
+        : undefined,
+      endereco: selectedAddress
+        ? {
+            enderecoId: selectedAddress.enderecoId,
+            logradouro: selectedAddress.logradouro,
+            numero: selectedAddress.numero,
+            cidade: selectedAddress.cidade,
+            estado: selectedAddress.estado,
+            cep: selectedAddress.cep,
+          }
+        : undefined,
+      dataVenda: formInput.dataVenda,
+      frete: formInput.frete,
+      valorTotal: totalValue,
+      pagamento: formInput.pagamento,
+      canalVenda: selectedChannel
+        ? {
+            idCanalVenda: selectedChannel.idCanalVenda,
+            nomeCanalVenda: selectedChannel.nomeCanalVenda,
+          }
+        : undefined,
+      custosAdicionais: formInput.custosAdicionais,
+      statusPedido: formInput.statusPedido,
+      itens: formInput.itens.map((item) => {
+        const sourceRecord = records.find(
+          (record) => String(record.discoId) === item.discoId
+        );
+        return {
+          discoId: Number(item.discoId),
+          nomeDisco: sourceRecord?.album ?? '',
+          nomeArtista: sourceRecord?.artista?.nomeArtista ?? '',
+          precoVenda: item.precoVenda,
+        };
+      }),
+    });
 
-      await Promise.all(
-        validItems.map((item) => {
-          const record = records.find((d) => String(d.discoId) === item.discoId);
-          if (!record?.discoId) return Promise.resolve();
-          return updateRecord.mutateAsync({
-            ...record,
-            discoId: record.discoId,
-            status: RecordStatus.SOLD,
-          });
-        })
-      );
+    await Promise.all(
+      formInput.itens.map((item) => {
+        const sourceRecord = records.find(
+          (record) => String(record.discoId) === item.discoId
+        );
+        if (!sourceRecord?.discoId) return Promise.resolve();
+        return updateRecord.mutateAsync({
+          ...sourceRecord,
+          discoId: sourceRecord.discoId,
+          status: RecordStatus.VENDIDO,
+        });
+      })
+    );
 
-      reset();
-      setItems([{ discoId: '', precoVenda: 0 }]);
-      setSuccessMessage('Venda registrada com sucesso!');
-      setTimeout(() => setSuccessMessage(''), 3000);
-      onSuccess?.();
-    } catch (err) {
-      console.error('Error creating sale:', err);
-    }
+    reset(buildDefaultValues());
+    setSuccessMessage('Venda registrada com sucesso!');
+    setTimeout(() => setSuccessMessage(''), 3000);
+    onSuccess?.();
   };
 
   return (
     <>
       {successMessage && (
         <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-900/20">
-          <p className="text-sm font-medium text-green-900 dark:text-green-200">✓ {successMessage}</p>
+          <p className="text-sm font-medium text-green-900 dark:text-green-200">
+            ✓ {successMessage}
+          </p>
         </div>
       )}
 
-      <Form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      <Form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -224,11 +217,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="clienteId">Selecione um Cliente *</Label>
-              <select
-                id="clienteId"
-                {...register('clienteId', { required: 'Cliente é obrigatório' })}
-                className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
+              <select id="clienteId" {...register('clienteId')} className={selectClass}>
                 <option value="">-- Selecione --</option>
                 {customers.map((customer) => (
                   <option key={customer.clienteId} value={customer.clienteId ?? ''}>
@@ -237,17 +226,15 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   </option>
                 ))}
               </select>
-              {errors.clienteId && (
-                <span className="mt-1 text-sm text-red-500">{errors.clienteId.message}</span>
-              )}
+              {errors.clienteId && <span className={errorClass}>{errors.clienteId.message}</span>}
             </div>
 
             <div>
               <Label htmlFor="enderecoId">Endereço de Entrega *</Label>
               <select
                 id="enderecoId"
-                {...register('enderecoId', { required: 'Endereço é obrigatório' })}
-                className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                {...register('enderecoId')}
+                className={selectClass}
                 disabled={!clienteId}
               >
                 <option value="">
@@ -259,9 +246,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   </option>
                 ))}
               </select>
-              {errors.enderecoId && (
-                <span className="mt-1 text-sm text-red-500">{errors.enderecoId.message}</span>
-              )}
+              {errors.enderecoId && <span className={errorClass}>{errors.enderecoId.message}</span>}
             </div>
           </div>
         </div>
@@ -269,29 +254,35 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Discos</h3>
-            <Button size="sm" variant="primary" type="button" onClick={addItem}>
+            <Button
+              size="sm"
+              variant="primary"
+              type="button"
+              onClick={() => append({ discoId: '', precoVenda: 0 })}
+            >
               + Adicionar Disco
             </Button>
           </div>
 
           <div className="space-y-4">
-            {items.map((item, index) => {
+            {fields.map((fieldItem, index) => {
+              const currentDiscoId = watchedItems?.[index]?.discoId ?? '';
               const selectedRecord = availableRecords.find(
-                (d) => String(d.discoId) === item.discoId
+                (record) => String(record.discoId) === currentDiscoId
               );
               return (
                 <div
-                  key={index}
+                  key={fieldItem.id}
                   className="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900"
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Disco {index + 1}
                     </span>
-                    {items.length > 1 && (
+                    {fields.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeItem(index)}
+                        onClick={() => remove(index)}
                         className="text-sm text-red-500 hover:text-red-700"
                       >
                         Remover
@@ -304,9 +295,8 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                       <Label htmlFor={`disco-${index}`}>Selecione um Disco *</Label>
                       <select
                         id={`disco-${index}`}
-                        value={item.discoId}
-                        onChange={(e) => updateItem(index, 'discoId', e.target.value)}
-                        className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                        {...register(`itens.${index}.discoId`)}
+                        className={selectClass}
                       >
                         <option value="">-- Selecione --</option>
                         {availableRecords.map((record) => (
@@ -316,15 +306,31 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                           </option>
                         ))}
                       </select>
+                      {errors.itens?.[index]?.discoId && (
+                        <span className={errorClass}>
+                          {errors.itens[index]?.discoId?.message}
+                        </span>
+                      )}
                     </div>
 
                     <div>
                       <Label htmlFor={`preco-${index}`}>Preço de Venda *</Label>
-                      <CurrencyInput
-                        id={`preco-${index}`}
-                        value={item.precoVenda}
-                        onChange={(val) => updateItem(index, 'precoVenda', val)}
+                      <Controller
+                        control={control}
+                        name={`itens.${index}.precoVenda`}
+                        render={({ field }) => (
+                          <CurrencyInput
+                            id={`preco-${index}`}
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        )}
                       />
+                      {errors.itens?.[index]?.precoVenda && (
+                        <span className={errorClass}>
+                          {errors.itens[index]?.precoVenda?.message}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -347,6 +353,9 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                 </div>
               );
             })}
+            {errors.itens?.root && (
+              <span className={errorClass}>{errors.itens.root.message}</span>
+            )}
           </div>
         </div>
 
@@ -363,10 +372,10 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   <input
                     type="date"
                     id="dataVenda"
-                    {...register('dataVenda', { required: 'Data é obrigatória' })}
-                    ref={(el) => {
-                      register('dataVenda').ref(el);
-                      dataVendaRef.current = el;
+                    {...register('dataVenda')}
+                    ref={(inputElement) => {
+                      register('dataVenda').ref(inputElement);
+                      dataVendaRef.current = inputElement;
                     }}
                     className={`h-11 w-full rounded-lg border bg-white px-4 py-2.5 pr-11 text-sm shadow-theme-xs focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 ${
                       errors.dataVenda
@@ -378,19 +387,17 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     type="button"
                     aria-label="Abrir calendário"
                     onClick={() => {
-                      const input = dataVendaRef.current;
-                      if (!input) return;
-                      if (typeof input.showPicker === 'function') input.showPicker();
-                      else input.focus();
+                      const inputElement = dataVendaRef.current;
+                      if (!inputElement) return;
+                      if (typeof inputElement.showPicker === 'function') inputElement.showPicker();
+                      else inputElement.focus();
                     }}
                     className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-gray-500 transition-colors hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-400"
                   >
                     <Calendar size={18} strokeWidth={2} />
                   </button>
                 </div>
-                {errors.dataVenda && (
-                  <span className="mt-1 text-sm text-red-500">{errors.dataVenda.message}</span>
-                )}
+                {errors.dataVenda && <span className={errorClass}>{errors.dataVenda.message}</span>}
               </div>
 
               <div>
@@ -402,17 +409,14 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     <CurrencyInput id="frete" value={field.value} onChange={field.onChange} />
                   )}
                 />
+                {errors.frete && <span className={errorClass}>{errors.frete.message}</span>}
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="pagamento">Forma de Pagamento</Label>
-                <select
-                  id="pagamento"
-                  {...register('pagamento')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                >
+                <Label htmlFor="pagamento">Forma de Pagamento *</Label>
+                <select id="pagamento" {...register('pagamento')} className={selectClass}>
                   <option value="PIX">PIX</option>
                   <option value="Cartão Crédito">Cartão Crédito</option>
                   <option value="Cartão Débito">Cartão Débito</option>
@@ -420,11 +424,12 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   <option value="Dinheiro">Dinheiro</option>
                   <option value="Transferência">Transferência</option>
                 </select>
+                {errors.pagamento && <span className={errorClass}>{errors.pagamento.message}</span>}
               </div>
 
               <div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="canalVendaId">Canal de Venda</Label>
+                  <Label htmlFor="canalVendaId">Canal de Venda *</Label>
                   <button
                     type="button"
                     className="text-brand-600 dark:text-brand-400 text-xs font-medium hover:underline"
@@ -436,7 +441,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                 <select
                   id="canalVendaId"
                   {...register('canalVendaId')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  className={selectClass}
                 >
                   <option value="">-- Selecione --</option>
                   {salesChannels.map((channel) => (
@@ -445,6 +450,9 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     </option>
                   ))}
                 </select>
+                {errors.canalVendaId && (
+                  <span className={errorClass}>{errors.canalVendaId.message}</span>
+                )}
               </div>
             </div>
 
@@ -462,20 +470,23 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                     />
                   )}
                 />
+                {errors.custosAdicionais && (
+                  <span className={errorClass}>{errors.custosAdicionais.message}</span>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="statusPedido">Status do Pedido</Label>
+                <Label htmlFor="statusPedido">Status do Pedido *</Label>
                 <select
                   id="statusPedido"
                   {...register('statusPedido')}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  className={selectClass}
                 >
-                  <option value={OrderStatus.PENDING}>Pendente</option>
-                  <option value={OrderStatus.CONFIRMED}>Confirmada</option>
-                  <option value={OrderStatus.SHIPPED}>Enviada</option>
-                  <option value={OrderStatus.DELIVERED}>Entregue</option>
-                  <option value={OrderStatus.CANCELLED}>Cancelada</option>
+                  <option value={OrderStatus.PENDENTE}>Pendente</option>
+                  <option value={OrderStatus.CONFIRMADA}>Confirmada</option>
+                  <option value={OrderStatus.ENVIADA}>Enviada</option>
+                  <option value={OrderStatus.ENTREGUE}>Entregue</option>
+                  <option value={OrderStatus.CANCELADA}>Cancelada</option>
                 </select>
               </div>
             </div>
@@ -498,7 +509,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
               <TextArea
                 placeholder="Adicionar observações sobre a venda..."
                 rows={4}
-                value={value}
+                value={value ?? ''}
                 onChange={onChange}
               />
             )}
@@ -506,17 +517,19 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
         </div>
 
         <div className="flex gap-4">
-          <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            isLoading={isMutating || isSubmitting}
+          >
             Registrar Venda
           </Button>
           <Button
             type="reset"
             variant="outline"
             fullWidth
-            onClick={() => {
-              reset();
-              setItems([{ discoId: '', precoVenda: 0 }]);
-            }}
+            onClick={() => reset(buildDefaultValues())}
           >
             Limpar
           </Button>
@@ -527,16 +540,16 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
         isOpen={showCustomerModal}
         onClose={() => setShowCustomerModal(false)}
         customerId={editCustomerId}
-        onSaved={(cId, eId) => {
-          setValue('clienteId', String(cId));
-          if (eId !== null) setValue('enderecoId', String(eId));
+        onSaved={(savedCustomerId, savedAddressId) => {
+          setValue('clienteId', String(savedCustomerId));
+          if (savedAddressId !== null) setValue('enderecoId', String(savedAddressId));
         }}
       />
 
       <SalesChannelModal
         isOpen={showChannelModal}
         onClose={() => setShowChannelModal(false)}
-        onCreated={(id) => setValue('canalVendaId', String(id))}
+        onCreated={(channelId) => setValue('canalVendaId', String(channelId))}
       />
     </>
   );
