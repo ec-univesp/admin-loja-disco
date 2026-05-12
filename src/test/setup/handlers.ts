@@ -51,7 +51,7 @@ export const handlers = [
     const artistaId = body.artistaId ?? nextId('artists', 'artistaId');
     const created: ArtistDTO = { ...body, artistaId };
     db.artists.push(created);
-    return HttpResponse.json(`Artista ${created.nomeArtista} criado.`);
+    return new HttpResponse(null, { status: 201 });
   }),
   http.put(buildUrl('/artistas/atualizar'), async ({ request }) => {
     const body: ArtistDTO = await parseBody(request, artistSchema);
@@ -65,7 +65,7 @@ export const handlers = [
     const index = db.artists.findIndex((candidate) => candidate.artistaId === artistId);
     if (index < 0) return notFound();
     db.artists.splice(index, 1);
-    return HttpResponse.json('Removido.');
+    return new HttpResponse(null, { status: 200 });
   }),
 
   // ===== Generos Musicais =====
@@ -80,7 +80,7 @@ export const handlers = [
     const generoMusicalId = body.generoMusicalId ?? nextId('genres', 'generoMusicalId');
     const created: MusicGenreDTO = { ...body, generoMusicalId };
     db.genres.push(created);
-    return HttpResponse.json(`Genero ${created.nomeGenero} criado.`);
+    return new HttpResponse(null, { status: 201 });
   }),
   http.put(buildUrl('/generos-musicais/atualizar'), async ({ request }) => {
     const body: MusicGenreDTO = await parseBody(request, musicGenreSchema);
@@ -96,7 +96,7 @@ export const handlers = [
     const index = db.genres.findIndex((candidate) => candidate.generoMusicalId === genreId);
     if (index < 0) return notFound();
     db.genres.splice(index, 1);
-    return HttpResponse.json('Removido.');
+    return new HttpResponse(null, { status: 200 });
   }),
 
   // ===== Enderecos =====
@@ -111,7 +111,7 @@ export const handlers = [
     const enderecoId = body.enderecoId ?? nextId('addresses', 'enderecoId');
     const created: AddressDTO = { ...body, enderecoId };
     db.addresses.push(created);
-    return HttpResponse.json('Endereco criado.');
+    return new HttpResponse(null, { status: 201 });
   }),
   http.put(buildUrl('/enderecos/atualizar'), async ({ request }) => {
     const body: AddressDTO = await parseBody(request, addressSchema);
@@ -127,7 +127,7 @@ export const handlers = [
     const index = db.addresses.findIndex((candidate) => candidate.enderecoId === addressId);
     if (index < 0) return notFound();
     db.addresses.splice(index, 1);
-    return HttpResponse.json('Removido.');
+    return new HttpResponse(null, { status: 200 });
   }),
 
   // ===== Clientes =====
@@ -142,7 +142,7 @@ export const handlers = [
     const clienteId = body.clienteId ?? nextId('customers', 'clienteId');
     const created: CustomerDTO = { ...body, clienteId };
     db.customers.push(created);
-    return HttpResponse.json(`Cliente ${created.nomeCliente} criado.`);
+    return new HttpResponse(null, { status: 201 });
   }),
   http.put(buildUrl('/clientes/atualizar'), async ({ request }) => {
     const body: CustomerDTO = await parseBody(request, customerSchema);
@@ -158,7 +158,7 @@ export const handlers = [
     const index = db.customers.findIndex((candidate) => candidate.clienteId === customerId);
     if (index < 0) return notFound();
     db.customers.splice(index, 1);
-    return HttpResponse.json('Removido.');
+    return new HttpResponse(null, { status: 200 });
   }),
 
   // ===== Canais de Venda =====
@@ -173,7 +173,7 @@ export const handlers = [
     const canalVendaId = body.canalVendaId ?? nextId('channels', 'canalVendaId');
     const created: SalesChannelDTO = { ...body, canalVendaId };
     db.channels.push(created);
-    return HttpResponse.json(`Canal ${created.nomeCanalVenda} criado.`);
+    return new HttpResponse(null, { status: 201 });
   }),
   http.put(buildUrl('/canais-venda/atualizar'), async ({ request }) => {
     const body: SalesChannelDTO = await parseBody(request, salesChannelSchema);
@@ -189,7 +189,7 @@ export const handlers = [
     const index = db.channels.findIndex((candidate) => candidate.canalVendaId === channelId);
     if (index < 0) return notFound();
     db.channels.splice(index, 1);
-    return HttpResponse.json('Removido.');
+    return new HttpResponse(null, { status: 200 });
   }),
 
   // ===== Discos =====
@@ -219,7 +219,7 @@ export const handlers = [
     const discoId = body.discoId ?? nextId('records', 'discoId');
     const created: RecordDTO = { ...body, discoId };
     db.records.push(created);
-    return HttpResponse.json(`Disco ${created.album} criado.`);
+    return new HttpResponse(null, { status: 201 });
   }),
   http.put(buildUrl('/discos/atualizar'), async ({ request }) => {
     const body: RecordDTO = await parseBody(request, recordSchema);
@@ -233,7 +233,7 @@ export const handlers = [
     const index = db.records.findIndex((candidate) => candidate.discoId === recordId);
     if (index < 0) return notFound();
     db.records.splice(index, 1);
-    return HttpResponse.json('Removido.');
+    return new HttpResponse(null, { status: 200 });
   }),
 
   // ===== Vendas =====
@@ -248,7 +248,7 @@ export const handlers = [
     const saleId = body.vendaId ?? body.vendasId ?? nextId('sales', 'vendaId');
     const created: SaleDTO = saleResponseSchema.parse({ ...body, vendaId: saleId });
     db.sales.push(created);
-    return HttpResponse.json('Venda criada.');
+    return new HttpResponse(null, { status: 201 });
   }),
   http.put(buildUrl('/vendas/atualizar'), async ({ request }) => {
     const body = await parseBody(request, salePayloadSchema);
@@ -263,7 +263,7 @@ export const handlers = [
     const index = db.sales.findIndex((candidate) => candidate.vendaId === saleId);
     if (index < 0) return notFound();
     db.sales.splice(index, 1);
-    return HttpResponse.json('Removido.');
+    return new HttpResponse(null, { status: 200 });
   }),
 
   // ===== Compras =====
@@ -278,7 +278,7 @@ export const handlers = [
     const compraId = body.compraId ?? nextId('purchases', 'compraId');
     const created: PurchaseDTO = { ...body, compraId };
     db.purchases.push(created);
-    return HttpResponse.json('Compra criada.');
+    return new HttpResponse(null, { status: 201 });
   }),
   http.put(buildUrl('/compras/atualizar'), async ({ request }) => {
     const body: PurchaseDTO = await parseBody(request, purchaseSchema);
@@ -292,7 +292,7 @@ export const handlers = [
     const index = db.purchases.findIndex((candidate) => candidate.compraId === purchaseId);
     if (index < 0) return notFound();
     db.purchases.splice(index, 1);
-    return HttpResponse.json('Removido.');
+    return new HttpResponse(null, { status: 200 });
   }),
 
   // ===== Relatorios =====

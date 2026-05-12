@@ -4,7 +4,7 @@ import { saleResponseSchema } from './schemas';
 import type { SalePayload } from './types';
 
 const BASE = '/vendas';
-const messageSchema = z.string();
+const messageSchema = z.unknown();
 const saleListSchema = z.array(saleResponseSchema);
 
 export const salesService = {

@@ -4,7 +4,7 @@ import { purchaseSchema } from './schemas';
 import type { PurchasePayload } from './types';
 
 const BASE = '/compras';
-const messageSchema = z.string();
+const messageSchema = z.unknown();
 const purchaseListSchema = z.array(purchaseSchema);
 
 export const purchasesService = {

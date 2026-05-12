@@ -110,4 +110,52 @@ runSequentialTests(async () => {
     );
     await assert.rejects(() => apiClient.get('/invalido', okSchema));
   });
+
+  await test('request converte null em campos opcionais para undefined antes do parse', async () => {
+    const schemaWithOptionals = z.object({
+      requiredField: z.string(),
+      optionalNumber: z.number().optional(),
+      optionalNested: z.object({ inner: z.string().optional() }).optional(),
+    });
+    server.use(
+      http.get('http://localhost:8080/com-nulls', () =>
+        HttpResponse.json({
+          requiredField: 'ok',
+          optionalNumber: null,
+          optionalNested: { inner: null },
+        })
+      )
+    );
+    const result = await apiClient.get('/com-nulls', schemaWithOptionals);
+    assert.strictEqual(result.requiredField, 'ok');
+    assert.strictEqual(result.optionalNumber, undefined);
+    assert.deepStrictEqual(result.optionalNested, {});
+  });
+
+  await test('request aceita body vazio em response (POST/DELETE pattern do backend)', async () => {
+    server.use(
+      http.post('http://localhost:8080/criar-vazio', () => new HttpResponse(null, { status: 201 })),
+      http.delete('http://localhost:8080/excluir-vazio', () => new HttpResponse(null, { status: 200 }))
+    );
+    const createResult = await apiClient.post('/criar-vazio', z.unknown(), { name: 'X' });
+    assert.strictEqual(createResult, undefined);
+    const deleteResult = await apiClient.delete('/excluir-vazio', z.unknown());
+    assert.strictEqual(deleteResult, undefined);
+  });
+
+  await test('request preserva null dentro de arrays (apos stripNulls vira [])', async () => {
+    const listSchema = z.array(z.object({ id: z.number(), name: z.string().optional() }));
+    server.use(
+      http.get('http://localhost:8080/lista-com-null', () =>
+        HttpResponse.json([
+          { id: 1, name: null },
+          { id: 2, name: 'real' },
+        ])
+      )
+    );
+    const result = await apiClient.get('/lista-com-null', listSchema);
+    assert.strictEqual(result.length, 2);
+    assert.strictEqual(result[0].name, undefined);
+    assert.strictEqual(result[1].name, 'real');
+  });
 });

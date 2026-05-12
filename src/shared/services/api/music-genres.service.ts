@@ -4,7 +4,7 @@ import { musicGenreSchema } from './schemas';
 import type { MusicGenrePayload } from './types';
 
 const BASE = '/generos-musicais';
-const messageSchema = z.string();
+const messageSchema = z.unknown();
 const genreListSchema = z.array(musicGenreSchema);
 
 export const genresService = {

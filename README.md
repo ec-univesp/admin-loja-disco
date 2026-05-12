@@ -19,9 +19,16 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-15_files_/_107_cases-2EA44F?logo=testinglibrary&logoColor=white" alt="Tests" />
-  <img src="https://img.shields.io/badge/statements-93%25-2EA44F" alt="Statements 93%" />
-  <img src="https://img.shields.io/badge/branches-96%25-2EA44F" alt="Branches 96%" />
+  <img src="https://img.shields.io/badge/Poku-4-7C3AED" alt="Poku 4" />
+  <img src="https://img.shields.io/badge/@pokujs%2Freact-1-7C3AED" alt="@pokujs/react 1" />
+  <img src="https://img.shields.io/badge/happy--dom-test_env-FF7A59" alt="happy-dom" />
+  <img src="https://img.shields.io/badge/monocart-coverage-2EA44F" alt="monocart coverage" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/tests-18_files_/_149_cases-2EA44F?logo=testinglibrary&logoColor=white" alt="Tests" />
+  <img src="https://img.shields.io/badge/statements-94%25-2EA44F" alt="Statements 94%" />
+  <img src="https://img.shields.io/badge/branches-97%25-2EA44F" alt="Branches 97%" />
   <img src="https://img.shields.io/badge/functions-98%25-2EA44F" alt="Functions 98%" />
   <img src="https://img.shields.io/badge/zero_any_/_zero_as-2EA44F" alt="Zero any / Zero as" />
 </p>

@@ -1,6 +1,8 @@
 import { test, assert } from 'poku';
 import { runSequentialTests } from '@/test/setup/run';
+import { http, HttpResponse } from 'msw';
 import { setupApiMock } from '@/test/setup/lifecycle';
+import { server } from '@/test/setup/server';
 import { db } from '@/test/setup/db';
 import { makeRecord } from '@/test/factories';
 import { recordsService } from '@/shared/services/api';
@@ -87,5 +89,31 @@ runSequentialTests(async () => {
     db.records.push(makeRecord({ discoId: 1 }));
     await recordsService.delete(1);
     assert.strictEqual(db.records.length, 0);
+  });
+
+  await test('recordsService.list aceita campos null vindos do backend (Spring Optional vazio)', async () => {
+    server.use(
+      http.get('http://localhost:8080/discos/lista', () =>
+        HttpResponse.json([
+          {
+            discoId: 99,
+            album: 'Vazio',
+            artista: { artistaId: 1, nomeArtista: 'X' },
+            encarte: null,
+            custoDisco: null,
+            gravadora: null,
+            condicaoDisco: null,
+            generosMusicais: null,
+            status: 'DISPONIVEL',
+          },
+        ])
+      )
+    );
+    const list = await recordsService.list();
+    assert.strictEqual(list.length, 1);
+    assert.strictEqual(list[0].album, 'Vazio');
+    assert.strictEqual(list[0].encarte, undefined);
+    assert.strictEqual(list[0].custoDisco, undefined);
+    assert.strictEqual(list[0].generosMusicais, undefined);
   });
 });

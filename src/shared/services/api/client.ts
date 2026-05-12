@@ -41,6 +41,20 @@ const safeJson = (text: string): unknown => {
   }
 };
 
+const stripNulls = (value: unknown): unknown => {
+  if (value === null) return undefined;
+  if (Array.isArray(value)) return value.map(stripNulls);
+  if (value && typeof value === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(value)) {
+      const normalized = stripNulls(entry);
+      if (normalized !== undefined) result[key] = normalized;
+    }
+    return result;
+  }
+  return value;
+};
+
 export async function request<Schema extends z.ZodTypeAny>(
   path: string,
   schema: Schema,
@@ -66,7 +80,7 @@ export async function request<Schema extends z.ZodTypeAny>(
     );
   }
 
-  return schema.parse(rawPayload);
+  return schema.parse(stripNulls(rawPayload));
 }
 
 export const apiClient = {

@@ -4,7 +4,7 @@ import { addressSchema } from './schemas';
 import type { AddressPayload } from './types';
 
 const BASE = '/enderecos';
-const messageSchema = z.string();
+const messageSchema = z.unknown();
 const addressListSchema = z.array(addressSchema);
 
 export const addressesService = {

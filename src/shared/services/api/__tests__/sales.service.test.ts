@@ -1,6 +1,8 @@
 import { test, assert } from 'poku';
 import { runSequentialTests } from '@/test/setup/run';
+import { http, HttpResponse } from 'msw';
 import { setupApiMock } from '@/test/setup/lifecycle';
+import { server } from '@/test/setup/server';
 import { db } from '@/test/setup/db';
 import { makeSale, makeSaleItem } from '@/test/factories';
 import { salesService } from '@/shared/services/api';
@@ -56,5 +58,33 @@ runSequentialTests(async () => {
     db.sales.push(makeSale({ vendaId: 1 }));
     await salesService.delete(1);
     assert.strictEqual(db.sales.length, 0);
+  });
+
+  await test('salesService.list aceita custosAdicionais e demais campos null (formato real do backend)', async () => {
+    server.use(
+      http.get('http://localhost:8080/vendas/lista', () =>
+        HttpResponse.json([
+          {
+            vendaId: 1,
+            cliente: { clienteId: 1, nomeCliente: 'X', idade: null, sexo: null, enderecos: null },
+            dataVenda: '2026-05-01',
+            endereco: null,
+            frete: null,
+            valorTotal: 100,
+            pagamento: 'PIX',
+            canalVenda: { idCanalVenda: 1, nomeCanalVenda: 'Site' },
+            custosAdicionais: null,
+            statusPedido: 'PENDENTE',
+            itens: [{ id: 1, discoId: 2, nomeDisco: 'X', nomeArtista: 'Y', precoVenda: 100 }],
+          },
+        ])
+      )
+    );
+    const list = await salesService.list();
+    assert.strictEqual(list.length, 1);
+    assert.strictEqual(list[0].custosAdicionais, undefined);
+    assert.strictEqual(list[0].frete, undefined);
+    assert.strictEqual(list[0].endereco, undefined);
+    assert.strictEqual(list[0].itens?.[0].precoVenda, 100);
   });
 });

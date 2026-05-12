@@ -1,8 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { reportsService, type ReportFilters } from '@/shared/services/api';
 
-export function useReportsModel(filters: ReportFilters) {
-  const isAllMonths = filters.ano !== undefined && filters.mes === undefined;
+type ReportsModelFilters = {
+  ano: number;
+  mes?: number;
+};
+
+export function useReportsModel(filters: ReportsModelFilters) {
+  const isAllMonths = filters.mes === undefined;
 
   const fetchAllMonths = async <T>(
     fn: (f: ReportFilters, signal?: AbortSignal) => Promise<T[]>,
@@ -15,28 +20,27 @@ export function useReportsModel(filters: ReportFilters) {
     return results.flat();
   };
 
+  const callWithMonth = <T>(
+    fn: (f: ReportFilters, signal?: AbortSignal) => Promise<T[]>,
+    signal?: AbortSignal
+  ): Promise<T[]> => {
+    if (isAllMonths) return fetchAllMonths(fn, signal);
+    return fn({ ano: filters.ano, mes: filters.mes as number }, signal);
+  };
+
   const summary = useQuery({
     queryKey: ['reports', 'summary', filters],
-    queryFn: ({ signal }) =>
-      isAllMonths
-        ? fetchAllMonths(reportsService.revenueSummary, signal)
-        : reportsService.revenueSummary(filters, signal),
+    queryFn: ({ signal }) => callWithMonth(reportsService.revenueSummary, signal),
   });
 
   const byChannel = useQuery({
     queryKey: ['reports', 'channel', filters],
-    queryFn: ({ signal }) =>
-      isAllMonths
-        ? fetchAllMonths(reportsService.channelRevenue, signal)
-        : reportsService.channelRevenue(filters, signal),
+    queryFn: ({ signal }) => callWithMonth(reportsService.channelRevenue, signal),
   });
 
   const detailed = useQuery({
     queryKey: ['reports', 'detailed', filters],
-    queryFn: ({ signal }) =>
-      isAllMonths
-        ? fetchAllMonths(reportsService.detailedRevenue, signal)
-        : reportsService.detailedRevenue(filters, signal),
+    queryFn: ({ signal }) => callWithMonth(reportsService.detailedRevenue, signal),
   });
 
   return { summary, byChannel, detailed };
