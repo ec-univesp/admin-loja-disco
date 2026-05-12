@@ -4,7 +4,7 @@ import { recordSchema, recordSearchParamsSchema } from './schemas';
 import type { RecordPayload, RecordSearchParams } from './types';
 
 const BASE = '/discos';
-const messageSchema = z.string();
+const messageSchema = z.unknown();
 const recordListSchema = z.array(recordSchema);
 
 export type { RecordSearchParams };

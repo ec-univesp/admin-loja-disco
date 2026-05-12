@@ -4,7 +4,7 @@ import { customerSchema } from './schemas';
 import type { CustomerPayload } from './types';
 
 const BASE = '/clientes';
-const messageSchema = z.string();
+const messageSchema = z.unknown();
 const customerListSchema = z.array(customerSchema);
 
 export const customersService = {

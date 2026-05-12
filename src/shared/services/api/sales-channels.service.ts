@@ -4,7 +4,7 @@ import { salesChannelSchema } from './schemas';
 import type { SalesChannelPayload } from './types';
 
 const BASE = '/canais-venda';
-const messageSchema = z.string();
+const messageSchema = z.unknown();
 const channelListSchema = z.array(salesChannelSchema);
 
 export const salesChannelsService = {

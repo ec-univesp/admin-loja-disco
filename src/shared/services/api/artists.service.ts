@@ -4,7 +4,7 @@ import { artistSchema } from './schemas';
 import type { ArtistPayload } from './types';
 
 const BASE = '/artistas';
-const messageSchema = z.string();
+const messageSchema = z.unknown();
 const artistListSchema = z.array(artistSchema);
 
 export const artistsService = {
