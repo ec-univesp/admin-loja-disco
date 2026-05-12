@@ -221,46 +221,6 @@ Stack: **Poku 4 + @pokujs/react + happy-dom + MSW 2**. Os testes interceptam `fe
 
 15 arquivos de teste · **107 casos** · execução total ≈ 4s.
 
-### O que está coberto
-
-- **Os 9 controllers do Swagger** (artistas, gêneros, endereços, clientes, canais, discos, compras, vendas, relatórios): list, getById, create, update, delete + cenários de erro (404, `ApiError` com `status` e `body`).
-- **Endpoints novos**:
-  - `/discos/buscar?termo=…` — filtra por álbum e por nome do artista.
-  - `/discos/lista-filtrada/{tipo}` — `tipo=1` exclui `VENDIDO`, `tipo=2` exclui `DISPONIVEL`.
-  - `/relatorios/lucroporitem?ano=…&mes=…` — propaga query e devolve linhas com lucro calculado.
-- **apiClient**: GET/POST/PUT/DELETE, serialização de query params, parsing JSON com fallback para texto, **validação Zod no boundary** (rejeita payload fora do contrato).
-- **Utils**: `currency` (positivos, negativos, zero, `null`/`NaN`), `notify` (sucesso e variantes de erro com `ApiError`/`Error`/`unknown`).
-- **Modais** de detalhe de venda e compra.
-- **Dashboard**: `StoreMetrics` (estoque, receita do mês, contagem de vendas).
-
-Os pontos cobertos representam **todo o contrato com o backend** e **toda a lógica de I/O**. As páginas (`/sales`, `/inventory`, …) e os formulários grandes ainda dependem de smoke test manual no browser.
-
----
-
-## Validação ponta-a-ponta
-
-```
-   Browser
-      │
-      ▼
-   Form (RHF + zodResolver)  ←  form-schemas.ts (Zod)
-      │  submit válido
-      ▼
-   TanStack useMutation
-      │
-      ▼
-   service (e.g. salesService.create)
-      │
-      ▼
-   apiClient.post(path, schema, payload)
-      │  fetch → response.text() → JSON
-      │  schema.parse(raw)  ←  schemas.ts (Zod)
-      ▼
-   resultado tipado em z.infer<typeof schema>
-```
-
-Qualquer divergência do contrato (campo faltando, tipo errado, enum inválido) é capturada **antes** de chegar à UI.
-
 ---
 
 ## Licença
