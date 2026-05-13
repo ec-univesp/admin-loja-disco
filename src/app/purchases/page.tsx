@@ -5,7 +5,7 @@ import { Suspense, useMemo, useState } from 'react';
 import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { exportTableToExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
 import NewPurchaseModal from '@/app/purchases/components/NewPurchaseModal';
@@ -38,6 +38,7 @@ function PurchasesContent() {
   const [showNewPurchaseModal, setShowNewPurchaseModal] = useState(
     () => searchParams.get('novo') === '1'
   );
+  const [purchaseToEditId, setPurchaseToEditId] = useState<number | null>(null);
   const deletePurchaseModal = useModal();
   const [purchaseToDelete, setPurchaseToDelete] = useState<{ id: number; number: string } | null>(
     null
@@ -199,6 +200,18 @@ function PurchasesContent() {
                         </button>
                         <button
                           type="button"
+                          aria-label={`Editar compra ${purchase.number}`}
+                          title={`Editar compra ${purchase.number}`}
+                          onClick={() => {
+                            setPurchaseToEditId(purchase.id);
+                            setShowNewPurchaseModal(true);
+                          }}
+                          className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
+                        >
+                          <Pencil size={15} strokeWidth={2.25} />
+                        </button>
+                        <button
+                          type="button"
                           aria-label={`Apagar compra ${purchase.number}`}
                           title={`Apagar compra ${purchase.number}`}
                           onClick={() => {
@@ -221,7 +234,15 @@ function PurchasesContent() {
 
       <NewPurchaseModal
         isOpen={showNewPurchaseModal}
-        onClose={() => setShowNewPurchaseModal(false)}
+        onClose={() => {
+          setShowNewPurchaseModal(false);
+          setPurchaseToEditId(null);
+        }}
+        purchase={
+          purchaseToEditId !== null
+            ? purchases.find((p) => p.compraId === purchaseToEditId) ?? null
+            : null
+        }
       />
 
       <PurchaseDetailsModal
