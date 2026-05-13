@@ -1,6 +1,6 @@
 'use client';
 
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Form from '@/shared/components/form/Form';
@@ -12,6 +12,7 @@ import { useModal } from '@/shared/hooks/useModal';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
 import AddRecordForm from '@/app/inventory/components/AddRecordForm';
+import type { PurchaseDTO } from '@/shared/services/api';
 import {
   purchaseFormSchema,
   type PurchaseFormInput,
@@ -19,22 +20,40 @@ import {
 
 interface PurchaseFormProps {
   onSuccess?: () => void;
+  purchase?: PurchaseDTO | null;
 }
 
 const selectClass =
   'h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white';
 const errorClass = 'mt-1 block text-sm text-red-500';
 
-const buildDefaultValues = (): PurchaseFormInput => ({
-  fornecedor: '',
-  dataCompra: new Date().toISOString().slice(0, 10),
-  itens: [{ discoId: '', custoDisco: 0 }],
-});
+const buildDefaultValues = (purchase?: PurchaseDTO | null): PurchaseFormInput => {
+  if (!purchase) {
+    return {
+      fornecedor: '',
+      dataCompra: new Date().toISOString().slice(0, 10),
+      itens: [{ discoId: '', custoDisco: 0 }],
+    };
+  }
+  const items = purchase.itens?.length
+    ? purchase.itens.map((item) => ({
+        id: item.id,
+        discoId: item.discoId !== undefined ? String(item.discoId) : '',
+        custoDisco: item.custoDisco ?? 0,
+      }))
+    : [{ discoId: '', custoDisco: 0 }];
+  return {
+    fornecedor: purchase.fornecedor ?? '',
+    dataCompra: (purchase.dataCompra ?? new Date().toISOString()).slice(0, 10),
+    itens: items,
+  };
+};
 
-const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
-  const { create } = usePurchasesModel();
+const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess, purchase }) => {
+  const { create, update } = usePurchasesModel();
   const { list: recordsList } = useRecordsModel();
-  const isMutating = create.isPending;
+  const isEditing = Boolean(purchase?.compraId);
+  const isMutating = create.isPending || update.isPending;
   const records = recordsList.data ?? [];
   const [successMsg, setSuccessMsg] = useState('');
   const addRecordModal = useModal();
@@ -50,10 +69,18 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
     formState: { errors, isSubmitting },
   } = useForm<PurchaseFormInput>({
     resolver: zodResolver(purchaseFormSchema),
-    defaultValues: buildDefaultValues(),
+    defaultValues: buildDefaultValues(purchase),
   });
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'itens' });
+  useEffect(() => {
+    reset(buildDefaultValues(purchase));
+  }, [purchase, reset]);
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'itens',
+    keyName: '_rhfKey',
+  });
   const watchedItems = useWatch({ control, name: 'itens' });
 
   const itemsTotal = (watchedItems ?? []).reduce(
@@ -79,7 +106,8 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
   };
 
   const onSubmit = async (formInput: PurchaseFormInput) => {
-    await create.mutateAsync({
+    const payload = {
+      ...(isEditing && purchase?.compraId !== undefined ? { compraId: purchase.compraId } : {}),
       dataCompra: formInput.dataCompra,
       fornecedor: formInput.fornecedor,
       valorTotal: itemsTotal,
@@ -88,16 +116,23 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
           (record) => String(record.discoId) === item.discoId
         );
         return {
+          ...(item.id !== undefined ? { id: item.id } : {}),
           discoId: Number(item.discoId),
           nomeDisco: sourceRecord?.album ?? '',
           nomeArtista: sourceRecord?.artista?.nomeArtista ?? '',
           custoDisco: item.custoDisco,
         };
       }),
-    });
+    };
 
-    reset(buildDefaultValues());
-    setSuccessMsg('Compra registrada com sucesso!');
+    if (isEditing) {
+      await update.mutateAsync(payload);
+    } else {
+      await create.mutateAsync(payload);
+    }
+
+    reset(buildDefaultValues(isEditing ? purchase : undefined));
+    setSuccessMsg(isEditing ? 'Compra atualizada com sucesso!' : 'Compra registrada com sucesso!');
     setTimeout(() => setSuccessMsg(''), 3000);
     onSuccess?.();
   };
@@ -165,7 +200,7 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
               );
               return (
                 <div
-                  key={fieldItem.id}
+                  key={fieldItem._rhfKey}
                   className="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900"
                 >
                   <div className="mb-3 flex items-center justify-between">
@@ -262,15 +297,15 @@ const PurchaseForm: FC<PurchaseFormProps> = ({ onSuccess }) => {
             fullWidth
             isLoading={isMutating || isSubmitting}
           >
-            Registrar Compra
+            {isEditing ? 'Salvar Alterações' : 'Registrar Compra'}
           </Button>
           <Button
             type="reset"
             variant="outline"
             fullWidth
-            onClick={() => reset(buildDefaultValues())}
+            onClick={() => reset(buildDefaultValues(isEditing ? purchase : undefined))}
           >
-            Limpar
+            {isEditing ? 'Restaurar' : 'Limpar'}
           </Button>
         </div>
       </Form>
