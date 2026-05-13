@@ -78,6 +78,7 @@ export const saleFormSchema = z.object({
 export type SaleFormInput = z.infer<typeof saleFormSchema>;
 
 export const purchaseItemFormSchema = z.object({
+  id: z.number().int().optional(),
   discoId: requiredString('Disco'),
   custoDisco: nonNegativeMoney('Custo do disco'),
 });
