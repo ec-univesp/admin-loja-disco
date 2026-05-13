@@ -257,7 +257,7 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
                 <Label htmlFor="gravadora">Gravadora</Label>
                 <input
@@ -274,9 +274,25 @@ export default function AddRecordForm({ onSuccess, embedded = false }: AddRecord
                 <input
                   type="number"
                   id="anoLancamento"
-                  {...register('anoLancamento')}
+                  {...register('anoLancamento', { valueAsNumber: true })}
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
                 />
+                {errors.anoLancamento && (
+                  <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.anoLancamento.message}</span>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="anoPrensagem">Ano de Prensagem</Label>
+                <input
+                  type="number"
+                  id="anoPrensagem"
+                  {...register('anoPrensagem', { valueAsNumber: true })}
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-700 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-brand-600"
+                />
+                {errors.anoPrensagem && (
+                  <span className="mt-1 block text-sm text-error-600 dark:text-error-400">{errors.anoPrensagem.message}</span>
+                )}
               </div>
             </div>
           </div>
