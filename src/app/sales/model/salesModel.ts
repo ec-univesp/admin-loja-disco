@@ -25,10 +25,15 @@ export function useSalesModel(id?: number) {
     enabled: id !== undefined,
   });
 
+  const invalidateSalesAndStock = () => {
+    queryClient.invalidateQueries({ queryKey: keys.all });
+    queryClient.invalidateQueries({ queryKey: ['records'] });
+  };
+
   const create = useMutation({
     mutationFn: (payload: SalePayload) => salesService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.all });
+      invalidateSalesAndStock();
       notifySuccess('Venda registrada.');
     },
     onError: (error) => notifyError('Erro ao registrar venda', error),
@@ -37,7 +42,7 @@ export function useSalesModel(id?: number) {
   const update = useMutation({
     mutationFn: (payload: SalePayload) => salesService.update(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.all });
+      invalidateSalesAndStock();
       notifySuccess('Venda atualizada.');
     },
     onError: (error) => notifyError('Erro ao atualizar venda', error),
@@ -46,7 +51,7 @@ export function useSalesModel(id?: number) {
   const remove = useMutation({
     mutationFn: (id: number) => salesService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.all });
+      invalidateSalesAndStock();
       notifySuccess('Venda excluída.');
     },
     onError: (error) => notifyError('Erro ao excluir venda', error),

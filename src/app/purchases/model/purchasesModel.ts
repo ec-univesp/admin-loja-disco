@@ -25,10 +25,15 @@ export function usePurchasesModel(id?: number) {
     enabled: id !== undefined,
   });
 
+  const invalidatePurchasesAndStock = () => {
+    queryClient.invalidateQueries({ queryKey: keys.all });
+    queryClient.invalidateQueries({ queryKey: ['records'] });
+  };
+
   const create = useMutation({
     mutationFn: (payload: PurchasePayload) => purchasesService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.all });
+      invalidatePurchasesAndStock();
       notifySuccess('Compra registrada.');
     },
     onError: (error) => notifyError('Erro ao registrar compra', error),
@@ -37,7 +42,7 @@ export function usePurchasesModel(id?: number) {
   const update = useMutation({
     mutationFn: (payload: PurchasePayload) => purchasesService.update(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.all });
+      invalidatePurchasesAndStock();
       notifySuccess('Compra atualizada.');
     },
     onError: (error) => notifyError('Erro ao atualizar compra', error),
@@ -46,7 +51,7 @@ export function usePurchasesModel(id?: number) {
   const remove = useMutation({
     mutationFn: (id: number) => purchasesService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.all });
+      invalidatePurchasesAndStock();
       notifySuccess('Compra excluída.');
     },
     onError: (error) => notifyError('Erro ao excluir compra', error),
