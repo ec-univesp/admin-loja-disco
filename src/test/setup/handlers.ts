@@ -245,7 +245,7 @@ export const handlers = [
   }),
   http.post(buildUrl('/vendas/criar'), async ({ request }) => {
     const body = await parseBody(request, salePayloadSchema);
-    const saleId = body.vendaId ?? body.vendasId ?? nextId('sales', 'vendaId');
+    const saleId = body.vendaId ?? nextId('sales', 'vendaId');
     const created: SaleDTO = saleResponseSchema.parse({ ...body, vendaId: saleId });
     db.sales.push(created);
     return new HttpResponse(null, { status: 201 });

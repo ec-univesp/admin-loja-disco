@@ -6,7 +6,6 @@ import React, { Suspense, useCallback, useMemo, useState } from 'react';
 import { OrderStatus, RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useSalesModel } from '@/app/sales/model/salesModel';
-import { useCustomersModel } from '@/app/sales/model/customersModel';
 import CustomerAddressModal from '@/app/sales/components/CustomerAddressModal';
 import NewRegistrationModal from '@/app/sales/components/NewRegistrationModal';
 import SaleDetailsModal from '@/app/sales/components/SaleDetailsModal';
@@ -88,10 +87,8 @@ export default function SalesPage() {
 
 function SalesContent() {
   const { list: salesList, remove: removeSale, update: updateSale } = useSalesModel();
-  const { list: customersList, remove: removeCustomer } = useCustomersModel();
   const { update: updateRecord, list: recordsList } = useRecordsModel();
   const sales = useMemo(() => salesList.data ?? [], [salesList.data]);
-  const customers = useMemo(() => customersList.data ?? [], [customersList.data]);
   const allRecords = useMemo(() => recordsList.data ?? [], [recordsList.data]);
 
   const searchParams = useSearchParams();
@@ -109,17 +106,20 @@ function SalesContent() {
   const detailsModal = useModal();
   const [saleDetails, setSaleDetails] = useState<{ number: string; saleId: number } | null>(null);
 
-  const deleteCustomerModal = useModal();
-  const [customerToDelete, setCustomerToDelete] = useState<{ id: number; name: string } | null>(
-    null
-  );
-
   const exportModal = useModal();
   const now = new Date();
   const [exportYear, setExportYear] = useState<number>(now.getFullYear());
   const [exportMonth, setExportMonth] = useState<number>(now.getMonth() + 1);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+
+  const sortedSales = useMemo(
+    () =>
+      [...sales].sort((firstSale, secondSale) =>
+        (firstSale.dataVenda ?? '') < (secondSale.dataVenda ?? '') ? 1 : -1
+      ),
+    [sales]
+  );
 
   const handleConfirmDeleteSale = useCallback(async () => {
     if (!saleToDelete) return;
@@ -143,21 +143,6 @@ function SalesContent() {
     setSaleToDelete(null);
     deleteSaleModal.closeModal();
   }, [saleToDelete, sortedSales, allRecords, updateRecord, removeSale, deleteSaleModal]);
-
-  const handleConfirmDeleteCustomer = useCallback(async () => {
-    if (!customerToDelete) return;
-    await removeCustomer.mutateAsync(customerToDelete.id);
-    setCustomerToDelete(null);
-    deleteCustomerModal.closeModal();
-  }, [customerToDelete, removeCustomer, deleteCustomerModal]);
-
-  const sortedSales = useMemo(
-    () =>
-      [...sales].sort((firstSale, secondSale) =>
-        (firstSale.dataVenda ?? '') < (secondSale.dataVenda ?? '') ? 1 : -1
-      ),
-    [sales]
-  );
 
   const rows = useMemo(
     () =>
@@ -305,107 +290,6 @@ function SalesContent() {
             </button>
           </div>
         </div>
-
-        {customers.length === 0 ? (
-          <div className="flex items-center gap-3 border-t border-gray-100 px-6 py-5 dark:border-gray-800">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-              <svg
-                className="h-4 w-4 text-gray-400 dark:text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M16 14a4 4 0 10-8 0M12 11a3 3 0 100-6 3 3 0 000 6z"
-                />
-              </svg>
-            </div>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
-              Nenhum cliente cadastrado ainda.
-            </p>
-          </div>
-        ) : (
-          <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-            <div className="mb-3 flex items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                Clientes cadastrados
-              </p>
-              <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-700/70 dark:text-gray-400">
-                {customers.length}
-              </span>
-            </div>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(188px,1fr))] gap-2">
-              {customers.map((customer) => {
-                const words = (customer.nomeCliente ?? '?').trim().split(/\s+/);
-                const initials =
-                  words.length >= 2
-                    ? `${words[0][0] ?? ''}${words[words.length - 1][0] ?? ''}`.toUpperCase()
-                    : (words[0]?.[0] ?? '?').toUpperCase();
-                const avatarGradients = [
-                  'from-violet-400 to-violet-600',
-                  'from-brand-400 to-brand-600',
-                  'from-emerald-400 to-emerald-600',
-                  'from-amber-400 to-amber-600',
-                  'from-rose-400 to-rose-600',
-                  'from-cyan-400 to-cyan-600',
-                ];
-                const gradient =
-                  avatarGradients[(customer.clienteId ?? 0) % avatarGradients.length];
-                return (
-                  <div
-                    key={customer.clienteId}
-                    className="group flex items-center gap-2.5 rounded-xl border border-gray-100 bg-white px-3 py-2 transition-all hover:border-gray-200 hover:shadow-sm dark:border-gray-700/60 dark:bg-gray-800/50 dark:hover:border-gray-600"
-                  >
-                    <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br ${gradient} text-[11px] font-bold text-white shadow-sm`}
-                    >
-                      {initials}
-                    </div>
-                    <span
-                      className="min-w-0 flex-1 truncate text-sm font-medium text-gray-700 dark:text-gray-200"
-                      title={customer.nomeCliente}
-                    >
-                      {customer.nomeCliente}
-                    </span>
-                    <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-                      <button
-                        type="button"
-                        aria-label={`Editar cliente ${customer.nomeCliente}`}
-                        title={`Editar cliente ${customer.nomeCliente}`}
-                        onClick={() => {
-                          setEditCustomerId(customer.clienteId);
-                          setShowCustomerModal(true);
-                        }}
-                        className="flex h-6 w-6 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 dark:hover:text-brand-400"
-                      >
-                        <Pencil size={12} strokeWidth={2.5} />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`Excluir cliente ${customer.nomeCliente}`}
-                        title={`Excluir cliente ${customer.nomeCliente}`}
-                        onClick={() => {
-                          if (customer.clienteId === undefined) return;
-                          setCustomerToDelete({
-                            id: customer.clienteId,
-                            name: customer.nomeCliente ?? '',
-                          });
-                          deleteCustomerModal.openModal();
-                        }}
-                        className="flex h-6 w-6 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                      >
-                        <Trash2 size={12} strokeWidth={2.5} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -671,42 +555,6 @@ function SalesContent() {
               className="bg-brand-500 hover:bg-brand-600 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
             >
               {isExporting ? 'Exportando...' : 'Exportar'}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        isOpen={deleteCustomerModal.isOpen}
-        onClose={deleteCustomerModal.closeModal}
-        className="m-4 max-w-110"
-        showCloseButton={false}
-      >
-        <div className="p-6">
-          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Excluir cliente
-          </h4>
-          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-            Tem certeza que deseja excluir o cliente{' '}
-            <span className="font-semibold text-gray-700 dark:text-gray-200">
-              {customerToDelete?.name}
-            </span>
-            ?
-          </p>
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={deleteCustomerModal.closeModal}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-white/3 dark:text-gray-300 dark:hover:bg-white/5"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmDeleteCustomer}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
-            >
-              Apagar
             </button>
           </div>
         </div>

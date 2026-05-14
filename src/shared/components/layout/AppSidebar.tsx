@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Music, ShoppingCart } from 'lucide-react';
 import { useSidebar } from '@/shared/context/SidebarContext';
 import Logo from './Logo';
 import {
@@ -10,6 +11,7 @@ import {
   DocsIcon,
   DollarLineIcon,
   GridIcon,
+  GroupIcon,
   HorizontaLDots,
   PaperPlaneIcon,
 } from '@/shared/icons';
@@ -38,7 +40,17 @@ const navItems: NavItem[] = [
     path: '/sales',
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <GroupIcon />,
+    name: 'Clientes',
+    path: '/customers',
+  },
+  {
+    icon: <Music className="h-5 w-5" strokeWidth={2} />,
+    name: 'Artistas',
+    path: '/artists',
+  },
+  {
+    icon: <ShoppingCart className="h-5 w-5" strokeWidth={2} />,
     name: 'Compras',
     path: '/purchases',
   },
@@ -217,7 +229,7 @@ const AppSidebar: React.FC = () => {
   return (
     <aside
       className={`fixed top-0 left-0 z-50 mt-16 flex h-screen flex-col border-r border-gray-200 bg-white px-5 text-gray-900 transition-all duration-300 ease-in-out lg:mt-0 dark:border-gray-800 dark:bg-gray-900 ${
-        isExpanded || isMobileOpen ? 'w-[290px]' : isHovered ? 'w-[290px]' : 'w-[90px]'
+        isExpanded || isMobileOpen ? 'w-72.5' : isHovered ? 'w-72.5' : 'w-22.5'
       } ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -231,7 +243,7 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 flex text-xs leading-[20px] text-gray-400 uppercase ${
+                className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${
                   !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
                 }`}
               >

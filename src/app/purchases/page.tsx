@@ -61,7 +61,7 @@ function PurchasesContent() {
       (a.dataCompra ?? '') < (b.dataCompra ?? '') ? 1 : -1
     );
 
-    return sortedPurchases.map((purchase, index) => ({
+    return sortedPurchases.map((purchase) => ({
       id: purchase.compraId ?? 0,
       number: formatPurchaseNumber(purchase.compraId ?? 0),
       supplier: purchase.fornecedor ?? '—',
@@ -71,16 +71,21 @@ function PurchasesContent() {
     }));
   }, [purchases]);
 
-  const normalizedSearch = searchTerm.toLowerCase();
-  const filteredRows = rows.filter(
-    (row) =>
-      row.supplier.toLowerCase().includes(normalizedSearch) ||
-      row.number.toLowerCase().includes(normalizedSearch)
+  const filteredRows = useMemo(() => {
+    const normalizedSearch = searchTerm.toLowerCase();
+    return rows.filter(
+      (row) =>
+        row.supplier.toLowerCase().includes(normalizedSearch) ||
+        row.number.toLowerCase().includes(normalizedSearch)
+    );
+  }, [rows, searchTerm]);
+
+  const totalSpent = useMemo(
+    () => filteredRows.reduce((acc, row) => acc + row.total, 0),
+    [filteredRows]
   );
 
-  const totalSpent = filteredRows.reduce((acc, row) => acc + row.total, 0);
-
-  const rowsToExport = useCallback(
+  const rowsToExport = useMemo(
     () =>
       filteredRows.map(({ number, supplier, date, items, total }) => ({
         'Nº Compra': number,
@@ -94,7 +99,7 @@ function PurchasesContent() {
 
   const handleExportToExcel = useCallback(() => {
     const stamp = new Date().toISOString().slice(0, 10);
-    exportTableToExcel('Purchases', rowsToExport(), `purchases-${stamp}.xlsx`);
+    exportTableToExcel('Purchases', rowsToExport, `purchases-${stamp}.xlsx`);
   }, [rowsToExport]);
 
   return (
