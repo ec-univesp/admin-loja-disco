@@ -307,53 +307,102 @@ function SalesContent() {
         </div>
 
         {customers.length === 0 ? (
-          <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-            <p className="text-xs text-gray-400 dark:text-gray-500">Nenhum cliente cadastrado.</p>
+          <div className="flex items-center gap-3 border-t border-gray-100 px-6 py-5 dark:border-gray-800">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+              <svg
+                className="h-4 w-4 text-gray-400 dark:text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16 14a4 4 0 10-8 0M12 11a3 3 0 100-6 3 3 0 000 6z"
+                />
+              </svg>
+            </div>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
+              Nenhum cliente cadastrado ainda.
+            </p>
           </div>
         ) : (
           <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-            <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-              Clientes cadastrados:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {customers.map((customer) => (
-                <div
-                  key={customer.clienteId}
-                  className="bg-brand-50 dark:bg-brand-900/30 border-brand-100 dark:border-brand-900/50 inline-flex items-center gap-2 rounded-lg border py-1.5 pr-1.5 pl-3"
-                >
-                  <span className="text-brand-700 dark:text-brand-400 text-sm font-medium">
-                    {customer.nomeCliente}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label={`Editar cliente ${customer.nomeCliente}`}
-                    title={`Editar cliente ${customer.nomeCliente}`}
-                    onClick={() => {
-                      setEditCustomerId(customer.clienteId);
-                      setShowCustomerModal(true);
-                    }}
-                    className="bg-brand-500 hover:bg-brand-600 inline-flex h-7 w-7 items-center justify-center rounded-md text-white shadow-sm transition-colors"
+            <div className="mb-3 flex items-center gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                Clientes cadastrados
+              </p>
+              <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-700/70 dark:text-gray-400">
+                {customers.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(188px,1fr))] gap-2">
+              {customers.map((customer) => {
+                const words = (customer.nomeCliente ?? '?').trim().split(/\s+/);
+                const initials =
+                  words.length >= 2
+                    ? `${words[0][0] ?? ''}${words[words.length - 1][0] ?? ''}`.toUpperCase()
+                    : (words[0]?.[0] ?? '?').toUpperCase();
+                const avatarGradients = [
+                  'from-violet-400 to-violet-600',
+                  'from-brand-400 to-brand-600',
+                  'from-emerald-400 to-emerald-600',
+                  'from-amber-400 to-amber-600',
+                  'from-rose-400 to-rose-600',
+                  'from-cyan-400 to-cyan-600',
+                ];
+                const gradient =
+                  avatarGradients[(customer.clienteId ?? 0) % avatarGradients.length];
+                return (
+                  <div
+                    key={customer.clienteId}
+                    className="group flex items-center gap-2.5 rounded-xl border border-gray-100 bg-white px-3 py-2 transition-all hover:border-gray-200 hover:shadow-sm dark:border-gray-700/60 dark:bg-gray-800/50 dark:hover:border-gray-600"
                   >
-                    <Pencil size={14} strokeWidth={2.25} />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Excluir cliente ${customer.nomeCliente}`}
-                    title={`Excluir cliente ${customer.nomeCliente}`}
-                    onClick={() => {
-                      if (customer.clienteId === undefined) return;
-                      setCustomerToDelete({
-                        id: customer.clienteId,
-                        name: customer.nomeCliente ?? '',
-                      });
-                      deleteCustomerModal.openModal();
-                    }}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
-                  >
-                    <Trash2 size={14} strokeWidth={2.25} />
-                  </button>
-                </div>
-              ))}
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br ${gradient} text-[11px] font-bold text-white shadow-sm`}
+                    >
+                      {initials}
+                    </div>
+                    <span
+                      className="min-w-0 flex-1 truncate text-sm font-medium text-gray-700 dark:text-gray-200"
+                      title={customer.nomeCliente}
+                    >
+                      {customer.nomeCliente}
+                    </span>
+                    <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                      <button
+                        type="button"
+                        aria-label={`Editar cliente ${customer.nomeCliente}`}
+                        title={`Editar cliente ${customer.nomeCliente}`}
+                        onClick={() => {
+                          setEditCustomerId(customer.clienteId);
+                          setShowCustomerModal(true);
+                        }}
+                        className="flex h-6 w-6 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 dark:hover:text-brand-400"
+                      >
+                        <Pencil size={12} strokeWidth={2.5} />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Excluir cliente ${customer.nomeCliente}`}
+                        title={`Excluir cliente ${customer.nomeCliente}`}
+                        onClick={() => {
+                          if (customer.clienteId === undefined) return;
+                          setCustomerToDelete({
+                            id: customer.clienteId,
+                            name: customer.nomeCliente ?? '',
+                          });
+                          deleteCustomerModal.openModal();
+                        }}
+                        className="flex h-6 w-6 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                      >
+                        <Trash2 size={12} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
