@@ -17,7 +17,10 @@ import Button from '@/shared/components/ui/button/Button';
 import { reportsService, type ProfitPerItemDTO } from '@/shared/services/api';
 
 const MONTHS_IN_YEAR = 12;
-const monthOptions = Array.from({ length: MONTHS_IN_YEAR }, (_unused, monthIndex) => monthIndex + 1);
+const monthOptions = Array.from(
+  { length: MONTHS_IN_YEAR },
+  (_unused, monthIndex) => monthIndex + 1
+);
 
 const toCurrencyNumber = (value?: number): number | null =>
   typeof value === 'number' ? value : null;
@@ -52,7 +55,8 @@ const statusColor: Record<string, string> = {
   [OrderStatus.ENTREGUE]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   [OrderStatus.CONFIRMADA]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   [OrderStatus.ENVIADA]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  [OrderStatus.PENDENTE]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  [OrderStatus.PENDENTE]:
+    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   [OrderStatus.CANCELADA]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
@@ -64,8 +68,7 @@ const statusLabel: Record<string, string> = {
   [OrderStatus.CANCELADA]: 'Cancelada',
 };
 
-const formatSaleNumber = (index: number) =>
-  `VND-${String(index + 1).padStart(4, '0')}`;
+const formatSaleNumber = (id: number) => `VND-${String(id).padStart(4, '0')}`;
 
 const formatDateBR = (isoDate: string) => {
   if (!isoDate || isoDate.length < 10) return isoDate || '—';
@@ -107,7 +110,9 @@ function SalesContent() {
   const [saleDetails, setSaleDetails] = useState<{ number: string; saleId: number } | null>(null);
 
   const deleteCustomerModal = useModal();
-  const [customerToDelete, setCustomerToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [customerToDelete, setCustomerToDelete] = useState<{ id: number; name: string } | null>(
+    null
+  );
 
   const exportModal = useModal();
   const now = new Date();
@@ -122,9 +127,15 @@ function SalesContent() {
     if (sale?.itens?.length) {
       await Promise.all(
         sale.itens.map((item) => {
-          const record = allRecords.find((candidateRecord) => candidateRecord.discoId === item.discoId);
+          const record = allRecords.find(
+            (candidateRecord) => candidateRecord.discoId === item.discoId
+          );
           if (!record?.discoId) return Promise.resolve();
-          return updateRecord.mutateAsync({ ...record, discoId: record.discoId, status: RecordStatus.DISPONIVEL });
+          return updateRecord.mutateAsync({
+            ...record,
+            discoId: record.discoId,
+            status: RecordStatus.DISPONIVEL,
+          });
         })
       );
     }
@@ -152,7 +163,7 @@ function SalesContent() {
     () =>
       sortedSales.map((sale, index) => ({
         id: sale.vendaId ?? 0,
-        number: formatSaleNumber(index),
+        number: formatSaleNumber(sale.vendaId ?? 0),
         customer: sale.cliente?.nomeCliente ?? '—',
         customerId: sale.cliente?.clienteId,
         date: sale.dataVenda ?? '',
@@ -166,29 +177,33 @@ function SalesContent() {
     [sortedSales]
   );
 
-  const handleToggleDelivered = useCallback(async (saleIndex: number, currentStatus: string) => {
-    const sale = sortedSales[saleIndex];
-    if (!sale?.vendaId) return;
-    const newStatus = currentStatus === OrderStatus.ENTREGUE ? OrderStatus.PENDENTE : OrderStatus.ENTREGUE;
-    await updateSale.mutateAsync({
-      vendaId: sale.vendaId,
-      cliente: sale.cliente,
-      dataVenda: sale.dataVenda,
-      endereco: sale.endereco,
-      frete: sale.frete,
-      valorTotal: sale.valorTotal,
-      pagamento: sale.pagamento,
-      canalVenda: sale.canalVenda,
-      custosAdicionais: sale.custosAdicionais,
-      statusPedido: newStatus,
-      itens: sale.itens?.map((item) => ({
-        discoId: item.discoId,
-        nomeDisco: item.nomeDisco,
-        nomeArtista: item.nomeArtista,
-        precoVenda: item.precoVenda,
-      })),
-    });
-  }, [sortedSales, updateSale]);
+  const handleToggleDelivered = useCallback(
+    async (saleIndex: number, currentStatus: string) => {
+      const sale = sortedSales[saleIndex];
+      if (!sale?.vendaId) return;
+      const newStatus =
+        currentStatus === OrderStatus.ENTREGUE ? OrderStatus.PENDENTE : OrderStatus.ENTREGUE;
+      await updateSale.mutateAsync({
+        vendaId: sale.vendaId,
+        cliente: sale.cliente,
+        dataVenda: sale.dataVenda,
+        endereco: sale.endereco,
+        frete: sale.frete,
+        valorTotal: sale.valorTotal,
+        pagamento: sale.pagamento,
+        canalVenda: sale.canalVenda,
+        custosAdicionais: sale.custosAdicionais,
+        statusPedido: newStatus,
+        itens: sale.itens?.map((item) => ({
+          discoId: item.discoId,
+          nomeDisco: item.nomeDisco,
+          nomeArtista: item.nomeArtista,
+          precoVenda: item.precoVenda,
+        })),
+      });
+    },
+    [sortedSales, updateSale]
+  );
 
   const normalizedSearch = searchTerm.toLowerCase();
   const filteredRows = rows.filter((row) => {
@@ -304,9 +319,9 @@ function SalesContent() {
               {customers.map((customer) => (
                 <div
                   key={customer.clienteId}
-                  className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
+                  className="bg-brand-50 dark:bg-brand-900/30 border-brand-100 dark:border-brand-900/50 inline-flex items-center gap-2 rounded-lg border py-1.5 pr-1.5 pl-3"
                 >
-                  <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
+                  <span className="text-brand-700 dark:text-brand-400 text-sm font-medium">
                     {customer.nomeCliente}
                   </span>
                   <button
@@ -404,9 +419,7 @@ function SalesContent() {
                     <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
                       R$ {row.total.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {row.payment}
-                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{row.payment}</td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
                       {row.salesChannel}
                     </td>
@@ -489,9 +502,7 @@ function SalesContent() {
         }}
         saleNumber={saleDetails?.number ?? ''}
         sale={
-          saleDetails
-            ? sortedSales.find((s) => s.vendaId === saleDetails.saleId) ?? null
-            : null
+          saleDetails ? (sortedSales.find((s) => s.vendaId === saleDetails.saleId) ?? null) : null
         }
       />
 
