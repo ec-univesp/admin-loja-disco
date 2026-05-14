@@ -7,10 +7,11 @@ import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { OrderStatus } from '@/shared/types';
 import { formatBRL } from '@/shared/utils/currency';
 
-const COMPLETED = new Set<string>([
-  OrderStatus.ENTREGUE,
+const REVENUE_STATUSES = new Set<string>([
+  OrderStatus.PENDENTE,
   OrderStatus.CONFIRMADA,
   OrderStatus.ENVIADA,
+  OrderStatus.ENTREGUE,
 ]);
 
 type MetricCardProps = {
@@ -52,7 +53,7 @@ export const StoreMetrics = () => {
     });
 
     const revenue = salesThisMonth
-      .filter((s) => COMPLETED.has(s.statusPedido ?? ''))
+      .filter((s) => REVENUE_STATUSES.has(s.statusPedido ?? ''))
       .reduce((acc, s) => acc + (s.valorTotal ?? 0), 0);
 
     return {
