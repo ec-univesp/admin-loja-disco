@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  recordsService,
-  type RecordPayload,
-  type RecordSearchParams,
-} from '@/shared/services/api';
+import { recordsService, type RecordPayload, type RecordSearchParams } from '@/shared/services/api';
 import { notifyError, notifySuccess } from '@/shared/utils/notify';
 
 const keys = {
