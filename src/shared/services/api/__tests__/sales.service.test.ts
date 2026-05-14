@@ -54,6 +54,43 @@ runSequentialTests(async () => {
     assert.strictEqual(db.sales[0].statusPedido, 'ENTREGUE');
   });
 
+  await test('salesService.update aceita resposta sem corpo', async () => {
+    db.sales.push(makeSale({ vendaId: 4, statusPedido: 'PENDENTE' }));
+    server.use(
+      http.patch('http://localhost:8080/vendas/atualizar/:id', async ({ request, params }) => {
+        const body = await request.json();
+        const saleId = Number(params.id);
+        const index = db.sales.findIndex((candidate) => candidate.vendaId === saleId);
+        db.sales[index] = { ...db.sales[index], ...(body as object) };
+        return new HttpResponse(null, { status: 200 });
+      })
+    );
+    await salesService.update({ ...makeSale({ vendaId: 4 }), statusPedido: 'ENTREGUE' });
+    assert.strictEqual(db.sales[0].statusPedido, 'ENTREGUE');
+  });
+
+  await test('salesService.update tenta PUT legado quando PATCH nao existe', async () => {
+    db.sales.push(makeSale({ vendaId: 6, statusPedido: 'PENDENTE' }));
+    server.use(
+      http.patch(
+        'http://localhost:8080/vendas/atualizar/:id',
+        () => new HttpResponse(null, { status: 405 })
+      ),
+      http.put(
+        'http://localhost:8080/vendas/atualizar/:id',
+        () => new HttpResponse(null, { status: 405 })
+      ),
+      http.put('http://localhost:8080/vendas/atualizar', async ({ request }) => {
+        const body = (await request.json()) as { vendaId?: number; statusPedido?: string };
+        const index = db.sales.findIndex((candidate) => candidate.vendaId === body.vendaId);
+        db.sales[index] = { ...db.sales[index], ...body };
+        return new HttpResponse(null, { status: 200 });
+      })
+    );
+    await salesService.update({ ...makeSale({ vendaId: 6 }), statusPedido: 'ENTREGUE' });
+    assert.strictEqual(db.sales[0].statusPedido, 'ENTREGUE');
+  });
+
   await test('salesService.delete remove venda', async () => {
     db.sales.push(makeSale({ vendaId: 1 }));
     await salesService.delete(1);
