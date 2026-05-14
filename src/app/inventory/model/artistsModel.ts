@@ -14,6 +14,7 @@ export function useArtistsModel(id?: number) {
   const list = useQuery({
     queryKey: keys.list(),
     queryFn: ({ signal }) => artistsService.list(signal),
+    staleTime: 10 * 60_000,
   });
 
   const byId = useQuery({
@@ -23,6 +24,7 @@ export function useArtistsModel(id?: number) {
       return artistsService.getById(id, signal);
     },
     enabled: id !== undefined,
+    staleTime: 10 * 60_000,
   });
 
   const create = useMutation({
