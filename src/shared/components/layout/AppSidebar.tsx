@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Music } from 'lucide-react';
+import { Music, ShoppingCart } from 'lucide-react';
 import { useSidebar } from '@/shared/context/SidebarContext';
 import Logo from './Logo';
 import {
@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
     path: '/artists',
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <ShoppingCart className="h-5 w-5" strokeWidth={2} />,
     name: 'Compras',
     path: '/purchases',
   },
