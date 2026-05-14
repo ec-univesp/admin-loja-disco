@@ -109,8 +109,7 @@ export default function RevenuePage() {
       sales.filter((v) => {
         const d = new Date(v.dataVenda ?? '');
         return (
-          d.getFullYear() === yearFilter &&
-          (monthFilter === 0 || d.getMonth() + 1 === monthFilter)
+          d.getFullYear() === yearFilter && (monthFilter === 0 || d.getMonth() + 1 === monthFilter)
         );
       }),
     [sales, yearFilter, monthFilter]
@@ -193,34 +192,41 @@ export default function RevenuePage() {
   const dimensionRevenue = dimensionData;
   const isDimensionEmpty = !detailed.isFetching && dimensionData.length === 0;
 
-  const salesDetails = useMemo(() => filteredSales.map((v) => ({
-    id: String(v.vendaId ?? ''),
-    data: v.dataVenda ?? '',
-    cliente: v.cliente?.nomeCliente ?? '',
-    canal: v.canalVenda?.nomeCanalVenda ?? '',
-    pagamento: v.pagamento ?? '',
-    frete: v.frete ?? 0,
-    custosAdicionais: v.custosAdicionais ?? 0,
-    total: v.valorTotal ?? 0,
-    status: v.statusPedido ?? '',
-  })), [filteredSales]);
-
-  const handleExportReport = useCallback(() =>
-    exportFinancialReport({
-      monthlySummary: monthlyRevenue,
-      topProducts: [],
-      paymentMethods: channelRevenue.map((c) => ({
-        forma: c.label,
-        total: c.total,
-        percentual: c.percentual,
+  const salesDetails = useMemo(
+    () =>
+      filteredSales.map((v) => ({
+        id: String(v.vendaId ?? ''),
+        data: v.dataVenda ?? '',
+        cliente: v.cliente?.nomeCliente ?? '',
+        canal: v.canalVenda?.nomeCanalVenda ?? '',
+        pagamento: v.pagamento ?? '',
+        frete: v.frete ?? 0,
+        custosAdicionais: v.custosAdicionais ?? 0,
+        total: v.valorTotal ?? 0,
+        status: v.statusPedido ?? '',
       })),
-      salesDetails,
-    }),
-  [monthlyRevenue, channelRevenue, salesDetails]);
+    [filteredSales]
+  );
 
-  const handleExportCSV = useCallback(() =>
-    exportFinancialReportCSV({ monthlySummary: monthlyRevenue, salesDetails }),
-  [monthlyRevenue, salesDetails]);
+  const handleExportReport = useCallback(
+    () =>
+      exportFinancialReport({
+        monthlySummary: monthlyRevenue,
+        topProducts: [],
+        paymentMethods: channelRevenue.map((c) => ({
+          forma: c.label,
+          total: c.total,
+          percentual: c.percentual,
+        })),
+        salesDetails,
+      }),
+    [monthlyRevenue, channelRevenue, salesDetails]
+  );
+
+  const handleExportCSV = useCallback(
+    () => exportFinancialReportCSV({ monthlySummary: monthlyRevenue, salesDetails }),
+    [monthlyRevenue, salesDetails]
+  );
 
   const handleFullBackup = useCallback(() => {
     const customers = customersQuery.data ?? [];
@@ -252,7 +258,16 @@ export default function RevenuePage() {
       purchaseItems,
       salesChannels: channelsQuery.data ?? [],
     });
-  }, [customersQuery.data, purchasesQuery.data, sales, genres, artistsQuery.data, recordsQuery.data, addressesQuery.data, channelsQuery.data]);
+  }, [
+    customersQuery.data,
+    purchasesQuery.data,
+    sales,
+    genres,
+    artistsQuery.data,
+    recordsQuery.data,
+    addressesQuery.data,
+    channelsQuery.data,
+  ]);
 
   return (
     <div>
@@ -374,7 +389,9 @@ export default function RevenuePage() {
                 ) : (
                   monthlyRevenue.map((m) => (
                     <tr key={m.month}>
-                      <td className="py-3 font-medium text-gray-700 dark:text-gray-300">{m.month}</td>
+                      <td className="py-3 font-medium text-gray-700 dark:text-gray-300">
+                        {m.month}
+                      </td>
                       <td className="py-3 text-right text-green-600">R$ {m.revenue.toFixed(2)}</td>
                       <td className="py-3 text-right text-red-500">R$ {m.expenses.toFixed(2)}</td>
                       <td className="py-3 text-right font-semibold text-gray-800 dark:text-white">
@@ -396,7 +413,6 @@ export default function RevenuePage() {
               <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
                 Análise de Receita
               </h3>
-
             </div>
             <p className="mt-0.5 text-xs text-gray-400">
               {monthFilter === 0
