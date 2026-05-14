@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Music, ShoppingCart } from 'lucide-react';
 import { useSidebar } from '@/shared/context/SidebarContext';
 import Logo from './Logo';
@@ -62,6 +62,7 @@ const navItems: NavItem[] = [
   {
     icon: <PaperPlaneIcon />,
     name: 'Entregas',
+    path: '/deliveries',
     subItems: [
       { name: 'Todas as Entregas', path: '/deliveries' },
       { name: 'Pendentes', path: '/deliveries/pending' },
@@ -73,6 +74,7 @@ const navItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const router = useRouter();
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: 'main';
     index: number;
@@ -80,10 +82,13 @@ const AppSidebar: React.FC = () => {
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // Close submenu when pathname changes
+  // Keep the submenu for the current route open when pathname changes.
   useEffect(() => {
+    const activeIndex = navItems.findIndex((item) =>
+      item.subItems?.some((subItem) => subItem.path === pathname)
+    );
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOpenSubmenu(null);
+    setOpenSubmenu(activeIndex >= 0 ? { type: 'main', index: activeIndex } : null);
   }, [pathname]);
 
   // Update submenu height when it changes
@@ -101,7 +106,13 @@ const AppSidebar: React.FC = () => {
 
   const isActive = (path: string) => path === pathname;
 
-  const handleSubmenuToggle = (index: number) => {
+  const isSubmenuActive = (item: NavItem) =>
+    item.subItems?.some((subItem) => isActive(subItem.path)) ?? false;
+
+  const handleSubmenuToggle = (index: number, path?: string) => {
+    if (path && path !== pathname) {
+      router.push(path);
+    }
     setOpenSubmenu((prevOpenSubmenu) => {
       if (prevOpenSubmenu && prevOpenSubmenu.index === index) {
         return null;
@@ -116,11 +127,14 @@ const AppSidebar: React.FC = () => {
         <li key={nav.name}>
           {nav.subItems ? (
             <button
-              onClick={() => handleSubmenuToggle(index)}
+              type="button"
+              onClick={() => handleSubmenuToggle(index, nav.path)}
               className={`menu-item group ${
                 openSubmenu?.type === menuType && openSubmenu?.index === index
                   ? 'menu-item-active'
-                  : 'menu-item-inactive'
+                  : isSubmenuActive(nav)
+                    ? 'menu-item-active'
+                    : 'menu-item-inactive'
               } cursor-pointer ${
                 !isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start'
               }`}
@@ -129,7 +143,9 @@ const AppSidebar: React.FC = () => {
                 className={` ${
                   openSubmenu?.type === menuType && openSubmenu?.index === index
                     ? 'menu-item-icon-active'
-                    : 'menu-item-icon-inactive'
+                    : isSubmenuActive(nav)
+                      ? 'menu-item-icon-active'
+                      : 'menu-item-icon-inactive'
                 }`}
               >
                 {nav.icon}
