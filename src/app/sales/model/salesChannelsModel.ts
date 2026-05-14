@@ -1,5 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { salesChannelsService, type SalesChannelPayload } from '@/shared/services/api';
+import {
+  getSalesChannelId,
+  salesChannelsService,
+  type SalesChannelPayload,
+} from '@/shared/services/api';
 import { notifyError, notifySuccess } from '@/shared/utils/notify';
 
 const keys = {
@@ -27,12 +31,14 @@ export function useSalesChannelsModel(id?: number) {
 
   const create = useMutation({
     mutationFn: async (payload: SalesChannelPayload) => {
-      const before = new Set((await salesChannelsService.list()).map((c) => c.idCanalVenda));
+      const before = new Set(
+        (await salesChannelsService.list()).map((c) => getSalesChannelId(c))
+      );
       await salesChannelsService.create(payload);
       const after = await salesChannelsService.list();
-      const found = after.find((c) => !before.has(c.idCanalVenda));
+      const found = after.find((c) => !before.has(getSalesChannelId(c)));
       return found
-        ? { canalVendaId: found.idCanalVenda, nomeCanalVenda: found.nomeCanalVenda }
+        ? { canalVendaId: getSalesChannelId(found), nomeCanalVenda: found.nomeCanalVenda }
         : payload;
     },
     onSuccess: () => {

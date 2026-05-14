@@ -43,7 +43,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 export default function InventoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [hideSoldRecords, setHideSoldRecords] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | RecordStatus>('all');
   const [newGenre, setNewGenre] = useState('');
   const [newArtist, setNewArtist] = useState('');
   const [editRecordId, setEditRecordId] = useState<number | null>(null);
@@ -162,11 +162,17 @@ export default function InventoryPage() {
     [records]
   );
 
-  const filteredRows = hideSoldRecords
-    ? rows.filter((row) => row.status !== RecordStatus.VENDIDO)
-    : rows;
+  const filteredRows =
+    statusFilter === 'all' ? rows : rows.filter((row) => row.status === statusFilter);
 
+  const availableCount = rows.filter((row) => row.status === RecordStatus.DISPONIVEL).length;
   const soldCount = rows.filter((row) => row.status === RecordStatus.VENDIDO).length;
+
+  const statusOptions: ReadonlyArray<{ value: 'all' | RecordStatus; label: string; count: number }> = [
+    { value: 'all', label: 'Todos', count: rows.length },
+    { value: RecordStatus.DISPONIVEL, label: 'Disponíveis', count: availableCount },
+    { value: RecordStatus.VENDIDO, label: 'Vendidos', count: soldCount },
+  ];
 
   const iconPlus = (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,26 +195,41 @@ export default function InventoryPage() {
                 {filteredRows.length} disco(s){' '}
                 {isSearching
                   ? 'encontrado(s)'
-                  : hideSoldRecords
+                  : statusFilter === RecordStatus.DISPONIVEL
                     ? 'disponível(is)'
-                    : 'cadastrado(s)'}
-                {soldCount > 0 && hideSoldRecords && !isSearching && (
-                  <span className="ml-1 text-brand-600/70 dark:text-brand-300/60">
-                    · {soldCount} vendido(s) ocultos
-                  </span>
-                )}
+                    : statusFilter === RecordStatus.VENDIDO
+                      ? 'vendido(s)'
+                      : 'cadastrado(s)'}
               </p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm text-gray-700 dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200">
-                <input
-                  type="checkbox"
-                  checked={hideSoldRecords}
-                  onChange={(toggleEvent) => setHideSoldRecords(toggleEvent.target.checked)}
-                  className="h-4 w-4 cursor-pointer accent-brand-600"
-                />
-                Ocultar vendidos
-              </label>
+              <div
+                role="group"
+                aria-label="Filtrar por status"
+                className="inline-flex rounded-lg border border-brand-200 bg-white p-1 dark:border-brand-700/40 dark:bg-gray-800/50"
+              >
+                {statusOptions.map((option) => {
+                  const isActive = statusFilter === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setStatusFilter(option.value)}
+                      aria-pressed={isActive}
+                      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                        isActive
+                          ? 'bg-brand-600 text-white shadow-sm'
+                          : 'text-gray-600 hover:bg-brand-50 dark:text-gray-300 dark:hover:bg-brand-900/30'
+                      }`}
+                    >
+                      {option.label}
+                      <span className={`ml-1.5 ${isActive ? 'text-white/80' : 'text-gray-400'}`}>
+                        {option.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
               <input
                 type="text"
                 placeholder="Buscar álbum ou artista..."

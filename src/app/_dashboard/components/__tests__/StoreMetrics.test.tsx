@@ -15,7 +15,7 @@ const cardValueOf = (label: string): string =>
   screen.getByText(label).parentElement?.querySelector('h4')?.textContent ?? '';
 
 runSequentialTests(async () => {
-  await test('exibe contagem de discos disponiveis (lista-filtrada/1)', async () => {
+  await test('exibe contagem de discos nao-vendidos (/discos/lista-filtrada/1)', async () => {
     db.records.push(
       makeRecord({ discoId: 1, status: 'DISPONIVEL' }),
       makeRecord({ discoId: 2, status: 'DISPONIVEL' }),
@@ -23,6 +23,17 @@ runSequentialTests(async () => {
     );
     renderWidget();
     await waitFor(() => assert.strictEqual(cardValueOf('Discos em estoque'), '2'));
+  });
+
+  await test('card exclui vendidos do total (regressao 140 totais, 71 vendidos -> 69)', async () => {
+    for (let i = 1; i <= 69; i += 1) {
+      db.records.push(makeRecord({ discoId: i, status: 'DISPONIVEL' }));
+    }
+    for (let i = 70; i <= 140; i += 1) {
+      db.records.push(makeRecord({ discoId: i, status: 'VENDIDO' }));
+    }
+    renderWidget();
+    await waitFor(() => assert.strictEqual(cardValueOf('Discos em estoque'), '69'));
   });
 
   await test('exibe receita do mes apenas para vendas concluidas', async () => {

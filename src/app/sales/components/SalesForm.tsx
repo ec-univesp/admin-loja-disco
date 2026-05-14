@@ -13,6 +13,7 @@ import { formatBRL } from '@/shared/utils/currency';
 import { RecordStatus, OrderStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useSalesChannelsModel } from '@/app/sales/model/salesChannelsModel';
+import { getSalesChannelId } from '@/shared/services/api';
 import { useCustomersModel } from '@/app/sales/model/customersModel';
 import { useSalesModel } from '@/app/sales/model/salesModel';
 import { saleFormSchema, type SaleFormInput } from '@/shared/services/api/form-schemas';
@@ -103,8 +104,9 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
       (address) => String(address.enderecoId) === formInput.enderecoId
     );
     const selectedChannel = salesChannels.find(
-      (channel) => String(channel.idCanalVenda) === formInput.canalVendaId
+      (channel) => String(getSalesChannelId(channel)) === formInput.canalVendaId
     );
+    const selectedChannelId = selectedChannel ? getSalesChannelId(selectedChannel) : undefined;
 
     await createSale.mutateAsync({
       cliente: selectedCustomer
@@ -131,7 +133,7 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
       pagamento: formInput.pagamento,
       canalVenda: selectedChannel
         ? {
-            idCanalVenda: selectedChannel.idCanalVenda,
+            canalVendaId: selectedChannelId,
             nomeCanalVenda: selectedChannel.nomeCanalVenda,
           }
         : undefined,
@@ -444,11 +446,14 @@ const SalesForm: FC<SalesFormProps> = ({ onSuccess }) => {
                   className={selectClass}
                 >
                   <option value="">-- Selecione --</option>
-                  {salesChannels.map((channel) => (
-                    <option key={channel.idCanalVenda} value={channel.idCanalVenda ?? ''}>
-                      {channel.nomeCanalVenda}
-                    </option>
-                  ))}
+                  {salesChannels.map((channel) => {
+                    const channelId = getSalesChannelId(channel);
+                    return (
+                      <option key={channelId} value={channelId ?? ''}>
+                        {channel.nomeCanalVenda}
+                      </option>
+                    );
+                  })}
                 </select>
                 {errors.canalVendaId && (
                   <span className={errorClass}>{errors.canalVendaId.message}</span>
