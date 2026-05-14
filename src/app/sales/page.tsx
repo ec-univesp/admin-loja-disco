@@ -13,7 +13,7 @@ import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
 import { exportTableToExcel } from '@/shared/services/exportExcel';
 import Button from '@/shared/components/ui/button/Button';
-import { reportsService, type ProfitPerItemDTO } from '@/shared/services/api';
+import { reportsService, type ProfitPerItemDTO, type SaleDTO } from '@/shared/services/api';
 
 const MONTHS_IN_YEAR = 12;
 const monthOptions = Array.from(
@@ -76,6 +76,11 @@ const formatDateBR = (isoDate: string) => {
 };
 
 const COMPLETED_STATUSES = [OrderStatus.ENTREGUE];
+
+const buildSaleStatusPayload = (sale: SaleDTO, statusPedido: OrderStatus): SaleDTO => ({
+  ...sale,
+  statusPedido,
+});
 
 export default function SalesPage() {
   return (
@@ -146,7 +151,7 @@ function SalesContent() {
 
   const rows = useMemo(
     () =>
-      sortedSales.map((sale, index) => ({
+      sortedSales.map((sale) => ({
         id: sale.vendaId ?? 0,
         number: formatSaleNumber(sale.vendaId ?? 0),
         customer: sale.cliente?.nomeCliente ?? '—',
@@ -157,35 +162,17 @@ function SalesContent() {
         payment: sale.pagamento ?? '—',
         salesChannel: sale.canalVenda?.nomeCanalVenda ?? '—',
         status: sale.statusPedido ?? OrderStatus.PENDENTE,
-        rawIdx: index,
       })),
     [sortedSales]
   );
 
   const handleToggleDelivered = useCallback(
-    async (saleIndex: number, currentStatus: string) => {
-      const sale = sortedSales[saleIndex];
+    async (saleId: number, currentStatus: string) => {
+      const sale = sortedSales.find((candidateSale) => candidateSale.vendaId === saleId);
       if (!sale?.vendaId) return;
       const newStatus =
         currentStatus === OrderStatus.ENTREGUE ? OrderStatus.PENDENTE : OrderStatus.ENTREGUE;
-      await updateSale.mutateAsync({
-        vendaId: sale.vendaId,
-        cliente: sale.cliente,
-        dataVenda: sale.dataVenda,
-        endereco: sale.endereco,
-        frete: sale.frete,
-        valorTotal: sale.valorTotal,
-        pagamento: sale.pagamento,
-        canalVenda: sale.canalVenda,
-        custosAdicionais: sale.custosAdicionais,
-        statusPedido: newStatus,
-        itens: sale.itens?.map((item) => ({
-          discoId: item.discoId,
-          nomeDisco: item.nomeDisco,
-          nomeArtista: item.nomeArtista,
-          precoVenda: item.precoVenda,
-        })),
-      });
+      await updateSale.mutateAsync(buildSaleStatusPayload(sale, newStatus));
     },
     [sortedSales, updateSale]
   );
@@ -376,7 +363,7 @@ function SalesContent() {
                           <input
                             type="checkbox"
                             checked={row.status === OrderStatus.ENTREGUE}
-                            onChange={() => handleToggleDelivered(row.rawIdx, row.status)}
+                            onChange={() => handleToggleDelivered(row.id, row.status)}
                             aria-label={`Marcar venda ${row.number} como entregue`}
                             className="h-4 w-4 cursor-pointer accent-green-600"
                           />
