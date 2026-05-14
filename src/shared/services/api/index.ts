@@ -5,7 +5,7 @@ export { artistsService } from './artists.service';
 export { genresService } from './music-genres.service';
 export { addressesService } from './addresses.service';
 export { customersService } from './customers.service';
-export { salesChannelsService } from './sales-channels.service';
+export { salesChannelsService, getSalesChannelId } from './sales-channels.service';
 export { recordsService, type RecordSearchParams } from './records.service';
 export { purchasesService } from './purchases.service';
 export { salesService } from './sales.service';

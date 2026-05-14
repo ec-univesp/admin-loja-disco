@@ -8,6 +8,7 @@ import { Modal } from '@/shared/components/ui/modal';
 import Button from '@/shared/components/ui/button/Button';
 import Label from '@/shared/components/form/Label';
 import { useSalesChannelsModel } from '@/app/sales/model/salesChannelsModel';
+import { getSalesChannelId } from '@/shared/services/api';
 import {
   salesChannelFormSchema,
   type SalesChannelFormInput,
@@ -19,7 +20,7 @@ interface SalesChannelFormProps {
 }
 
 interface ChannelToDelete {
-  idCanalVenda: number;
+  canalVendaId: number;
   nomeCanalVenda: string;
 }
 
@@ -48,7 +49,7 @@ export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFor
 
   const handleConfirmDelete = async () => {
     if (!channelToDelete) return;
-    await remove.mutateAsync(channelToDelete.idCanalVenda);
+    await remove.mutateAsync(channelToDelete.canalVendaId);
     setChannelToDelete(null);
   };
 
@@ -76,31 +77,34 @@ export default function SalesChannelForm({ onClose, onCreated }: SalesChannelFor
             Canais já cadastrados:
           </p>
           <div className="flex flex-wrap gap-2">
-            {salesChannels.map((channel) => (
-              <div
-                key={channel.idCanalVenda}
-                className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
-              >
-                <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
-                  {channel.nomeCanalVenda}
-                </span>
-                <button
-                  type="button"
-                  aria-label={`Excluir canal ${channel.nomeCanalVenda}`}
-                  title={`Excluir canal ${channel.nomeCanalVenda}`}
-                  onClick={() => {
-                    if (channel.idCanalVenda === undefined) return;
-                    setChannelToDelete({
-                      idCanalVenda: channel.idCanalVenda,
-                      nomeCanalVenda: channel.nomeCanalVenda ?? '',
-                    });
-                  }}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
+            {salesChannels.map((channel) => {
+              const channelId = getSalesChannelId(channel);
+              return (
+                <div
+                  key={channelId}
+                  className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
                 >
-                  <Trash2 size={14} strokeWidth={2.25} />
-                </button>
-              </div>
-            ))}
+                  <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
+                    {channel.nomeCanalVenda}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={`Excluir canal ${channel.nomeCanalVenda}`}
+                    title={`Excluir canal ${channel.nomeCanalVenda}`}
+                    onClick={() => {
+                      if (channelId === undefined) return;
+                      setChannelToDelete({
+                        canalVendaId: channelId,
+                        nomeCanalVenda: channel.nomeCanalVenda ?? '',
+                      });
+                    }}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
+                  >
+                    <Trash2 size={14} strokeWidth={2.25} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

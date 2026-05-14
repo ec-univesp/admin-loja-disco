@@ -1,11 +1,15 @@
 import { z } from 'zod';
 import { apiClient } from './client';
 import { salesChannelSchema } from './schemas';
-import type { SalesChannelPayload } from './types';
+import type { SalesChannelDTO, SalesChannelPayload } from './types';
 
 const BASE = '/canais-venda';
 const messageSchema = z.unknown();
 const channelListSchema = z.array(salesChannelSchema);
+
+// Backend retorna o id ora como `canalVendaId` ora como `idCanalVenda` — cf. schemas.ts:22-26.
+export const getSalesChannelId = (channel: SalesChannelDTO): number | undefined =>
+  channel.canalVendaId ?? channel.idCanalVenda;
 
 export const salesChannelsService = {
   list: (signal?: AbortSignal) =>
