@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Music, ShoppingCart } from 'lucide-react';
 import { useSidebar } from '@/shared/context/SidebarContext';
 import Logo from './Logo';
@@ -74,7 +74,6 @@ const navItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
-  const router = useRouter();
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: 'main';
     index: number;
@@ -109,10 +108,7 @@ const AppSidebar: React.FC = () => {
   const isSubmenuActive = (item: NavItem) =>
     item.subItems?.some((subItem) => isActive(subItem.path)) ?? false;
 
-  const handleSubmenuToggle = (index: number, path?: string) => {
-    if (path && path !== pathname) {
-      router.push(path);
-    }
+  const handleSubmenuToggle = (index: number) => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (prevOpenSubmenu && prevOpenSubmenu.index === index) {
         return null;
@@ -126,43 +122,83 @@ const AppSidebar: React.FC = () => {
       {items.map((nav, index) => (
         <li key={nav.name}>
           {nav.subItems ? (
-            <button
-              type="button"
-              onClick={() => handleSubmenuToggle(index, nav.path)}
-              className={`menu-item group ${
-                openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? 'menu-item-active'
-                  : isSubmenuActive(nav)
-                    ? 'menu-item-active'
-                    : 'menu-item-inactive'
-              } cursor-pointer ${
-                !isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start'
-              }`}
-            >
-              <span
-                className={` ${
+            nav.path ? (
+              <Link
+                href={nav.path}
+                onClick={() => setOpenSubmenu({ type: 'main', index })}
+                className={`menu-item group ${
                   openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? 'menu-item-icon-active'
+                    ? 'menu-item-active'
                     : isSubmenuActive(nav)
-                      ? 'menu-item-icon-active'
-                      : 'menu-item-icon-inactive'
+                      ? 'menu-item-active'
+                      : 'menu-item-inactive'
+                } cursor-pointer ${
+                  !isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start'
                 }`}
               >
-                {nav.icon}
-              </span>
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <span className={`menu-item-text`}>{nav.name}</span>
-              )}
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <ChevronDownIcon
-                  className={`ml-auto h-5 w-5 transition-transform duration-200 ${
+                <span
+                  className={` ${
                     openSubmenu?.type === menuType && openSubmenu?.index === index
-                      ? 'text-brand-500 rotate-180'
-                      : ''
+                      ? 'menu-item-icon-active'
+                      : isSubmenuActive(nav)
+                        ? 'menu-item-icon-active'
+                        : 'menu-item-icon-inactive'
                   }`}
-                />
-              )}
-            </button>
+                >
+                  {nav.icon}
+                </span>
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <span className={`menu-item-text`}>{nav.name}</span>
+                )}
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <ChevronDownIcon
+                    className={`ml-auto h-5 w-5 transition-transform duration-200 ${
+                      openSubmenu?.type === menuType && openSubmenu?.index === index
+                        ? 'text-brand-500 rotate-180'
+                        : ''
+                    }`}
+                  />
+                )}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSubmenuToggle(index)}
+                className={`menu-item group ${
+                  openSubmenu?.type === menuType && openSubmenu?.index === index
+                    ? 'menu-item-active'
+                    : isSubmenuActive(nav)
+                      ? 'menu-item-active'
+                      : 'menu-item-inactive'
+                } cursor-pointer ${
+                  !isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start'
+                }`}
+              >
+                <span
+                  className={` ${
+                    openSubmenu?.type === menuType && openSubmenu?.index === index
+                      ? 'menu-item-icon-active'
+                      : isSubmenuActive(nav)
+                        ? 'menu-item-icon-active'
+                        : 'menu-item-icon-inactive'
+                  }`}
+                >
+                  {nav.icon}
+                </span>
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <span className={`menu-item-text`}>{nav.name}</span>
+                )}
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <ChevronDownIcon
+                    className={`ml-auto h-5 w-5 transition-transform duration-200 ${
+                      openSubmenu?.type === menuType && openSubmenu?.index === index
+                        ? 'text-brand-500 rotate-180'
+                        : ''
+                    }`}
+                  />
+                )}
+              </button>
+            )
           ) : (
             nav.path && (
               <Link
