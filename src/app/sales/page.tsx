@@ -2,7 +2,7 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
-import React, { Suspense, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useMemo, useState } from 'react';
 import { OrderStatus, RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useSalesModel } from '@/app/sales/model/salesModel';
@@ -116,7 +116,7 @@ function SalesContent() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  const handleConfirmDeleteSale = async () => {
+  const handleConfirmDeleteSale = useCallback(async () => {
     if (!saleToDelete) return;
     const sale = sortedSales.find((candidateSale) => candidateSale.vendaId === saleToDelete.id);
     if (sale?.itens?.length) {
@@ -131,14 +131,14 @@ function SalesContent() {
     await removeSale.mutateAsync(saleToDelete.id);
     setSaleToDelete(null);
     deleteSaleModal.closeModal();
-  };
+  }, [saleToDelete, sortedSales, allRecords, updateRecord, removeSale, deleteSaleModal]);
 
-  const handleConfirmDeleteCustomer = async () => {
+  const handleConfirmDeleteCustomer = useCallback(async () => {
     if (!customerToDelete) return;
     await removeCustomer.mutateAsync(customerToDelete.id);
     setCustomerToDelete(null);
     deleteCustomerModal.closeModal();
-  };
+  }, [customerToDelete, removeCustomer, deleteCustomerModal]);
 
   const sortedSales = useMemo(
     () =>
@@ -166,7 +166,7 @@ function SalesContent() {
     [sortedSales]
   );
 
-  const handleToggleDelivered = async (saleIndex: number, currentStatus: string) => {
+  const handleToggleDelivered = useCallback(async (saleIndex: number, currentStatus: string) => {
     const sale = sortedSales[saleIndex];
     if (!sale?.vendaId) return;
     const newStatus = currentStatus === OrderStatus.ENTREGUE ? OrderStatus.PENDENTE : OrderStatus.ENTREGUE;
@@ -188,7 +188,7 @@ function SalesContent() {
         precoVenda: item.precoVenda,
       })),
     });
-  };
+  }, [sortedSales, updateSale]);
 
   const normalizedSearch = searchTerm.toLowerCase();
   const filteredRows = rows.filter((row) => {
@@ -206,12 +206,12 @@ function SalesContent() {
     .filter((row) => isCompletedStatus(row.status))
     .reduce((acc, row) => acc + row.total, 0);
 
-  const handleOpenExportModal = () => {
+  const handleOpenExportModal = useCallback(() => {
     setExportError(null);
     exportModal.openModal();
-  };
+  }, [exportModal]);
 
-  const handleConfirmExport = async () => {
+  const handleConfirmExport = useCallback(async () => {
     setExportError(null);
     setIsExporting(true);
     try {
@@ -237,7 +237,7 @@ function SalesContent() {
     } finally {
       setIsExporting(false);
     }
-  };
+  }, [exportYear, exportMonth, exportModal]);
 
   return (
     <div>

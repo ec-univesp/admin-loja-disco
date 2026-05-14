@@ -1,7 +1,7 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
@@ -49,12 +49,12 @@ function PurchasesContent() {
     null
   );
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!purchaseToDelete) return;
     await remove.mutateAsync(purchaseToDelete.id);
     setPurchaseToDelete(null);
     deletePurchaseModal.closeModal();
-  };
+  }, [purchaseToDelete, remove, deletePurchaseModal]);
 
   const rows = useMemo(() => {
     const sortedPurchases = [...purchases].sort((a, b) =>
@@ -80,19 +80,22 @@ function PurchasesContent() {
 
   const totalSpent = filteredRows.reduce((acc, row) => acc + row.total, 0);
 
-  const rowsToExport = () =>
-    filteredRows.map(({ number, supplier, date, items, total }) => ({
-      'Nº Compra': number,
-      Fornecedor: supplier,
-      Data: date,
-      Itens: items,
-      'Total (R$)': total,
-    }));
+  const rowsToExport = useCallback(
+    () =>
+      filteredRows.map(({ number, supplier, date, items, total }) => ({
+        'Nº Compra': number,
+        Fornecedor: supplier,
+        Data: date,
+        Itens: items,
+        'Total (R$)': total,
+      })),
+    [filteredRows]
+  );
 
-  const handleExportToExcel = () => {
+  const handleExportToExcel = useCallback(() => {
     const stamp = new Date().toISOString().slice(0, 10);
     exportTableToExcel('Purchases', rowsToExport(), `purchases-${stamp}.xlsx`);
-  };
+  }, [rowsToExport]);
 
   return (
     <div>

@@ -1,7 +1,7 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
@@ -11,6 +11,12 @@ import { useModal } from '@/shared/hooks/useModal';
 import EditRecordModal from '@/app/inventory/components/EditRecordModal';
 import AddRecordForm from '@/app/inventory/components/AddRecordForm';
 import { Pencil, Trash2 } from 'lucide-react';
+
+const iconPlus = (
+  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+  </svg>
+);
 
 type AddOption = 'menu' | 'genre' | 'artist' | 'record';
 
@@ -79,10 +85,10 @@ export default function InventoryPage() {
   const genres = useMemo(() => genresList.data ?? [], [genresList.data]);
   const artists = useMemo(() => artistsList.data ?? [], [artistsList.data]);
 
-  const closeAddModal = () => {
+  const closeAddModal = useCallback(() => {
     addModal.closeModal();
     setAddOption('menu');
-  };
+  }, [addModal]);
 
   const deleteRecordModal = useModal();
   const [recordToDelete, setRecordToDelete] = useState<{ id: number; title: string } | null>(null);
@@ -99,40 +105,40 @@ export default function InventoryPage() {
     nomeArtista: string;
   } | null>(null);
 
-  const handleAddGenre = async () => {
+  const handleAddGenre = useCallback(async () => {
     const nomeGenero = newGenre.trim();
     if (!nomeGenero) return;
     await createGenre.mutateAsync({ nomeGenero });
     setNewGenre('');
-  };
+  }, [newGenre, createGenre]);
 
-  const handleConfirmDeleteRecord = async () => {
+  const handleConfirmDeleteRecord = useCallback(async () => {
     if (!recordToDelete) return;
     await removeRecord.mutateAsync(recordToDelete.id);
     setRecordToDelete(null);
     deleteRecordModal.closeModal();
-  };
+  }, [recordToDelete, removeRecord, deleteRecordModal]);
 
-  const handleConfirmDeleteGenre = async () => {
+  const handleConfirmDeleteGenre = useCallback(async () => {
     if (!genreToDelete) return;
     await removeGenre.mutateAsync(genreToDelete.generoMusicalId);
     setGenreToDelete(null);
     deleteGenreModal.closeModal();
-  };
+  }, [genreToDelete, removeGenre, deleteGenreModal]);
 
-  const handleAddArtist = async () => {
+  const handleAddArtist = useCallback(async () => {
     const nomeArtista = newArtist.trim();
     if (!nomeArtista) return;
     await createArtist.mutateAsync({ nomeArtista });
     setNewArtist('');
-  };
+  }, [newArtist, createArtist]);
 
-  const handleConfirmDeleteArtist = async () => {
+  const handleConfirmDeleteArtist = useCallback(async () => {
     if (!artistToDelete) return;
     await removeArtist.mutateAsync(artistToDelete.artistaId);
     setArtistToDelete(null);
     deleteArtistModal.closeModal();
-  };
+  }, [artistToDelete, removeArtist, deleteArtistModal]);
 
   const rows = useMemo<RecordRow[]>(
     () =>
@@ -173,12 +179,6 @@ export default function InventoryPage() {
     { value: RecordStatus.DISPONIVEL, label: 'Disponíveis', count: availableCount },
     { value: RecordStatus.VENDIDO, label: 'Vendidos', count: soldCount },
   ];
-
-  const iconPlus = (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-    </svg>
-  );
 
   return (
     <div>
