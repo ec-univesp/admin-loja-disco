@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  recordsService,
-  type RecordPayload,
-  type RecordSearchParams,
-} from '@/shared/services/api';
+import { recordsService, type RecordPayload, type RecordSearchParams } from '@/shared/services/api';
 import { notifyError, notifySuccess } from '@/shared/utils/notify';
 
 const keys = {
@@ -20,16 +16,19 @@ export function useRecordsModel(id?: number, searchFilters?: RecordSearchParams)
   const list = useQuery({
     queryKey: keys.list(),
     queryFn: ({ signal }) => recordsService.list(signal),
+    staleTime: 5 * 60_000,
   });
 
   const listAvailable = useQuery({
     queryKey: keys.filtered(1),
     queryFn: ({ signal }) => recordsService.listFiltered(1, signal),
+    staleTime: 5 * 60_000,
   });
 
   const listSold = useQuery({
     queryKey: keys.filtered(2),
     queryFn: ({ signal }) => recordsService.listFiltered(2, signal),
+    staleTime: 5 * 60_000,
   });
 
   const byId = useQuery({
@@ -39,6 +38,7 @@ export function useRecordsModel(id?: number, searchFilters?: RecordSearchParams)
       return recordsService.getById(id, signal);
     },
     enabled: id !== undefined,
+    staleTime: 5 * 60_000,
   });
 
   const searchTerm = searchFilters?.termo ?? '';
@@ -46,6 +46,7 @@ export function useRecordsModel(id?: number, searchFilters?: RecordSearchParams)
     queryKey: keys.search({ termo: searchTerm }),
     queryFn: ({ signal }) => recordsService.search({ termo: searchTerm }, signal),
     enabled: searchTerm.length > 0,
+    staleTime: 0,
   });
 
   const create = useMutation({

@@ -2,7 +2,7 @@
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
-import React, { Suspense, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useMemo, useState } from 'react';
 import { OrderStatus, RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useSalesModel } from '@/app/sales/model/salesModel';
@@ -17,7 +17,10 @@ import Button from '@/shared/components/ui/button/Button';
 import { reportsService, type ProfitPerItemDTO } from '@/shared/services/api';
 
 const MONTHS_IN_YEAR = 12;
-const monthOptions = Array.from({ length: MONTHS_IN_YEAR }, (_unused, monthIndex) => monthIndex + 1);
+const monthOptions = Array.from(
+  { length: MONTHS_IN_YEAR },
+  (_unused, monthIndex) => monthIndex + 1
+);
 
 const toCurrencyNumber = (value?: number): number | null =>
   typeof value === 'number' ? value : null;
@@ -52,7 +55,8 @@ const statusColor: Record<string, string> = {
   [OrderStatus.ENTREGUE]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   [OrderStatus.CONFIRMADA]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   [OrderStatus.ENVIADA]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  [OrderStatus.PENDENTE]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  [OrderStatus.PENDENTE]:
+    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   [OrderStatus.CANCELADA]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
@@ -64,8 +68,7 @@ const statusLabel: Record<string, string> = {
   [OrderStatus.CANCELADA]: 'Cancelada',
 };
 
-const formatSaleNumber = (index: number) =>
-  `VND-${String(index + 1).padStart(4, '0')}`;
+const formatSaleNumber = (id: number) => `VND-${String(id).padStart(4, '0')}`;
 
 const formatDateBR = (isoDate: string) => {
   if (!isoDate || isoDate.length < 10) return isoDate || '—';
@@ -107,7 +110,9 @@ function SalesContent() {
   const [saleDetails, setSaleDetails] = useState<{ number: string; saleId: number } | null>(null);
 
   const deleteCustomerModal = useModal();
-  const [customerToDelete, setCustomerToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [customerToDelete, setCustomerToDelete] = useState<{ id: number; name: string } | null>(
+    null
+  );
 
   const exportModal = useModal();
   const now = new Date();
@@ -116,29 +121,35 @@ function SalesContent() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  const handleConfirmDeleteSale = async () => {
+  const handleConfirmDeleteSale = useCallback(async () => {
     if (!saleToDelete) return;
     const sale = sortedSales.find((candidateSale) => candidateSale.vendaId === saleToDelete.id);
     if (sale?.itens?.length) {
       await Promise.all(
         sale.itens.map((item) => {
-          const record = allRecords.find((candidateRecord) => candidateRecord.discoId === item.discoId);
+          const record = allRecords.find(
+            (candidateRecord) => candidateRecord.discoId === item.discoId
+          );
           if (!record?.discoId) return Promise.resolve();
-          return updateRecord.mutateAsync({ ...record, discoId: record.discoId, status: RecordStatus.DISPONIVEL });
+          return updateRecord.mutateAsync({
+            ...record,
+            discoId: record.discoId,
+            status: RecordStatus.DISPONIVEL,
+          });
         })
       );
     }
     await removeSale.mutateAsync(saleToDelete.id);
     setSaleToDelete(null);
     deleteSaleModal.closeModal();
-  };
+  }, [saleToDelete, sortedSales, allRecords, updateRecord, removeSale, deleteSaleModal]);
 
-  const handleConfirmDeleteCustomer = async () => {
+  const handleConfirmDeleteCustomer = useCallback(async () => {
     if (!customerToDelete) return;
     await removeCustomer.mutateAsync(customerToDelete.id);
     setCustomerToDelete(null);
     deleteCustomerModal.closeModal();
-  };
+  }, [customerToDelete, removeCustomer, deleteCustomerModal]);
 
   const sortedSales = useMemo(
     () =>
@@ -152,7 +163,7 @@ function SalesContent() {
     () =>
       sortedSales.map((sale, index) => ({
         id: sale.vendaId ?? 0,
-        number: formatSaleNumber(index),
+        number: formatSaleNumber(sale.vendaId ?? 0),
         customer: sale.cliente?.nomeCliente ?? '—',
         customerId: sale.cliente?.clienteId,
         date: sale.dataVenda ?? '',
@@ -166,29 +177,33 @@ function SalesContent() {
     [sortedSales]
   );
 
-  const handleToggleDelivered = async (saleIndex: number, currentStatus: string) => {
-    const sale = sortedSales[saleIndex];
-    if (!sale?.vendaId) return;
-    const newStatus = currentStatus === OrderStatus.ENTREGUE ? OrderStatus.PENDENTE : OrderStatus.ENTREGUE;
-    await updateSale.mutateAsync({
-      vendasId: sale.vendaId,
-      cliente: sale.cliente,
-      dataVenda: sale.dataVenda,
-      endereco: sale.endereco,
-      frete: sale.frete,
-      valorTotal: sale.valorTotal,
-      pagamento: sale.pagamento,
-      canalVenda: sale.canalVenda,
-      custosAdicionais: sale.custosAdicionais,
-      statusPedido: newStatus,
-      itens: sale.itens?.map((item) => ({
-        discoId: item.discoId,
-        nomeDisco: item.nomeDisco,
-        nomeArtista: item.nomeArtista,
-        precoVenda: item.precoVenda,
-      })),
-    });
-  };
+  const handleToggleDelivered = useCallback(
+    async (saleIndex: number, currentStatus: string) => {
+      const sale = sortedSales[saleIndex];
+      if (!sale?.vendaId) return;
+      const newStatus =
+        currentStatus === OrderStatus.ENTREGUE ? OrderStatus.PENDENTE : OrderStatus.ENTREGUE;
+      await updateSale.mutateAsync({
+        vendaId: sale.vendaId,
+        cliente: sale.cliente,
+        dataVenda: sale.dataVenda,
+        endereco: sale.endereco,
+        frete: sale.frete,
+        valorTotal: sale.valorTotal,
+        pagamento: sale.pagamento,
+        canalVenda: sale.canalVenda,
+        custosAdicionais: sale.custosAdicionais,
+        statusPedido: newStatus,
+        itens: sale.itens?.map((item) => ({
+          discoId: item.discoId,
+          nomeDisco: item.nomeDisco,
+          nomeArtista: item.nomeArtista,
+          precoVenda: item.precoVenda,
+        })),
+      });
+    },
+    [sortedSales, updateSale]
+  );
 
   const normalizedSearch = searchTerm.toLowerCase();
   const filteredRows = rows.filter((row) => {
@@ -206,12 +221,12 @@ function SalesContent() {
     .filter((row) => isCompletedStatus(row.status))
     .reduce((acc, row) => acc + row.total, 0);
 
-  const handleOpenExportModal = () => {
+  const handleOpenExportModal = useCallback(() => {
     setExportError(null);
     exportModal.openModal();
-  };
+  }, [exportModal]);
 
-  const handleConfirmExport = async () => {
+  const handleConfirmExport = useCallback(async () => {
     setExportError(null);
     setIsExporting(true);
     try {
@@ -237,7 +252,7 @@ function SalesContent() {
     } finally {
       setIsExporting(false);
     }
-  };
+  }, [exportYear, exportMonth, exportModal]);
 
   return (
     <div>
@@ -292,53 +307,102 @@ function SalesContent() {
         </div>
 
         {customers.length === 0 ? (
-          <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-            <p className="text-xs text-gray-400 dark:text-gray-500">Nenhum cliente cadastrado.</p>
+          <div className="flex items-center gap-3 border-t border-gray-100 px-6 py-5 dark:border-gray-800">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+              <svg
+                className="h-4 w-4 text-gray-400 dark:text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16 14a4 4 0 10-8 0M12 11a3 3 0 100-6 3 3 0 000 6z"
+                />
+              </svg>
+            </div>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
+              Nenhum cliente cadastrado ainda.
+            </p>
           </div>
         ) : (
           <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-            <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-              Clientes cadastrados:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {customers.map((customer) => (
-                <div
-                  key={customer.clienteId}
-                  className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
-                >
-                  <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
-                    {customer.nomeCliente}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label={`Editar cliente ${customer.nomeCliente}`}
-                    title={`Editar cliente ${customer.nomeCliente}`}
-                    onClick={() => {
-                      setEditCustomerId(customer.clienteId);
-                      setShowCustomerModal(true);
-                    }}
-                    className="bg-brand-500 hover:bg-brand-600 inline-flex h-7 w-7 items-center justify-center rounded-md text-white shadow-sm transition-colors"
+            <div className="mb-3 flex items-center gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                Clientes cadastrados
+              </p>
+              <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-700/70 dark:text-gray-400">
+                {customers.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(188px,1fr))] gap-2">
+              {customers.map((customer) => {
+                const words = (customer.nomeCliente ?? '?').trim().split(/\s+/);
+                const initials =
+                  words.length >= 2
+                    ? `${words[0][0] ?? ''}${words[words.length - 1][0] ?? ''}`.toUpperCase()
+                    : (words[0]?.[0] ?? '?').toUpperCase();
+                const avatarGradients = [
+                  'from-violet-400 to-violet-600',
+                  'from-brand-400 to-brand-600',
+                  'from-emerald-400 to-emerald-600',
+                  'from-amber-400 to-amber-600',
+                  'from-rose-400 to-rose-600',
+                  'from-cyan-400 to-cyan-600',
+                ];
+                const gradient =
+                  avatarGradients[(customer.clienteId ?? 0) % avatarGradients.length];
+                return (
+                  <div
+                    key={customer.clienteId}
+                    className="group flex items-center gap-2.5 rounded-xl border border-gray-100 bg-white px-3 py-2 transition-all hover:border-gray-200 hover:shadow-sm dark:border-gray-700/60 dark:bg-gray-800/50 dark:hover:border-gray-600"
                   >
-                    <Pencil size={14} strokeWidth={2.25} />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Excluir cliente ${customer.nomeCliente}`}
-                    title={`Excluir cliente ${customer.nomeCliente}`}
-                    onClick={() => {
-                      if (customer.clienteId === undefined) return;
-                      setCustomerToDelete({
-                        id: customer.clienteId,
-                        name: customer.nomeCliente ?? '',
-                      });
-                      deleteCustomerModal.openModal();
-                    }}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
-                  >
-                    <Trash2 size={14} strokeWidth={2.25} />
-                  </button>
-                </div>
-              ))}
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br ${gradient} text-[11px] font-bold text-white shadow-sm`}
+                    >
+                      {initials}
+                    </div>
+                    <span
+                      className="min-w-0 flex-1 truncate text-sm font-medium text-gray-700 dark:text-gray-200"
+                      title={customer.nomeCliente}
+                    >
+                      {customer.nomeCliente}
+                    </span>
+                    <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                      <button
+                        type="button"
+                        aria-label={`Editar cliente ${customer.nomeCliente}`}
+                        title={`Editar cliente ${customer.nomeCliente}`}
+                        onClick={() => {
+                          setEditCustomerId(customer.clienteId);
+                          setShowCustomerModal(true);
+                        }}
+                        className="flex h-6 w-6 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 dark:hover:text-brand-400"
+                      >
+                        <Pencil size={12} strokeWidth={2.5} />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Excluir cliente ${customer.nomeCliente}`}
+                        title={`Excluir cliente ${customer.nomeCliente}`}
+                        onClick={() => {
+                          if (customer.clienteId === undefined) return;
+                          setCustomerToDelete({
+                            id: customer.clienteId,
+                            name: customer.nomeCliente ?? '',
+                          });
+                          deleteCustomerModal.openModal();
+                        }}
+                        className="flex h-6 w-6 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                      >
+                        <Trash2 size={12} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -404,9 +468,7 @@ function SalesContent() {
                     <td className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
                       R$ {row.total.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {row.payment}
-                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{row.payment}</td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
                       {row.salesChannel}
                     </td>
@@ -489,9 +551,7 @@ function SalesContent() {
         }}
         saleNumber={saleDetails?.number ?? ''}
         sale={
-          saleDetails
-            ? sortedSales.find((s) => s.vendaId === saleDetails.saleId) ?? null
-            : null
+          saleDetails ? (sortedSales.find((s) => s.vendaId === saleDetails.saleId) ?? null) : null
         }
       />
 

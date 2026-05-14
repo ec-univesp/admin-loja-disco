@@ -21,8 +21,7 @@ const statusLabel: Record<string, string> = {
   [OrderStatus.CANCELADA]: 'Cancelada',
 };
 
-const formatSaleNumber = (index: number): string =>
-  `VND-${String(index + 1).padStart(4, '0')}`;
+const formatSaleNumber = (id: number): string => `VND-${String(id).padStart(4, '0')}`;
 
 const RECENT_SALES_LIMIT = 5;
 
@@ -39,7 +38,7 @@ export default function RecentSales() {
       const firstItem = sale.itens?.[0];
       return {
         id: sale.vendaId ?? index,
-        number: formatSaleNumber(index),
+        number: formatSaleNumber(sale.vendaId ?? 0),
         record: firstItem?.nomeDisco ?? '—',
         quantity: sale.itens?.length ?? 0,
         amount: sale.valorTotal ?? 0,
@@ -123,7 +122,9 @@ export default function RecentSales() {
                     R$ {row.amount.toFixed(2)}
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
-                    <Badge color={statusColor[row.status] ?? 'warning'}>{statusLabel[row.status] ?? row.status}</Badge>
+                    <Badge color={statusColor[row.status] ?? 'warning'}>
+                      {statusLabel[row.status] ?? row.status}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               ))

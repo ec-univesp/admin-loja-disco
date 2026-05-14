@@ -1,7 +1,7 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
@@ -109,23 +109,30 @@ export default function RevenuePage() {
       sales.filter((v) => {
         const d = new Date(v.dataVenda ?? '');
         return (
-          d.getFullYear() === yearFilter &&
-          (monthFilter === 0 || d.getMonth() + 1 === monthFilter)
+          d.getFullYear() === yearFilter && (monthFilter === 0 || d.getMonth() + 1 === monthFilter)
         );
       }),
     [sales, yearFilter, monthFilter]
   );
 
-  const monthlyRevenueData = useMemo(
-    () =>
-      (summary.data ?? []).map((r) => ({
-        month: MONTH_LABELS[(r.mes ?? 1) - 1] ?? String(r.mes),
-        revenue: r.receita ?? 0,
-        expenses: r.totalDespesa ?? 0,
-        profit: r.lucro ?? 0,
-      })),
-    [summary.data]
-  );
+  const monthlyRevenueData = useMemo(() => {
+    const map = new Map<number, { revenue: number; expenses: number; profit: number }>();
+    for (const r of summary.data ?? []) {
+      const mes = r.mes ?? 1;
+      const prev = map.get(mes) ?? { revenue: 0, expenses: 0, profit: 0 };
+      map.set(mes, {
+        revenue: prev.revenue + (r.receita ?? 0),
+        expenses: prev.expenses + (r.totalDespesa ?? 0),
+        profit: prev.profit + (r.lucro ?? 0),
+      });
+    }
+    return [...map.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([mes, v]) => ({
+        month: MONTH_LABELS[mes - 1] ?? String(mes),
+        ...v,
+      }));
+  }, [summary.data]);
 
   const monthlyRevenue = monthlyRevenueData;
 
@@ -185,34 +192,43 @@ export default function RevenuePage() {
   const dimensionRevenue = dimensionData;
   const isDimensionEmpty = !detailed.isFetching && dimensionData.length === 0;
 
-  const salesDetails = filteredSales.map((v) => ({
-    id: String(v.vendaId ?? ''),
-    data: v.dataVenda ?? '',
-    cliente: v.cliente?.nomeCliente ?? '',
-    canal: v.canalVenda?.nomeCanalVenda ?? '',
-    pagamento: v.pagamento ?? '',
-    frete: v.frete ?? 0,
-    custosAdicionais: v.custosAdicionais ?? 0,
-    total: v.valorTotal ?? 0,
-    status: v.statusPedido ?? '',
-  }));
-
-  const handleExportReport = () =>
-    exportFinancialReport({
-      monthlySummary: monthlyRevenue,
-      topProducts: [],
-      paymentMethods: channelRevenue.map((c) => ({
-        forma: c.label,
-        total: c.total,
-        percentual: c.percentual,
+  const salesDetails = useMemo(
+    () =>
+      filteredSales.map((v) => ({
+        id: String(v.vendaId ?? ''),
+        data: v.dataVenda ?? '',
+        cliente: v.cliente?.nomeCliente ?? '',
+        canal: v.canalVenda?.nomeCanalVenda ?? '',
+        pagamento: v.pagamento ?? '',
+        frete: v.frete ?? 0,
+        custosAdicionais: v.custosAdicionais ?? 0,
+        total: v.valorTotal ?? 0,
+        status: v.statusPedido ?? '',
       })),
-      salesDetails,
-    });
+    [filteredSales]
+  );
 
-  const handleExportCSV = () =>
-    exportFinancialReportCSV({ monthlySummary: monthlyRevenue, salesDetails });
+  const handleExportReport = useCallback(
+    () =>
+      exportFinancialReport({
+        monthlySummary: monthlyRevenue,
+        topProducts: [],
+        paymentMethods: channelRevenue.map((c) => ({
+          forma: c.label,
+          total: c.total,
+          percentual: c.percentual,
+        })),
+        salesDetails,
+      }),
+    [monthlyRevenue, channelRevenue, salesDetails]
+  );
 
-  const handleFullBackup = () => {
+  const handleExportCSV = useCallback(
+    () => exportFinancialReportCSV({ monthlySummary: monthlyRevenue, salesDetails }),
+    [monthlyRevenue, salesDetails]
+  );
+
+  const handleFullBackup = useCallback(() => {
     const customers = customersQuery.data ?? [];
     const purchases = purchasesQuery.data ?? [];
 
@@ -242,7 +258,16 @@ export default function RevenuePage() {
       purchaseItems,
       salesChannels: channelsQuery.data ?? [],
     });
-  };
+  }, [
+    customersQuery.data,
+    purchasesQuery.data,
+    sales,
+    genres,
+    artistsQuery.data,
+    recordsQuery.data,
+    addressesQuery.data,
+    channelsQuery.data,
+  ]);
 
   return (
     <div>
@@ -364,7 +389,9 @@ export default function RevenuePage() {
                 ) : (
                   monthlyRevenue.map((m) => (
                     <tr key={m.month}>
-                      <td className="py-3 font-medium text-gray-700 dark:text-gray-300">{m.month}</td>
+                      <td className="py-3 font-medium text-gray-700 dark:text-gray-300">
+                        {m.month}
+                      </td>
                       <td className="py-3 text-right text-green-600">R$ {m.revenue.toFixed(2)}</td>
                       <td className="py-3 text-right text-red-500">R$ {m.expenses.toFixed(2)}</td>
                       <td className="py-3 text-right font-semibold text-gray-800 dark:text-white">
@@ -386,7 +413,6 @@ export default function RevenuePage() {
               <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
                 Análise de Receita
               </h3>
-
             </div>
             <p className="mt-0.5 text-xs text-gray-400">
               {monthFilter === 0

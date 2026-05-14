@@ -1,7 +1,7 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import Button from '@/shared/components/ui/button/Button';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useGenresModel } from '@/app/inventory/model/genresModel';
@@ -11,6 +11,12 @@ import { useModal } from '@/shared/hooks/useModal';
 import EditRecordModal from '@/app/inventory/components/EditRecordModal';
 import AddRecordForm from '@/app/inventory/components/AddRecordForm';
 import { Pencil, Trash2 } from 'lucide-react';
+
+const iconPlus = (
+  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+  </svg>
+);
 
 type AddOption = 'menu' | 'genre' | 'artist' | 'record';
 
@@ -34,8 +40,8 @@ interface RecordRow {
   status: string;
 }
 
-const generateCode = (index: number): string => {
-  return `DISC-${String(index + 1).padStart(4, '0')}`;
+const generateCode = (id: number): string => {
+  return `DISC-${String(id).padStart(4, '0')}`;
 };
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -58,9 +64,7 @@ export default function InventoryPage() {
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
 
-  const searchFilters = debouncedSearchTerm
-    ? { termo: debouncedSearchTerm }
-    : undefined;
+  const searchFilters = debouncedSearchTerm ? { termo: debouncedSearchTerm } : undefined;
 
   const {
     list: recordsList,
@@ -79,10 +83,10 @@ export default function InventoryPage() {
   const genres = useMemo(() => genresList.data ?? [], [genresList.data]);
   const artists = useMemo(() => artistsList.data ?? [], [artistsList.data]);
 
-  const closeAddModal = () => {
+  const closeAddModal = useCallback(() => {
     addModal.closeModal();
     setAddOption('menu');
-  };
+  }, [addModal]);
 
   const deleteRecordModal = useModal();
   const [recordToDelete, setRecordToDelete] = useState<{ id: number; title: string } | null>(null);
@@ -99,46 +103,46 @@ export default function InventoryPage() {
     nomeArtista: string;
   } | null>(null);
 
-  const handleAddGenre = async () => {
+  const handleAddGenre = useCallback(async () => {
     const nomeGenero = newGenre.trim();
     if (!nomeGenero) return;
     await createGenre.mutateAsync({ nomeGenero });
     setNewGenre('');
-  };
+  }, [newGenre, createGenre]);
 
-  const handleConfirmDeleteRecord = async () => {
+  const handleConfirmDeleteRecord = useCallback(async () => {
     if (!recordToDelete) return;
     await removeRecord.mutateAsync(recordToDelete.id);
     setRecordToDelete(null);
     deleteRecordModal.closeModal();
-  };
+  }, [recordToDelete, removeRecord, deleteRecordModal]);
 
-  const handleConfirmDeleteGenre = async () => {
+  const handleConfirmDeleteGenre = useCallback(async () => {
     if (!genreToDelete) return;
     await removeGenre.mutateAsync(genreToDelete.generoMusicalId);
     setGenreToDelete(null);
     deleteGenreModal.closeModal();
-  };
+  }, [genreToDelete, removeGenre, deleteGenreModal]);
 
-  const handleAddArtist = async () => {
+  const handleAddArtist = useCallback(async () => {
     const nomeArtista = newArtist.trim();
     if (!nomeArtista) return;
     await createArtist.mutateAsync({ nomeArtista });
     setNewArtist('');
-  };
+  }, [newArtist, createArtist]);
 
-  const handleConfirmDeleteArtist = async () => {
+  const handleConfirmDeleteArtist = useCallback(async () => {
     if (!artistToDelete) return;
     await removeArtist.mutateAsync(artistToDelete.artistaId);
     setArtistToDelete(null);
     deleteArtistModal.closeModal();
-  };
+  }, [artistToDelete, removeArtist, deleteArtistModal]);
 
   const rows = useMemo<RecordRow[]>(
     () =>
       records.map((record, index) => ({
         id: record.discoId ?? 0,
-        code: generateCode(index),
+        code: generateCode(record.discoId ?? 0),
         title: record.album ?? '',
         artist: record.artista?.nomeArtista ?? 'Desconhecido',
         genre:
@@ -168,30 +172,26 @@ export default function InventoryPage() {
   const availableCount = rows.filter((row) => row.status === RecordStatus.DISPONIVEL).length;
   const soldCount = rows.filter((row) => row.status === RecordStatus.VENDIDO).length;
 
-  const statusOptions: ReadonlyArray<{ value: 'all' | RecordStatus; label: string; count: number }> = [
+  const statusOptions: ReadonlyArray<{
+    value: 'all' | RecordStatus;
+    label: string;
+    count: number;
+  }> = [
     { value: 'all', label: 'Todos', count: rows.length },
     { value: RecordStatus.DISPONIVEL, label: 'Disponíveis', count: availableCount },
     { value: RecordStatus.VENDIDO, label: 'Vendidos', count: soldCount },
   ];
-
-  const iconPlus = (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-    </svg>
-  );
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Estoque" />
 
       <div className="grid gap-4">
-        <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-brand-50 via-white to-brand-25 dark:border-gray-700 dark:from-brand-950/50 dark:via-gray-900 dark:to-brand-900/30">
+        <div className="from-brand-50 to-brand-25 dark:from-brand-950/50 dark:to-brand-900/30 rounded-2xl border border-gray-200 bg-gradient-to-br via-white dark:border-gray-700 dark:via-gray-900">
           <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-2xl font-bold text-brand-900 dark:text-brand-50">
-                Meu Estoque
-              </h3>
-              <p className="mt-1 text-sm text-brand-700/70 dark:text-brand-200/60">
+              <h3 className="text-brand-900 dark:text-brand-50 text-2xl font-bold">Meu Estoque</h3>
+              <p className="text-brand-700/70 dark:text-brand-200/60 mt-1 text-sm">
                 {filteredRows.length} disco(s){' '}
                 {isSearching
                   ? 'encontrado(s)'
@@ -206,7 +206,7 @@ export default function InventoryPage() {
               <div
                 role="group"
                 aria-label="Filtrar por status"
-                className="inline-flex rounded-lg border border-brand-200 bg-white p-1 dark:border-brand-700/40 dark:bg-gray-800/50"
+                className="border-brand-200 dark:border-brand-700/40 inline-flex rounded-lg border bg-white p-1 dark:bg-gray-800/50"
               >
                 {statusOptions.map((option) => {
                   const isActive = statusFilter === option.value;
@@ -219,7 +219,7 @@ export default function InventoryPage() {
                       className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                         isActive
                           ? 'bg-brand-600 text-white shadow-sm'
-                          : 'text-gray-600 hover:bg-brand-50 dark:text-gray-300 dark:hover:bg-brand-900/30'
+                          : 'hover:bg-brand-50 dark:hover:bg-brand-900/30 text-gray-600 dark:text-gray-300'
                       }`}
                     >
                       {option.label}
@@ -235,14 +235,9 @@ export default function InventoryPage() {
                 placeholder="Buscar álbum ou artista..."
                 value={searchTerm}
                 onChange={(searchChangeEvent) => setSearchTerm(searchChangeEvent.target.value)}
-                className="focus:border-brand-700 focus:ring-brand-600/20 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition-all dark:border-brand-700/40 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:border-brand-600"
+                className="focus:border-brand-700 focus:ring-brand-600/20 border-brand-200 dark:border-brand-700/40 dark:focus:border-brand-600 rounded-lg border bg-white px-4 py-2.5 text-sm text-gray-700 transition-all outline-none dark:bg-gray-800/50 dark:text-gray-200"
               />
-              <Button
-                size="md"
-                variant="primary"
-                startIcon={iconPlus}
-                onClick={addModal.openModal}
-              >
+              <Button size="md" variant="primary" startIcon={iconPlus} onClick={addModal.openModal}>
                 Adicionar
               </Button>
             </div>
@@ -254,22 +249,54 @@ export default function InventoryPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Código</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Álbum</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Artista</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Gênero</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Nacionalidade</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Prensagem</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Encarte</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Gravadora</th>
-                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Ano Lanç.</th>
-                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Ano Prens.</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cond. Capa</th>
-                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cond. Disco</th>
-                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Valor de Mercado</th>
-                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Custo</th>
-                  <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">Status</th>
-                  <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">Ações</th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Código
+                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Álbum
+                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Artista
+                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Gênero
+                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Nacionalidade
+                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Prensagem
+                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Encarte
+                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Gravadora
+                  </th>
+                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">
+                    Ano Lanç.
+                  </th>
+                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">
+                    Ano Prens.
+                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Cond. Capa
+                  </th>
+                  <th className="px-4 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">
+                    Cond. Disco
+                  </th>
+                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">
+                    Valor de Mercado
+                  </th>
+                  <th className="px-4 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">
+                    Custo
+                  </th>
+                  <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">
+                    Status
+                  </th>
+                  <th className="px-4 py-4 text-center font-semibold text-gray-700 dark:text-gray-300">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
@@ -277,8 +304,18 @@ export default function InventoryPage() {
                   <tr>
                     <td colSpan={16} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center justify-center gap-2">
-                        <svg className="h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        <svg
+                          className="h-12 w-12 text-gray-300 dark:text-gray-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                          />
                         </svg>
                         <p className="text-gray-500 dark:text-gray-400">
                           {loading ? 'Carregando estoque...' : 'Nenhum disco encontrado'}
@@ -295,7 +332,7 @@ export default function InventoryPage() {
                   filteredRows.map((row) => (
                     <tr
                       key={row.id}
-                      className="transition-all duration-200 hover:bg-brand-50/50 dark:hover:bg-brand-900/20"
+                      className="hover:bg-brand-50/50 dark:hover:bg-brand-900/20 transition-all duration-200"
                     >
                       <td className="px-4 py-4 font-mono text-xs font-medium text-gray-600 dark:text-gray-400">
                         {row.code}
@@ -303,9 +340,7 @@ export default function InventoryPage() {
                       <td className="px-4 py-4 font-semibold text-gray-900 dark:text-white">
                         {row.title}
                       </td>
-                      <td className="px-4 py-4 text-gray-700 dark:text-gray-300">
-                        {row.artist}
-                      </td>
+                      <td className="px-4 py-4 text-gray-700 dark:text-gray-300">{row.artist}</td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
                         {row.genre || '—'}
                       </td>
@@ -333,7 +368,7 @@ export default function InventoryPage() {
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
                         {row.recordCondition || '—'}
                       </td>
-                      <td className="px-4 py-4 text-right font-medium text-brand-700 dark:text-brand-400">
+                      <td className="text-brand-700 dark:text-brand-400 px-4 py-4 text-right font-medium">
                         R$ {row.marketValue.toFixed(2)}
                       </td>
                       <td className="px-4 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
@@ -387,13 +422,13 @@ export default function InventoryPage() {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-400">
                   Total em estoque:{' '}
-                  <span className="font-semibold text-brand-700 dark:text-brand-400">
+                  <span className="text-brand-700 dark:text-brand-400 font-semibold">
                     {filteredRows.length} disco(s)
                   </span>
                 </span>
                 <span className="text-gray-600 dark:text-gray-400">
                   Valor total:{' '}
-                  <span className="font-semibold text-brand-700 dark:text-brand-400">
+                  <span className="text-brand-700 dark:text-brand-400 font-semibold">
                     R$ {filteredRows.reduce((sum, row) => sum + row.price, 0).toFixed(2)}
                   </span>
                 </span>
@@ -413,10 +448,15 @@ export default function InventoryPage() {
             <button
               type="button"
               onClick={() => setAddOption('menu')}
-              className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-700 transition-colors hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300"
+              className="text-brand-700 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 mb-4 inline-flex items-center gap-1 text-sm font-medium transition-colors"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               Voltar
             </button>
@@ -434,44 +474,64 @@ export default function InventoryPage() {
                 <button
                   type="button"
                   onClick={() => setAddOption('genre')}
-                  className="group flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
+                  className="group hover:border-brand-400 hover:bg-brand-50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20 flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all dark:border-gray-700 dark:bg-gray-900/50"
                 >
-                  <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400">
+                  <span className="bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400 rounded-lg p-2">
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19a3 3 0 11-6 0 3 3 0 016 0zm12-3a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 19V6l12-3v13M9 19a3 3 0 11-6 0 3 3 0 016 0zm12-3a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
                     </svg>
                   </span>
-                  <span className="font-semibold text-gray-800 dark:text-white/90">Gênero Musical</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Cadastre um novo gênero.</span>
+                  <span className="font-semibold text-gray-800 dark:text-white/90">
+                    Gênero Musical
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Cadastre um novo gênero.
+                  </span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setAddOption('artist')}
-                  className="group flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
+                  className="group hover:border-brand-400 hover:bg-brand-50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20 flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all dark:border-gray-700 dark:bg-gray-900/50"
                 >
-                  <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400">
+                  <span className="bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400 rounded-lg p-2">
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
                     </svg>
                   </span>
                   <span className="font-semibold text-gray-800 dark:text-white/90">Artista</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Cadastre um novo artista.</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Cadastre um novo artista.
+                  </span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setAddOption('record')}
-                  className="group flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
+                  className="group hover:border-brand-400 hover:bg-brand-50 dark:hover:border-brand-500 dark:hover:bg-brand-900/20 flex flex-col items-start gap-2 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all dark:border-gray-700 dark:bg-gray-900/50"
                 >
-                  <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400">
+                  <span className="bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400 rounded-lg p-2">
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <circle cx="12" cy="12" r="9" strokeWidth={2} />
                       <circle cx="12" cy="12" r="3" strokeWidth={2} />
                     </svg>
                   </span>
-                  <span className="font-semibold text-gray-800 dark:text-white/90">Adicionar Disco</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Adicione um disco ao estoque.</span>
+                  <span className="font-semibold text-gray-800 dark:text-white/90">
+                    Adicionar Disco
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Adicione um disco ao estoque.
+                  </span>
                 </button>
               </div>
             </>
@@ -509,9 +569,9 @@ export default function InventoryPage() {
                       {genres.map((genre) => (
                         <div
                           key={genre.generoMusicalId}
-                          className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
+                          className="bg-brand-50 dark:bg-brand-900/30 border-brand-100 dark:border-brand-900/50 inline-flex items-center gap-2 rounded-lg border py-1.5 pr-1.5 pl-3"
                         >
-                          <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
+                          <span className="text-brand-700 dark:text-brand-400 text-sm font-medium">
                             {genre.nomeGenero}
                           </span>
                           <button
@@ -580,9 +640,9 @@ export default function InventoryPage() {
                       {artists.map((artist) => (
                         <div
                           key={artist.artistaId}
-                          className="bg-brand-50 dark:bg-brand-900/30 inline-flex items-center gap-2 rounded-lg border border-brand-100 py-1.5 pr-1.5 pl-3 dark:border-brand-900/50"
+                          className="bg-brand-50 dark:bg-brand-900/30 border-brand-100 dark:border-brand-900/50 inline-flex items-center gap-2 rounded-lg border py-1.5 pr-1.5 pl-3"
                         >
-                          <span className="text-sm font-medium text-brand-700 dark:text-brand-400">
+                          <span className="text-brand-700 dark:text-brand-400 text-sm font-medium">
                             {artist.nomeArtista}
                           </span>
                           <button

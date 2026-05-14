@@ -14,6 +14,7 @@ export function useGenresModel(id?: number) {
   const list = useQuery({
     queryKey: keys.list(),
     queryFn: ({ signal }) => genresService.list(signal),
+    staleTime: 10 * 60_000,
   });
 
   const byId = useQuery({
@@ -23,6 +24,7 @@ export function useGenresModel(id?: number) {
       return genresService.getById(id, signal);
     },
     enabled: id !== undefined,
+    staleTime: 10 * 60_000,
   });
 
   const create = useMutation({

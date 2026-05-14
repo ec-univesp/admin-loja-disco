@@ -14,6 +14,7 @@ export function usePurchasesModel(id?: number) {
   const list = useQuery({
     queryKey: keys.list(),
     queryFn: ({ signal }) => purchasesService.list(signal),
+    staleTime: 2 * 60_000,
   });
 
   const byId = useQuery({
@@ -23,6 +24,7 @@ export function usePurchasesModel(id?: number) {
       return purchasesService.getById(id, signal);
     },
     enabled: id !== undefined,
+    staleTime: 2 * 60_000,
   });
 
   const invalidatePurchasesAndStock = () => {

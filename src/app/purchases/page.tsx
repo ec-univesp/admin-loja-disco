@@ -1,7 +1,7 @@
 'use client';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadCrumb';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import { usePurchasesModel } from '@/app/purchases/model/purchasesModel';
 import { Modal } from '@/shared/components/ui/modal';
 import { useModal } from '@/shared/hooks/useModal';
@@ -17,8 +17,7 @@ const iconPlus = (
   </svg>
 );
 
-const formatPurchaseNumber = (positionInList: number) =>
-  `CMP-${String(positionInList + 1).padStart(4, '0')}`;
+const formatPurchaseNumber = (id: number) => `CMP-${String(id).padStart(4, '0')}`;
 
 export default function PurchasesPage() {
   return (
@@ -45,16 +44,17 @@ function PurchasesContent() {
   );
 
   const detailsModal = useModal();
-  const [purchaseDetails, setPurchaseDetails] = useState<{ number: string; purchaseId: number } | null>(
-    null
-  );
+  const [purchaseDetails, setPurchaseDetails] = useState<{
+    number: string;
+    purchaseId: number;
+  } | null>(null);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!purchaseToDelete) return;
     await remove.mutateAsync(purchaseToDelete.id);
     setPurchaseToDelete(null);
     deletePurchaseModal.closeModal();
-  };
+  }, [purchaseToDelete, remove, deletePurchaseModal]);
 
   const rows = useMemo(() => {
     const sortedPurchases = [...purchases].sort((a, b) =>
@@ -63,7 +63,7 @@ function PurchasesContent() {
 
     return sortedPurchases.map((purchase, index) => ({
       id: purchase.compraId ?? 0,
-      number: formatPurchaseNumber(index),
+      number: formatPurchaseNumber(purchase.compraId ?? 0),
       supplier: purchase.fornecedor ?? '—',
       date: purchase.dataCompra ?? '',
       items: purchase.itens?.length ?? 0,
@@ -80,19 +80,22 @@ function PurchasesContent() {
 
   const totalSpent = filteredRows.reduce((acc, row) => acc + row.total, 0);
 
-  const rowsToExport = () =>
-    filteredRows.map(({ number, supplier, date, items, total }) => ({
-      'Nº Compra': number,
-      Fornecedor: supplier,
-      Data: date,
-      Itens: items,
-      'Total (R$)': total,
-    }));
+  const rowsToExport = useCallback(
+    () =>
+      filteredRows.map(({ number, supplier, date, items, total }) => ({
+        'Nº Compra': number,
+        Fornecedor: supplier,
+        Data: date,
+        Itens: items,
+        'Total (R$)': total,
+      })),
+    [filteredRows]
+  );
 
-  const handleExportToExcel = () => {
+  const handleExportToExcel = useCallback(() => {
     const stamp = new Date().toISOString().slice(0, 10);
     exportTableToExcel('Purchases', rowsToExport(), `purchases-${stamp}.xlsx`);
-  };
+  }, [rowsToExport]);
 
   return (
     <div>
@@ -191,7 +194,10 @@ function PurchasesContent() {
                           aria-label={`Ver itens da compra ${purchase.number}`}
                           title={`Ver itens da compra ${purchase.number}`}
                           onClick={() => {
-                            setPurchaseDetails({ number: purchase.number, purchaseId: purchase.id });
+                            setPurchaseDetails({
+                              number: purchase.number,
+                              purchaseId: purchase.id,
+                            });
                             detailsModal.openModal();
                           }}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gray-500 text-white shadow-sm transition-colors hover:bg-gray-600"
@@ -240,7 +246,7 @@ function PurchasesContent() {
         }}
         purchase={
           purchaseToEditId !== null
-            ? purchases.find((p) => p.compraId === purchaseToEditId) ?? null
+            ? (purchases.find((p) => p.compraId === purchaseToEditId) ?? null)
             : null
         }
       />
@@ -254,7 +260,7 @@ function PurchasesContent() {
         purchaseNumber={purchaseDetails?.number ?? ''}
         purchase={
           purchaseDetails
-            ? purchases.find((p) => p.compraId === purchaseDetails.purchaseId) ?? null
+            ? (purchases.find((p) => p.compraId === purchaseDetails.purchaseId) ?? null)
             : null
         }
       />

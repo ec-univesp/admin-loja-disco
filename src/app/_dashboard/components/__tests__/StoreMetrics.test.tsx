@@ -36,16 +36,43 @@ runSequentialTests(async () => {
     await waitFor(() => assert.strictEqual(cardValueOf('Discos em estoque'), '69'));
   });
 
-  await test('exibe receita do mes apenas para vendas concluidas', async () => {
+  await test('receita exclui CANCELADA e inclui ENTREGUE e CONFIRMADA', async () => {
     const today = new Date();
     const yyyyMm = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
     db.sales.push(
-      makeSale({ vendaId: 1, dataVenda: `${yyyyMm}-15`, valorTotal: 100, statusPedido: 'ENTREGUE' }),
-      makeSale({ vendaId: 2, dataVenda: `${yyyyMm}-16`, valorTotal: 200, statusPedido: 'CONFIRMADA' }),
+      makeSale({
+        vendaId: 1,
+        dataVenda: `${yyyyMm}-15`,
+        valorTotal: 100,
+        statusPedido: 'ENTREGUE',
+      }),
+      makeSale({
+        vendaId: 2,
+        dataVenda: `${yyyyMm}-16`,
+        valorTotal: 200,
+        statusPedido: 'CONFIRMADA',
+      }),
       makeSale({ vendaId: 3, dataVenda: `${yyyyMm}-17`, valorTotal: 50, statusPedido: 'CANCELADA' })
     );
     renderWidget();
     await waitFor(() => assert.match(cardValueOf('Receita do mês'), /300,00/));
+  });
+
+  await test('receita inclui PENDENTE e ENVIADA', async () => {
+    const today = new Date();
+    const yyyyMm = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    db.sales.push(
+      makeSale({ vendaId: 1, dataVenda: `${yyyyMm}-10`, valorTotal: 80, statusPedido: 'PENDENTE' }),
+      makeSale({ vendaId: 2, dataVenda: `${yyyyMm}-11`, valorTotal: 120, statusPedido: 'ENVIADA' }),
+      makeSale({
+        vendaId: 3,
+        dataVenda: `${yyyyMm}-12`,
+        valorTotal: 999,
+        statusPedido: 'CANCELADA',
+      })
+    );
+    renderWidget();
+    await waitFor(() => assert.match(cardValueOf('Receita do mês'), /200,00/));
   });
 
   await test('exibe contagem de vendas do mes (todos os status do mes corrente)', async () => {

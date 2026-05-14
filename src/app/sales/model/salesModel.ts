@@ -14,6 +14,7 @@ export function useSalesModel(id?: number) {
   const list = useQuery({
     queryKey: keys.list(),
     queryFn: ({ signal }) => salesService.list(signal),
+    staleTime: 30_000,
   });
 
   const byId = useQuery({
@@ -23,6 +24,7 @@ export function useSalesModel(id?: number) {
       return salesService.getById(id, signal);
     },
     enabled: id !== undefined,
+    staleTime: 30_000,
   });
 
   const invalidateSalesAndStock = () => {
