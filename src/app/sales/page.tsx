@@ -171,7 +171,7 @@ function SalesContent() {
     if (!sale?.vendaId) return;
     const newStatus = currentStatus === OrderStatus.ENTREGUE ? OrderStatus.PENDENTE : OrderStatus.ENTREGUE;
     await updateSale.mutateAsync({
-      vendasId: sale.vendaId,
+      vendaId: sale.vendaId,
       cliente: sale.cliente,
       dataVenda: sale.dataVenda,
       endereco: sale.endereco,
