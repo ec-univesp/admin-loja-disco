@@ -17,8 +17,7 @@ const iconPlus = (
   </svg>
 );
 
-const formatPurchaseNumber = (positionInList: number) =>
-  `CMP-${String(positionInList + 1).padStart(4, '0')}`;
+const formatPurchaseNumber = (id: number) => `CMP-${String(id).padStart(4, '0')}`;
 
 export default function PurchasesPage() {
   return (
@@ -45,9 +44,10 @@ function PurchasesContent() {
   );
 
   const detailsModal = useModal();
-  const [purchaseDetails, setPurchaseDetails] = useState<{ number: string; purchaseId: number } | null>(
-    null
-  );
+  const [purchaseDetails, setPurchaseDetails] = useState<{
+    number: string;
+    purchaseId: number;
+  } | null>(null);
 
   const handleConfirmDelete = useCallback(async () => {
     if (!purchaseToDelete) return;
@@ -63,7 +63,7 @@ function PurchasesContent() {
 
     return sortedPurchases.map((purchase, index) => ({
       id: purchase.compraId ?? 0,
-      number: formatPurchaseNumber(index),
+      number: formatPurchaseNumber(purchase.compraId ?? 0),
       supplier: purchase.fornecedor ?? '—',
       date: purchase.dataCompra ?? '',
       items: purchase.itens?.length ?? 0,
@@ -194,7 +194,10 @@ function PurchasesContent() {
                           aria-label={`Ver itens da compra ${purchase.number}`}
                           title={`Ver itens da compra ${purchase.number}`}
                           onClick={() => {
-                            setPurchaseDetails({ number: purchase.number, purchaseId: purchase.id });
+                            setPurchaseDetails({
+                              number: purchase.number,
+                              purchaseId: purchase.id,
+                            });
                             detailsModal.openModal();
                           }}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gray-500 text-white shadow-sm transition-colors hover:bg-gray-600"
@@ -243,7 +246,7 @@ function PurchasesContent() {
         }}
         purchase={
           purchaseToEditId !== null
-            ? purchases.find((p) => p.compraId === purchaseToEditId) ?? null
+            ? (purchases.find((p) => p.compraId === purchaseToEditId) ?? null)
             : null
         }
       />
@@ -257,7 +260,7 @@ function PurchasesContent() {
         purchaseNumber={purchaseDetails?.number ?? ''}
         purchase={
           purchaseDetails
-            ? purchases.find((p) => p.compraId === purchaseDetails.purchaseId) ?? null
+            ? (purchases.find((p) => p.compraId === purchaseDetails.purchaseId) ?? null)
             : null
         }
       />
