@@ -65,7 +65,7 @@ export const StoreMetrics = () => {
   }, [sales, customers, availableRecords]);
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-4">
       <MetricCard
         icon={<GroupIcon className="size-6 text-gray-800 dark:text-white/90" />}
         label="Clientes cadastrados"
