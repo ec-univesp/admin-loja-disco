@@ -17,9 +17,10 @@ const MONTHS = [
 const CURRENT_YEAR = new Date().getFullYear();
 const AVAILABLE_YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
 const REVENUE_STATUSES = new Set<string>([
-  OrderStatus.ENTREGUE,
+  OrderStatus.PENDENTE,
   OrderStatus.CONFIRMADA,
   OrderStatus.ENVIADA,
+  OrderStatus.ENTREGUE,
 ]);
 
 export default function MonthlySalesChart() {

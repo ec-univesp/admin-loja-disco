@@ -105,6 +105,13 @@ export const apiClient = {
     signal?: AbortSignal
   ) => request(path, schema, { method: 'PUT', body, signal }),
 
+  patch: <Schema extends z.ZodTypeAny>(
+    path: string,
+    schema: Schema,
+    body?: unknown,
+    signal?: AbortSignal
+  ) => request(path, schema, { method: 'PATCH', body, signal }),
+
   delete: <Schema extends z.ZodTypeAny>(
     path: string,
     schema: Schema,

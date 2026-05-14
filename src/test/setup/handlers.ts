@@ -250,9 +250,9 @@ export const handlers = [
     db.sales.push(created);
     return new HttpResponse(null, { status: 201 });
   }),
-  http.put(buildUrl('/vendas/atualizar'), async ({ request }) => {
+  http.patch(buildUrl('/vendas/atualizar/:id'), async ({ request, params }) => {
+    const saleId = Number(params.id);
     const body = await parseBody(request, salePayloadSchema);
-    const saleId = body.vendaId ?? body.vendasId;
     const index = db.sales.findIndex((candidate) => candidate.vendaId === saleId);
     if (index < 0) return notFound();
     db.sales[index] = saleResponseSchema.parse({ ...db.sales[index], ...body, vendaId: saleId });
@@ -280,9 +280,10 @@ export const handlers = [
     db.purchases.push(created);
     return new HttpResponse(null, { status: 201 });
   }),
-  http.put(buildUrl('/compras/atualizar'), async ({ request }) => {
+  http.patch(buildUrl('/compras/atualizar/:id'), async ({ request, params }) => {
+    const purchaseId = Number(params.id);
     const body: PurchaseDTO = await parseBody(request, purchaseSchema);
-    const index = db.purchases.findIndex((candidate) => candidate.compraId === body.compraId);
+    const index = db.purchases.findIndex((candidate) => candidate.compraId === purchaseId);
     if (index < 0) return notFound();
     db.purchases[index] = { ...db.purchases[index], ...body };
     return HttpResponse.json(db.purchases[index]);
@@ -321,9 +322,6 @@ export const handlers = [
         ano: year,
         mes: month,
         receita: 500,
-        custosAdicionais: 50,
-        frete: 25,
-        valorPago: 200,
         totalDespesa: 275,
         lucro: 225,
       },

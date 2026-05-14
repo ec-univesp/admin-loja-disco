@@ -98,9 +98,7 @@ export const saleResponseSchema = z.object({
   itens: z.array(saleItemSchema).optional(),
 });
 
-export const salePayloadSchema = saleResponseSchema.extend({
-  vendasId: z.number().int().optional(),
-});
+export const salePayloadSchema = saleResponseSchema;
 
 export const detailedRevenueSchema = z.object({
   ano: z.number().int().optional(),
@@ -119,9 +117,6 @@ export const revenueSummarySchema = z.object({
   ano: z.number().int().optional(),
   mes: z.number().int().optional(),
   receita: z.number().optional(),
-  custosAdicionais: z.number().optional(),
-  frete: z.number().optional(),
-  valorPago: z.number().optional(),
   totalDespesa: z.number().optional(),
   lucro: z.number().optional(),
 });

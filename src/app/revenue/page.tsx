@@ -52,8 +52,12 @@ const DIMENSIONS: { key: Dimension; label: string }[] = [
 function groupBy(
   entries: [string, number][]
 ): { label: string; total: number; percentual: number }[] {
-  const grand = entries.reduce((acc, [, v]) => acc + v, 0) || 1;
-  return entries
+  const map = new Map<string, number>();
+  for (const [label, value] of entries) {
+    map.set(label, (map.get(label) ?? 0) + value);
+  }
+  const grand = [...map.values()].reduce((acc, v) => acc + v, 0) || 1;
+  return [...map.entries()]
     .map(([label, total]) => ({ label, total, percentual: Math.round((total / grand) * 100) }))
     .sort((a, b) => b.total - a.total);
 }

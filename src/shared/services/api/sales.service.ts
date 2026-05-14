@@ -18,7 +18,7 @@ export const salesService = {
     apiClient.post(`${BASE}/criar`, messageSchema, payload, signal),
 
   update: (payload: SalePayload, signal?: AbortSignal) =>
-    apiClient.put(`${BASE}/atualizar`, saleResponseSchema, payload, signal),
+    apiClient.patch(`${BASE}/atualizar/${payload.vendaId}`, saleResponseSchema, payload, signal),
 
   delete: (id: number, signal?: AbortSignal) =>
     apiClient.delete(`${BASE}/${id}`, messageSchema, signal),

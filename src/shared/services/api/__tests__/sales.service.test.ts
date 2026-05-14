@@ -42,15 +42,15 @@ runSequentialTests(async () => {
     await assert.rejects(() => salesService.getById(999), ApiError);
   });
 
-  await test('salesService.create aceita payload com vendasId e persiste', async () => {
-    await salesService.create({ ...makeSale({ vendaId: undefined }), vendasId: undefined });
+  await test('salesService.create persiste nova venda', async () => {
+    await salesService.create({ ...makeSale({ vendaId: undefined }) });
     assert.strictEqual(db.sales.length, 1);
     assert.ok(db.sales[0].vendaId !== undefined);
   });
 
   await test('salesService.update altera statusPedido', async () => {
     db.sales.push(makeSale({ vendaId: 3, statusPedido: 'PENDENTE' }));
-    await salesService.update({ ...makeSale({ vendaId: 3 }), vendasId: 3, statusPedido: 'ENTREGUE' });
+    await salesService.update({ ...makeSale({ vendaId: 3 }), statusPedido: 'ENTREGUE' });
     assert.strictEqual(db.sales[0].statusPedido, 'ENTREGUE');
   });
 

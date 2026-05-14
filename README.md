@@ -133,7 +133,12 @@ Form (RHF + zodResolver)  →  useMutation/useQuery (TanStack)
 
 ### Pré-requisitos
 
-- Node.js ≥ 20 e npm ≥ 9
+- Node.js ≥ 20 e **pnpm ≥ 9** (recomendado)
+
+> **Recomendamos pnpm.** O lockfile do projeto é `pnpm-lock.yaml`. Usar npm ou yarn pode gerar conflitos de versão. Instale o pnpm caso ainda não tenha:
+> ```bash
+> npm install -g pnpm
+> ```
 - Backend [`loja-discos-api`](https://github.com/ec-univesp/loja-discos-api) rodando em `http://localhost:8080`
 - MySQL 8 (usado pelo backend)
 
@@ -172,8 +177,8 @@ Confirme em [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/
 ```bash
 git clone git@github.com:ec-univesp/admin-loja-disco.git
 cd admin-loja-disco
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Abra [http://localhost:3000](http://localhost:3000).
@@ -193,15 +198,15 @@ NEXT_PUBLIC_API_BASE_URL=https://api.exemplo.com
 ## Scripts
 
 ```bash
-npm run dev               # Next dev server (webpack) em :3000
-npm run build             # build de produção
-npm run start             # serve o build
-npm test                  # roda toda a suíte (Poku + MSW)
-npm run test:watch        # watch mode
-npm run test:coverage     # cobertura com monocart
-npm run lint              # ESLint
-npm run format            # Prettier write
-npm run format:check      # Prettier check
+pnpm dev                  # Next dev server (webpack) em :3000
+pnpm build                # build de produção
+pnpm start                # serve o build
+pnpm test                 # roda toda a suíte (Poku + MSW)
+pnpm test:watch           # watch mode
+pnpm test:coverage        # cobertura com monocart
+pnpm lint                 # ESLint
+pnpm format               # Prettier write
+pnpm format:check         # Prettier check
 ```
 
 ---
