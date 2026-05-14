@@ -121,6 +121,14 @@ function SalesContent() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
+  const sortedSales = useMemo(
+    () =>
+      [...sales].sort((firstSale, secondSale) =>
+        (firstSale.dataVenda ?? '') < (secondSale.dataVenda ?? '') ? 1 : -1
+      ),
+    [sales]
+  );
+
   const handleConfirmDeleteSale = useCallback(async () => {
     if (!saleToDelete) return;
     const sale = sortedSales.find((candidateSale) => candidateSale.vendaId === saleToDelete.id);
@@ -150,14 +158,6 @@ function SalesContent() {
     setCustomerToDelete(null);
     deleteCustomerModal.closeModal();
   }, [customerToDelete, removeCustomer, deleteCustomerModal]);
-
-  const sortedSales = useMemo(
-    () =>
-      [...sales].sort((firstSale, secondSale) =>
-        (firstSale.dataVenda ?? '') < (secondSale.dataVenda ?? '') ? 1 : -1
-      ),
-    [sales]
-  );
 
   const rows = useMemo(
     () =>
