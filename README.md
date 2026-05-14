@@ -57,18 +57,18 @@ Aplicação **Next.js 16 + TypeScript** com App Router que consome o backend Jav
 
 ## Stack
 
-| Camada | Tecnologia |
-|---|---|
-| Framework | Next.js 16 (App Router, Webpack) |
-| Linguagem | TypeScript 5.9 (strict) |
-| UI | Tailwind CSS 4, lucide-react, ApexCharts |
-| Data fetching | TanStack Query 5 |
-| Forms | react-hook-form 7 + `@hookform/resolvers` |
-| Validação | **Zod 4** (DTOs, enums, forms, responses no boundary) |
-| Mocks de rede (tests) | MSW 2 |
-| Testes | Poku 4 + `@pokujs/react` + happy-dom |
-| Cobertura | monocart-coverage-reports (V8) |
-| Lint / Format | ESLint 9 + Prettier 3 |
+| Camada                | Tecnologia                                            |
+| --------------------- | ----------------------------------------------------- |
+| Framework             | Next.js 16 (App Router, Webpack)                      |
+| Linguagem             | TypeScript 5.9 (strict)                               |
+| UI                    | Tailwind CSS 4, lucide-react, ApexCharts              |
+| Data fetching         | TanStack Query 5                                      |
+| Forms                 | react-hook-form 7 + `@hookform/resolvers`             |
+| Validação             | **Zod 4** (DTOs, enums, forms, responses no boundary) |
+| Mocks de rede (tests) | MSW 2                                                 |
+| Testes                | Poku 4 + `@pokujs/react` + happy-dom                  |
+| Cobertura             | monocart-coverage-reports (V8)                        |
+| Lint / Format         | ESLint 9 + Prettier 3                                 |
 
 ---
 
@@ -124,7 +124,7 @@ Form (RHF + zodResolver)  →  useMutation/useQuery (TanStack)
 
 - **Zero `as`**: sem type assertions em `src/`. Onde houve necessidade, foi substituído por `instanceof`, `z.parse`, ou guard explícito.
 - **Validação no boundary**: toda resposta da API é validada via Zod antes de chegar à UI. Resposta inesperada → `ApiError`.
-- **Forms = schema-driven**: o mesmo schema Zod define a validação do form *e* o tipo do input.
+- **Forms = schema-driven**: o mesmo schema Zod define a validação do form _e_ o tipo do input.
 - **PT-BR no domínio**: nomes de campos e enums seguem o backend (`OrderStatus.ENTREGUE`, `RecordStatus.DISPONIVEL`).
 
 ---
@@ -136,9 +136,11 @@ Form (RHF + zodResolver)  →  useMutation/useQuery (TanStack)
 - Node.js ≥ 20 e **pnpm ≥ 9** (recomendado)
 
 > **Recomendamos pnpm.** O lockfile do projeto é `pnpm-lock.yaml`. Usar npm ou yarn pode gerar conflitos de versão. Instale o pnpm caso ainda não tenha:
+>
 > ```bash
 > npm install -g pnpm
 > ```
+
 - Backend [`loja-discos-api`](https://github.com/ec-univesp/loja-discos-api) rodando em `http://localhost:8080`
 - MySQL 8 (usado pelo backend)
 
@@ -217,11 +219,11 @@ Stack: **Poku 4 + @pokujs/react + happy-dom + MSW 2**. Os testes interceptam `fe
 
 ### Cobertura atual
 
-| Métrica | % |
-|---|---:|
-| **Statements** | **93%** |
-| **Branches** | **96%** |
-| **Functions** | **98%** |
+| Métrica                     |                                               % |
+| --------------------------- | ----------------------------------------------: |
+| **Statements**              |                                         **93%** |
+| **Branches**                |                                         **96%** |
+| **Functions**               |                                         **98%** |
 | Lines (arquivos importados) | 12.57% (inclui código não importado por testes) |
 
 15 arquivos de teste · **107 casos** · execução total ≈ 4s.
