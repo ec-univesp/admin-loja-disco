@@ -5,6 +5,7 @@ import { Modal } from '@/shared/components/ui/modal';
 import SalesChannelForm from './SalesChannelForm';
 import CustomerAddressForm from './CustomerAddressForm';
 import SalesForm from './SalesForm';
+import type { SaleDTO } from '@/shared/services/api';
 
 type View = 'select' | 'customer' | 'channel' | 'sale';
 
@@ -12,6 +13,7 @@ interface NewRegistrationModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialView?: View;
+  sale?: SaleDTO | null;
 }
 
 const iconCliente = (
@@ -56,16 +58,20 @@ export default function NewRegistrationModal({
   isOpen,
   onClose,
   initialView = 'select',
+  sale,
 }: NewRegistrationModalProps) {
-  const [view, setView] = useState<View>(initialView);
+  const isEditingSale = Boolean(sale?.vendaId);
+  const effectiveInitialView = isEditingSale ? 'sale' : initialView;
+  const [view, setView] = useState<View>(effectiveInitialView);
 
   const handleClose = () => {
-    setView(initialView);
+    setView(effectiveInitialView);
     onClose();
   };
 
-  const titulo =
-    view === 'customer'
+  const titulo = isEditingSale
+    ? 'Editar Venda'
+    : view === 'customer'
       ? 'Cadastrar Novo Cliente'
       : view === 'channel'
         ? 'Cadastrar Canal de Venda'
@@ -86,7 +92,7 @@ export default function NewRegistrationModal({
     <Modal isOpen={isOpen} onClose={handleClose} className={`m-4 ${maxWidth}`}>
       <div className="flex max-h-[85vh] flex-col">
         <div className="flex shrink-0 items-center gap-3 border-b border-gray-100 px-6 py-4 pr-16 dark:border-gray-800">
-          {view !== 'select' && (
+          {view !== 'select' && !isEditingSale && (
             <button
               type="button"
               onClick={() => setView('select')}
@@ -181,7 +187,7 @@ export default function NewRegistrationModal({
 
           {view === 'channel' && <SalesChannelForm onClose={handleClose} />}
 
-          {view === 'sale' && <SalesForm onSuccess={handleClose} />}
+          {view === 'sale' && <SalesForm onSuccess={handleClose} initialSale={sale} />}
         </div>
       </div>
     </Modal>

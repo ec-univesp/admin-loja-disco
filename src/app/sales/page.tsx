@@ -6,7 +6,6 @@ import React, { Suspense, useCallback, useMemo, useState } from 'react';
 import { OrderStatus, RecordStatus } from '@/shared/types';
 import { useRecordsModel } from '@/app/inventory/model/recordsModel';
 import { useSalesModel } from '@/app/sales/model/salesModel';
-import CustomerAddressModal from '@/app/sales/components/CustomerAddressModal';
 import NewRegistrationModal from '@/app/sales/components/NewRegistrationModal';
 import SaleDetailsModal from '@/app/sales/components/SaleDetailsModal';
 import { Modal } from '@/shared/components/ui/modal';
@@ -101,9 +100,8 @@ function SalesContent() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
-  const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showNewRegistrationModal, setShowNewRegistrationModal] = useState(() => openNewSaleOnLoad);
-  const [editCustomerId, setEditCustomerId] = useState<number | undefined>();
+  const [saleToEdit, setSaleToEdit] = useState<SaleDTO | null>(null);
 
   const deleteSaleModal = useModal();
   const [saleToDelete, setSaleToDelete] = useState<{ id: number; number: string } | null>(null);
@@ -383,11 +381,13 @@ function SalesContent() {
                         <button
                           type="button"
                           onClick={() => {
-                            setEditCustomerId(row.customerId);
-                            setShowCustomerModal(true);
+                            const selectedSale = sortedSales.find(
+                              (sale) => sale.vendaId === row.id
+                            );
+                            if (selectedSale) setSaleToEdit(selectedSale);
                           }}
-                          aria-label="Editar cliente / endereço"
-                          title="Editar cliente / endereço"
+                          aria-label={`Editar venda ${row.number}`}
+                          title={`Editar venda ${row.number}`}
                           className="bg-brand-500 hover:bg-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-colors"
                         >
                           <Pencil size={15} strokeWidth={2.25} />
@@ -426,15 +426,16 @@ function SalesContent() {
         }
       />
 
-      <CustomerAddressModal
-        isOpen={showCustomerModal}
-        onClose={() => setShowCustomerModal(false)}
-        customerId={editCustomerId}
-      />
       <NewRegistrationModal
         isOpen={showNewRegistrationModal}
         onClose={() => setShowNewRegistrationModal(false)}
         initialView={openNewSaleOnLoad ? 'sale' : 'select'}
+      />
+      <NewRegistrationModal
+        isOpen={saleToEdit !== null}
+        onClose={() => setSaleToEdit(null)}
+        initialView="sale"
+        sale={saleToEdit}
       />
 
       <Modal
